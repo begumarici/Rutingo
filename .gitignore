@@ -1,0 +1,9 @@
+# Xcode
+*.xcuserstate
+*.xcuserdatad
+.DS_Store
+DerivedData/
+build/
+
+# CocoaPods
+Pods/
