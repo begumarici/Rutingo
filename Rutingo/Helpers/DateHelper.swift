@@ -23,7 +23,7 @@ class DateHelper {
         Calendar.current.component(.weekday, from: date)
     }
     
-    func lasySevenDays() -> [Date] {
+    func lastSevenDays() -> [Date] {
         let today = startOfDay()
         return (0..<7).compactMap { offset in
             Calendar.current.date(byAdding: .day, value: -offset, to: today)
@@ -53,7 +53,7 @@ class DateHelper {
         return "\(timeOfDay), \(name)."
     }
     
-    func formattedDatesShort(_ date: Date = Date()) -> String {
+    func formattedDateShort(_ date: Date = Date()) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE, MMM d"
         return formatter.string(from: date)
