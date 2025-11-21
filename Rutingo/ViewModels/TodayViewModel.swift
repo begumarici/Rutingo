@@ -1,5 +1,5 @@
 //
-//  TodayViewController.swift
+//  TodayViewModel.swift
 //  Rutingo
 //
 //  Created by Begüm Arıcı on 20.11.2025.
