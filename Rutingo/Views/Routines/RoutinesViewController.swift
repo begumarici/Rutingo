@@ -13,7 +13,7 @@ class RoutinesViewController: UIViewController {
     private let tableView: UITableView = {
        let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
-        table.register(UITableViewCell.self, forCellReuseIdentifier: "RoutineCell")
+        table.register(RoutineCell.self, forCellReuseIdentifier: RoutineCell.identifier)
         table.backgroundColor = AppColors.background
         return table
     }()
@@ -86,11 +86,12 @@ extension RoutinesViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "RoutineCell")
-        let routine = viewModel.allRoutines[indexPath.row]
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: RoutineCell.identifier, for: indexPath) as? RoutineCell else {
+            return UITableViewCell()
+        }
         
-        cell.textLabel?.text = "\(routine.name ?? "Unnamed")"
-        cell.detailTextLabel?.text = routine.frequency.displayText
+        let routine = viewModel.allRoutines[indexPath.row]
+        cell.configure(with: routine)
         
         return cell
     }

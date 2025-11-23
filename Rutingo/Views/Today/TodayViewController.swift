@@ -31,7 +31,7 @@ class TodayViewController: UIViewController {
     private let tableView: UITableView = {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
-        table.register(UITableViewCell.self, forCellReuseIdentifier: "TodayCell")
+        table.register(TodayRoutineCell.self, forCellReuseIdentifier: TodayRoutineCell.identifier)
         table.backgroundColor = AppColors.background
         return table
     }()
@@ -98,12 +98,12 @@ extension TodayViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodayCell", for: indexPath)
-        let routine = viewModel.todayRoutines[indexPath.row]
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: TodayRoutineCell.identifier, for: indexPath) as? TodayRoutineCell else {
+            return UITableViewCell()
+        }
         
-        let isCompleted = routine.isCompletedToday
-        let checkmark = isCompleted ? "✅" : "⬜️"
-        cell.textLabel?.text = "\(checkmark) \(routine.name ?? "Unnamed")"
+        let routine = viewModel.todayRoutines[indexPath.row]
+        cell.configure(with: routine)
         
         return cell
     }
