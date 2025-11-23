@@ -69,10 +69,15 @@ class RoutinesViewController: UIViewController {
         tableView.reloadData()
     }
     
-    @objc func addRoutineTapped() {
-        print("add routine tapped")
+    @objc private func addRoutineTapped() {
+        let addVC = AddRoutineViewController()
+        addVC.onSave = { [weak self] name, frequency in
+            self?.viewModel.addRoutine(name: name, frequency: frequency)
+            self?.loadData()
+        }
+        let navVC = UINavigationController(rootViewController: addVC)
+        present(navVC, animated: true)
     }
-
 }
 
 extension RoutinesViewController: UITableViewDataSource {
@@ -81,10 +86,10 @@ extension RoutinesViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "RoutineCell", for: indexPath)
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "RoutineCell")
         let routine = viewModel.allRoutines[indexPath.row]
         
-        cell.textLabel?.text = "\(routine.emoji ?? "✅") \(routine.name ?? "Unnamed")"
+        cell.textLabel?.text = "\(routine.name ?? "Unnamed")"
         cell.detailTextLabel?.text = routine.frequency.displayText
         
         return cell

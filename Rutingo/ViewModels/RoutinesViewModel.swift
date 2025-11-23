@@ -20,8 +20,8 @@ class RoutinesViewModel {
         allRoutines = fetchedAllRoutines
     }
     
-    func addRoutine(name: String, emoji: String, frequency: Frequency) {
-        _ = dataManager.saveRoutine(name: name, emoji: emoji, frequency: frequency)
+    func addRoutine(name: String, frequency: Frequency) {
+        _ = dataManager.saveRoutine(name: name, frequency: frequency)
         loadData()
     }
     

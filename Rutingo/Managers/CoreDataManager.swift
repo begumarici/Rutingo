@@ -43,11 +43,10 @@ class CoreDataManager: DataManager {
         return allRoutines.filter { $0.isScheduledToday }
     }
     
-    func saveRoutine(name: String, emoji: String, frequency: Frequency) -> Routine {
+    func saveRoutine(name: String, frequency: Frequency) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()
         routine.name = name
-        routine.emoji = emoji
         routine.frequency = frequency
         routine.createdAt = Date()
         save()

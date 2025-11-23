@@ -103,7 +103,7 @@ extension TodayViewController: UITableViewDataSource {
         
         let isCompleted = routine.isCompletedToday
         let checkmark = isCompleted ? "✅" : "⬜️"
-        cell.textLabel?.text = "\(checkmark) \(routine.emoji ?? "") \(routine.name ?? "Unnamed")"
+        cell.textLabel?.text = "\(checkmark) \(routine.name ?? "Unnamed")"
         
         return cell
     }

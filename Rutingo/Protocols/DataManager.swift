@@ -10,7 +10,7 @@ import Foundation
 protocol DataManager {
     func fetchAllRoutines() -> [Routine]
     func fetchTodayRoutines() -> [Routine]
-    func saveRoutine(name: String, emoji: String, frequency: Frequency) -> Routine
+    func saveRoutine(name: String, frequency: Frequency) -> Routine
     func deleteRoutine(_ routine: Routine)
     func toggleCompletion(_ routine: Routine)
     func save()
