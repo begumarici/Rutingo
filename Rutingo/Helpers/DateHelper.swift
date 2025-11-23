@@ -23,6 +23,18 @@ class DateHelper {
         Calendar.current.component(.weekday, from: date)
     }
     
+    func dayOfWeekShort(_ date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "E"
+        return String(formatter.string(from: date).prefix(3))
+    }
+    
+    func dayOfMonth(_ date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d"
+        return formatter.string(from: date)
+    }
+    
     func lastSevenDays() -> [Date] {
         let today = startOfDay()
         return (0..<7).compactMap { offset in

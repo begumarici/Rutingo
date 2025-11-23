@@ -36,6 +36,12 @@ class TodayViewController: UIViewController {
         return table
     }()
     
+    private let weekCalendarView: WeekCalendarView = {
+        let view = WeekCalendarView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,6 +65,7 @@ class TodayViewController: UIViewController {
     private func addSubviews() {
         view.addSubview(greetingLabel)
         view.addSubview(dateLabel)
+        view.addSubview(weekCalendarView)
         view.addSubview(tableView)
     }
     
@@ -72,7 +79,11 @@ class TodayViewController: UIViewController {
             dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             dateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
-            tableView.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: Layout.padding),
+            weekCalendarView.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: Layout.padding),
+            weekCalendarView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            weekCalendarView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            
+            tableView.topAnchor.constraint(equalTo: weekCalendarView.bottomAnchor, constant: Layout.padding),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -88,7 +99,45 @@ class TodayViewController: UIViewController {
         viewModel.loadData()
         greetingLabel.text = viewModel.greeting
         dateLabel.text = viewModel.dateText
+        
+        let dates = viewModel.lastSevenDays
+        let completedDays = getCompletedDays()
+        weekCalendarView.configure(with: dates, completedDates: completedDays)
+        
         tableView.reloadData()
+    }
+    
+    private func getCompletedDays() -> Set<Date> {
+        var completed = Set<Date>()
+        let allRoutines = CoreDataManager.shared.fetchAllRoutines()
+        
+        for date in viewModel.lastSevenDays {
+            let normalizedDate = DateHelper.shared.startOfDay(date)
+            let weekday = Calendar.current.component(.weekday, from: date)
+            
+            let scheduledRoutines = allRoutines.filter { routine in
+                switch routine.frequency {
+                case .daily:
+                    return true
+                case .specificDays(let days):
+                    return days.contains(weekday)
+                }
+            }
+
+            guard !scheduledRoutines.isEmpty else { continue }
+            
+            let allCompleted = scheduledRoutines.allSatisfy { routine in
+                routine.completions.contains { completion in
+                    Calendar.current.isDate(DateHelper.shared.startOfDay(completion), inSameDayAs: normalizedDate)
+                }
+            }
+            
+            if allCompleted {
+                completed.insert(normalizedDate)
+            }
+        }
+        
+        return completed
     }
 }
 
@@ -115,6 +164,6 @@ extension TodayViewController: UITableViewDelegate {
         
         let routine = viewModel.todayRoutines[indexPath.row]
         viewModel.toggleRoutine(routine)
-        tableView.reloadData()
+        loadData()
     }
 }
