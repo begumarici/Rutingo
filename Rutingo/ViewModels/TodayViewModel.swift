@@ -38,9 +38,51 @@ class TodayViewModel {
     
     func isCompleted(on date: Date) -> Bool {
         return todayRoutines.contains { routine in
-            routine.completions.contains { completion in
-                Calendar.current.isDate(completion, inSameDayAs: date)
+            routine.completionArray.contains { completion in
+                guard let completionDate = completion.date else { return false }
+                return Calendar.current.isDate(completionDate, inSameDayAs: date)
             }
         }
+    }
+    
+    func getCompletedDays() -> Set<Date> {
+        var completed = Set<Date>()
+        let allRoutines = dataManager.fetchAllRoutines()
+        
+        for date in lastSevenDays {
+            let normalizedDate = DateHelper.shared.startOfDay(date)
+            let weekday = Calendar.current.component(.weekday, from: date)
+            
+            let scheduledRoutines = allRoutines.filter { routine in
+                guard let createdAt = routine.createdAt else { return false }
+                let createdAtNormalized = DateHelper.shared.startOfDay(createdAt)
+                
+                guard createdAtNormalized <= normalizedDate else {
+                    return false
+                }
+                
+                switch routine.frequency {
+                case .daily:
+                    return true
+                case .specificDays(let days):
+                    return days.contains(weekday)
+                }
+            }
+            
+            guard !scheduledRoutines.isEmpty else { continue }
+            
+            let allCompleted = scheduledRoutines.allSatisfy { routine in
+                routine.completionArray.contains { completion in 
+                    guard let completionDate = completion.date else { return false }
+                    return Calendar.current.isDate(completionDate, inSameDayAs: normalizedDate)
+                }
+            }
+            
+            if allCompleted {
+                completed.insert(normalizedDate)
+            }
+        }
+        
+        return completed
     }
 }

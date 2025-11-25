@@ -78,6 +78,6 @@ class RoutineCell: UITableViewCell {
         nameLabel.text = routine.name
         frequencyLabel.text = routine.frequency.displayText
         let streak = routine.currentStreak
-        streakLabel.text = streak > 0 ? "🔥 \(streak)" : ""
+        streakLabel.text = "🔥 \(streak)"
     }
 }

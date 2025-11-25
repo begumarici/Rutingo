@@ -83,6 +83,6 @@ class TodayRoutineCell: UITableViewCell {
         checkboxButton.setTitle(isCompleted ? "✅" : "⬜️", for: .normal)
         
         let streak = routine.currentStreak
-        streakLabel.text = streak > 0 ? "🔥 \(streak)" : ""
+        streakLabel.text = "🔥 \(streak)"
     }
 }

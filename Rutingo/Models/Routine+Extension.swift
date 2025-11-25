@@ -18,52 +18,74 @@ extension Routine {
         }
     }
     
-    var completions: [Date] {
-        get {
-            return (completionDates as? [Date]) ?? []
-        }
-        set {
-            completionDates = newValue as NSArray
+    var completionArray: [RoutineCompletion] {
+        let set = completions as? Set<RoutineCompletion> ?? []
+        return Array(set).sorted {
+            ($0.date ?? Date.distantPast) > ($1.date ?? Date.distantPast)
         }
     }
     
-    var isScheduledToday: Bool {
-        let today = Calendar.current.component(.weekday, from: Date())
-        
+    func isScheduled(on date: Date) -> Bool {
+        let weekday = Calendar.current.component(.weekday, from: date)
         switch frequency {
         case .daily:
             return true
         case .specificDays(let days):
-            return days.contains(today)
+            return days.contains(weekday)
         }
+    }
+    
+    func completionRate(in days: [Date]) -> Double {
+        let scheduledDays = days.filter { isScheduled(on: $0) }
+        guard !scheduledDays.isEmpty else { return 0 }
+        
+        let completedCount = scheduledDays.filter { date in
+            completionArray.contains {
+                guard let completionDate = $0.date else { return false }
+                return Calendar.current.isDate(completionDate, inSameDayAs: date)
+            }
+        }.count
+        
+        return Double(completedCount) / Double(scheduledDays.count)
+    }
+    
+    var isScheduledToday: Bool {
+        return isScheduled(on: Date())
     }
     
     var isCompletedToday: Bool {
         let today = DateHelper.shared.startOfDay()
-        return completions.contains { completion in
-            Calendar.current.isDate(completion, inSameDayAs: today)
+        return completionArray.contains {
+            guard let date = $0.date else { return false }
+            return Calendar.current.isDate(date, inSameDayAs: today)
         }
     }
     
     var currentStreak: Int {
-        let sortedCompletions = completions
-            .map { DateHelper.shared.startOfDay($0) }
-            .sorted(by: >)
-        
-        guard !sortedCompletions.isEmpty else { return 0 }
-        
         var streak = 0
-        var currentDate = DateHelper.shared.startOfDay()
+        let today = DateHelper.shared.startOfDay()
         
-        if !isCompletedToday {
-            guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else {
-                return 0
-            }
-            currentDate = yesterday
+        guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today) else {
+              return 0
         }
         
-        for completion in sortedCompletions {
-            if Calendar.current.isDate(completion, inSameDayAs: currentDate) {
+        var currentDate = yesterday
+        
+        while true {
+            guard isScheduled(on: currentDate) else {
+                guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else {
+                    break
+                }
+                currentDate = previousDay
+                continue
+            }
+            
+            let completed = completionArray.contains {
+                guard let date = $0.date else { return false }
+                return Calendar.current.isDate(date, inSameDayAs: currentDate)
+            }
+            
+            if completed {
                 streak += 1
                 guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else {
                     break
@@ -73,30 +95,9 @@ extension Routine {
                 break
             }
         }
-        return streak
-    }
-    
-    func toggleCompletion() {
         if isCompletedToday {
-            removeCompletion()
-        } else {
-            addCompletion()
+            streak += 1
         }
-    }
-    
-    func addCompletion() {
-        let today = DateHelper.shared.startOfDay()
-        if !isCompletedToday {
-            var updated = completions
-            updated.append(today)
-            completions = updated
-        }
-    }
-    
-    func removeCompletion() {
-        let today = DateHelper.shared.startOfDay()
-        completions = completions.filter { completion in
-            !Calendar.current.isDate(completion, inSameDayAs: today)
-        }
+        return streak
     }
 }

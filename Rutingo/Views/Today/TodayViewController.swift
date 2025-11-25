@@ -101,43 +101,10 @@ class TodayViewController: UIViewController {
         dateLabel.text = viewModel.dateText
         
         let dates = viewModel.lastSevenDays
-        let completedDays = getCompletedDays()
+        let completedDays = viewModel.getCompletedDays()
         weekCalendarView.configure(with: dates, completedDates: completedDays)
         
         tableView.reloadData()
-    }
-    
-    private func getCompletedDays() -> Set<Date> {
-        var completed = Set<Date>()
-        let allRoutines = CoreDataManager.shared.fetchAllRoutines()
-        
-        for date in viewModel.lastSevenDays {
-            let normalizedDate = DateHelper.shared.startOfDay(date)
-            let weekday = Calendar.current.component(.weekday, from: date)
-            
-            let scheduledRoutines = allRoutines.filter { routine in
-                switch routine.frequency {
-                case .daily:
-                    return true
-                case .specificDays(let days):
-                    return days.contains(weekday)
-                }
-            }
-
-            guard !scheduledRoutines.isEmpty else { continue }
-            
-            let allCompleted = scheduledRoutines.allSatisfy { routine in
-                routine.completions.contains { completion in
-                    Calendar.current.isDate(DateHelper.shared.startOfDay(completion), inSameDayAs: normalizedDate)
-                }
-            }
-            
-            if allCompleted {
-                completed.insert(normalizedDate)
-            }
-        }
-        
-        return completed
     }
 }
 

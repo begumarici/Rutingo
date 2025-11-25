@@ -59,7 +59,18 @@ class CoreDataManager: DataManager {
     }
     
     func toggleCompletion(_ routine: Routine) {
-        routine.toggleCompletion()
+        let today = DateHelper.shared.startOfDay()
+        if let existing = routine.completionArray.first(where: {
+            guard let date = $0.date else { return false }
+            return Calendar.current.isDate(date, inSameDayAs: today)
+        }) {
+            viewContext.delete(existing)
+        } else {
+            let completion = RoutineCompletion(context: viewContext)
+            completion.id = UUID()
+            completion.date = today
+            completion.routine = routine
+        }
         save()
     }
     
