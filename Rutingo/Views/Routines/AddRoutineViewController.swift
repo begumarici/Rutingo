@@ -152,7 +152,22 @@ class AddRoutineViewController: UIViewController {
         } else {
             selectedDays.append(day)
             sender.backgroundColor = AppColors.accent
+            
+            if selectedDays.count == 7 {
+                switchToDaily()
+            }
         }
+    }
+    
+    private func switchToDaily() {
+        frequencyControl.selectedSegmentIndex = 0
+        selectedDays.removeAll()
+        
+        for case let button as UIButton in dayStackView.arrangedSubviews {
+            button.backgroundColor = AppColors.cardBackground
+        }
+        
+        dayStackView.isHidden = true
     }
     
     @objc private func saveButtonTapped() {
@@ -161,7 +176,13 @@ class AddRoutineViewController: UIViewController {
         let name = nameTextField.text ?? ""
         
         if frequencyControl.selectedSegmentIndex == 1 {
-            selectedFrequency = .specificDays(selectedDays.sorted())
+            if selectedDays.count == 7 {
+                selectedFrequency = .daily
+            } else {
+                selectedFrequency = .specificDays(selectedDays.sorted())
+            }
+        } else {
+            selectedFrequency = .daily
         }
         
         onSave?(name, selectedFrequency)
