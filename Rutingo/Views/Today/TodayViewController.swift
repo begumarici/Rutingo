@@ -27,12 +27,21 @@ class TodayViewController: UIViewController {
         return label
     }()
     
+    private let dailyFocusLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.semibold(22)
+        label.textColor = AppColors.primary
+        label.text = "Your daily focus"
+        return label
+    }()
     
     private let tableView: UITableView = {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
         table.register(TodayRoutineCell.self, forCellReuseIdentifier: TodayRoutineCell.identifier)
         table.backgroundColor = AppColors.background
+        table.separatorStyle = .none
         return table
     }()
     
@@ -56,7 +65,6 @@ class TodayViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = AppColors.background
-        title = "Today"
         
         addSubviews()
         setupConstraints()
@@ -66,6 +74,7 @@ class TodayViewController: UIViewController {
         view.addSubview(greetingLabel)
         view.addSubview(dateLabel)
         view.addSubview(weekCalendarView)
+        view.addSubview(dailyFocusLabel)
         view.addSubview(tableView)
     }
     
@@ -83,7 +92,11 @@ class TodayViewController: UIViewController {
             weekCalendarView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             weekCalendarView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
-            tableView.topAnchor.constraint(equalTo: weekCalendarView.bottomAnchor, constant: Layout.padding),
+            dailyFocusLabel.topAnchor.constraint(equalTo: weekCalendarView.bottomAnchor, constant: Layout.padding),
+            dailyFocusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            dailyFocusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            
+            tableView.topAnchor.constraint(equalTo: dailyFocusLabel.bottomAnchor, constant: Layout.smallPadding),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)

@@ -8,28 +8,28 @@
 import UIKit
 
 enum AppColors {
-    static let background = UIColor.systemBackground
+    static let background = UIColor(red: 37/255, green: 37/255, blue: 37/255, alpha: 1.0)
     static let cardBackground = UIColor.secondarySystemBackground
-    static let primary = UIColor.label
-    static let secondary = UIColor.secondaryLabel
+    static let primary = UIColor.white
+    static let secondary = UIColor.lightGray
     static let accent = UIColor.systemGreen
 }
 
 enum AppFonts {
     static func regular(_ size: CGFloat) -> UIFont {
-        return .systemFont(ofSize: size, weight: .regular)
+        return UIFont(name: "FiraSans-Regular", size: size) ?? .systemFont(ofSize: size, weight: .regular)
     }
     
     static func medium(_ size: CGFloat) -> UIFont {
-        return .systemFont(ofSize: size, weight: .medium)
+        return UIFont(name: "FiraSans-Medium", size: size) ?? .systemFont(ofSize: size, weight: .medium)
     }
     
     static func semibold(_ size: CGFloat) -> UIFont {
-        return .systemFont(ofSize: size, weight: .semibold)
+        return UIFont(name: "FiraSans-SemiBold", size: size) ?? .systemFont(ofSize: size, weight: .semibold)
     }
     
     static func bold(_ size: CGFloat) -> UIFont {
-        return .systemFont(ofSize: size, weight: .bold)
+        return UIFont(name: "FiraSans-Bold", size: size) ?? .systemFont(ofSize: size, weight: .bold)
     }
 }
 

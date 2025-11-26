@@ -19,5 +19,12 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>FiraSans-Regular.ttf</string>
+		<string>FiraSans-Medium.ttf</string>
+		<string>FiraSans-SemiBold.ttf</string>
+		<string>FiraSans-Bold.ttf</string>
+	</array>
 </dict>
 </plist>

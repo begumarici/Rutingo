@@ -15,6 +15,7 @@ class RoutinesViewController: UIViewController {
         table.translatesAutoresizingMaskIntoConstraints = false
         table.register(RoutineCell.self, forCellReuseIdentifier: RoutineCell.identifier)
         table.backgroundColor = AppColors.background
+        table.separatorStyle = .none
         return table
     }()
     
@@ -31,7 +32,6 @@ class RoutinesViewController: UIViewController {
 
     private func setupUI() {
         view.backgroundColor = AppColors.background
-        title = "Routines"
         
         setupNavigationBar()
         addSubviews()
