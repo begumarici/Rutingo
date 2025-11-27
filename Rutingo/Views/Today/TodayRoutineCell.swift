@@ -35,7 +35,7 @@ class TodayRoutineCell: UITableViewCell {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(18)
+        label.font = AppFonts.semibold(16)
         label.textColor = AppColors.primary
         return label
     }()
@@ -79,7 +79,7 @@ class TodayRoutineCell: UITableViewCell {
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
             cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
             cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.smallPadding),
-            cardView.heightAnchor.constraint(equalToConstant: 70),
+            cardView.heightAnchor.constraint(equalToConstant: 50),
 
             checkboxButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: Layout.padding),
             checkboxButton.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),

@@ -9,7 +9,7 @@ import UIKit
 
 class WeekCalendarView: UIView {
     private var dates: [Date] = []
-    private var completedDays: Set<Date> = []
+    private var progressMap: [Date: Double] = [:]
     
     private let stackView: UIStackView = {
         let stackView = UIStackView()
@@ -37,16 +37,16 @@ class WeekCalendarView: UIView {
         
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: topAnchor, constant: Layout.smallPadding),
-            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Layout.smallPadding),
-            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Layout.smallPadding),
+            stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 0),
+            stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 0),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -Layout.smallPadding),
-            stackView.heightAnchor.constraint(equalToConstant: 80)
+            stackView.heightAnchor.constraint(equalToConstant: 70)
         ])
     }
     
-    func configure(with dates: [Date], completedDates: Set<Date>) {
+    func configure(with dates: [Date], progressMap: [Date: Double]) {
         self.dates = dates
-        self.completedDays = completedDates
+        self.progressMap = progressMap
  
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
@@ -55,10 +55,10 @@ class WeekCalendarView: UIView {
         for date in dates {
             let dayView = DayCircleView()
             let normalizedDate = DateHelper.shared.startOfDay(date)
-            let isCompleted = completedDays.contains(normalizedDate)
+            let progress = progressMap[normalizedDate] ?? 0.0
             let isToday = Calendar.current.isDate(normalizedDate, inSameDayAs: today)
             
-            dayView.configure(with: date, isCompleted: isCompleted, isToday: isToday)
+            dayView.configure(with: date, progress: progress, isToday: isToday)
             stackView.addArrangedSubview(dayView)
         }
     }

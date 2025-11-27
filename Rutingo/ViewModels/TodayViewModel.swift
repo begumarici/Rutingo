@@ -45,6 +45,48 @@ class TodayViewModel {
         }
     }
     
+    func getCompletionProgress() -> [Date: Double] {
+        var progressMap: [Date: Double] = [:]
+        let allRoutines = dataManager.fetchAllRoutines()
+        
+        for date in lastSevenDays {
+            let normalizedDate = DateHelper.shared.startOfDay(date)
+            let weekday = Calendar.current.component(.weekday, from: date)
+            
+            let scheduledRoutines = allRoutines.filter { routine in
+                guard let createdAt = routine.createdAt else { return false }
+                let createdAtNormalized = DateHelper.shared.startOfDay(createdAt)
+                
+                guard createdAtNormalized <= normalizedDate else {
+                    return false
+                }
+                
+                switch routine.frequency {
+                case .daily:
+                    return true
+                case .specificDays(let days):
+                    return days.contains(weekday)
+                }
+            }
+            
+            guard !scheduledRoutines.isEmpty else {
+                progressMap[normalizedDate] = 0.0
+                continue
+            }
+            
+            let completedCount = scheduledRoutines.filter { routine in
+                routine.completionArray.contains { completion in
+                    guard let completionDate = completion.date else { return false }
+                    return Calendar.current.isDate(completionDate, inSameDayAs: normalizedDate)
+                }
+            }.count
+            
+            let progress = Double(completedCount) / Double(scheduledRoutines.count)
+            progressMap[normalizedDate] = progress
+        }
+        return progressMap
+    }
+    
     func getCompletedDays() -> Set<Date> {
         var completed = Set<Date>()
         let allRoutines = dataManager.fetchAllRoutines()

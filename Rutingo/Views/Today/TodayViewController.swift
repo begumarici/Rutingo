@@ -51,6 +51,23 @@ class TodayViewController: UIViewController {
         return view
     }()
     
+    private let emptyStateView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+    
+    private let emptyStateLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "No routines scheduled for today"
+        label.font = AppFonts.regular(16)
+        label.textColor = AppColors.secondary
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,6 +93,9 @@ class TodayViewController: UIViewController {
         view.addSubview(weekCalendarView)
         view.addSubview(dailyFocusLabel)
         view.addSubview(tableView)
+        
+        emptyStateView.addSubview(emptyStateLabel)
+        view.addSubview(emptyStateView)
     }
     
     private func setupConstraints() {
@@ -99,7 +119,17 @@ class TodayViewController: UIViewController {
             tableView.topAnchor.constraint(equalTo: dailyFocusLabel.bottomAnchor, constant: Layout.smallPadding),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            emptyStateView.topAnchor.constraint(equalTo: dailyFocusLabel.bottomAnchor, constant: 40),
+            emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            emptyStateView.heightAnchor.constraint(equalToConstant: 100),
+            
+            emptyStateLabel.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
+            emptyStateLabel.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor),
+            emptyStateLabel.leadingAnchor.constraint(equalTo: emptyStateView.leadingAnchor, constant: Layout.padding),
+            emptyStateLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor, constant: -Layout.padding)
         ])
     }
     
@@ -114,9 +144,12 @@ class TodayViewController: UIViewController {
         dateLabel.text = viewModel.dateText
         
         let dates = viewModel.lastSevenDays
-        let completedDays = viewModel.getCompletedDays()
-        weekCalendarView.configure(with: dates, completedDates: completedDays)
+        let progressMap = viewModel.getCompletionProgress()
+        weekCalendarView.configure(with: dates, progressMap: progressMap)
         
+        let isEmpty = viewModel.todayRoutines.isEmpty
+        tableView.isHidden = isEmpty
+        emptyStateView.isHidden = !isEmpty
         tableView.reloadData()
     }
 }

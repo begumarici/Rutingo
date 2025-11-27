@@ -11,8 +11,8 @@ class DayCircleView: UIView {
     private let dayLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.regular(12)
-        label.textColor = AppColors.secondary
+        label.font = AppFonts.regular(14)
+        label.textColor = UIColor.black
         label.textAlignment = .center
         return label
     }()
@@ -20,16 +20,8 @@ class DayCircleView: UIView {
     private let dateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.primary
-        label.textAlignment = .center
-        return label
-    }()
-    
-    private let statusLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.bold(20)
+        label.font = AppFonts.semibold(20)
+        label.textColor = UIColor.black
         label.textAlignment = .center
         return label
     }()
@@ -44,8 +36,8 @@ class DayCircleView: UIView {
     }
     
     private func setupUI() {
-        backgroundColor = AppColors.background
-        layer.cornerRadius = 8
+        backgroundColor = AppColors.progressEmpty
+        layer.cornerRadius = 14
         addSubviews()
         setupConstraints()
     }
@@ -53,7 +45,6 @@ class DayCircleView: UIView {
     private func addSubviews() {
         addSubview(dayLabel)
         addSubview(dateLabel)
-        addSubview(statusLabel)
     }
     
     private func setupConstraints() {
@@ -61,28 +52,33 @@ class DayCircleView: UIView {
             dayLabel.topAnchor.constraint(equalTo: topAnchor, constant: 4),
             dayLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
             
-            dateLabel.topAnchor.constraint(equalTo: dayLabel.bottomAnchor, constant: 2),
+            dateLabel.topAnchor.constraint(equalTo: dayLabel.bottomAnchor, constant: 0),
             dateLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            
-            statusLabel.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 2),
-            statusLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            statusLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -4)
+            dateLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8)
         ])
     }
     
-    func configure(with date: Date, isCompleted: Bool, isToday: Bool) {
+    func configure(with date: Date, progress: Double, isToday: Bool) {
         dayLabel.text = DateHelper.shared.dayOfWeekShort(date)
         dateLabel.text = DateHelper.shared.dayOfMonth(date)
         
-        if isToday && !isCompleted {
-            statusLabel.text = "🔵"
-            backgroundColor = AppColors.accent.withAlphaComponent(0.2)
-        } else if isCompleted {
-            statusLabel.text = "✅"
-            backgroundColor = AppColors.cardBackground
+        if progress == 0.0 {
+           backgroundColor = AppColors.progressEmpty
+        } else if progress < 0.34 {
+           backgroundColor = AppColors.progressLow
+        } else if progress < 0.67 {
+           backgroundColor = AppColors.progressMedium
+        } else if progress < 1.0 {
+           backgroundColor = AppColors.progressHigh
         } else {
-            statusLabel.text = "⬜️"
-            backgroundColor = AppColors.cardBackground
+           backgroundColor = AppColors.progressComplete
+        }
+        
+        if isToday {
+            layer.borderWidth = 1
+            layer.borderColor = AppColors.accent.cgColor
+        } else {
+            layer.borderWidth = 0
         }
     }
 }
