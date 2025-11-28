@@ -23,20 +23,12 @@ class TodayRoutineCell: UITableViewCell {
         view.layer.shadowRadius = 4
         return view
     }()
-
-    private let checkboxButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.titleLabel?.font = AppFonts.bold(24)
-        button.isUserInteractionEnabled = false
-        return button
-    }()
     
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.primary
+        label.textColor = UIColor.black
         return label
     }()
     
@@ -44,7 +36,7 @@ class TodayRoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.accent
+        label.textColor = AppColors.tertiary
         return label
     }()
     
@@ -68,7 +60,6 @@ class TodayRoutineCell: UITableViewCell {
     
     private func addSubviews() {
         contentView.addSubview(cardView)
-        cardView.addSubview(checkboxButton)
         cardView.addSubview(nameLabel)
         cardView.addSubview(streakLabel)
     }
@@ -80,16 +71,11 @@ class TodayRoutineCell: UITableViewCell {
             cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
             cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.smallPadding),
             cardView.heightAnchor.constraint(equalToConstant: 50),
-
-            checkboxButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: Layout.padding),
-            checkboxButton.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
-            checkboxButton.widthAnchor.constraint(equalToConstant: 32),
-            checkboxButton.heightAnchor.constraint(equalToConstant: 32),
             
             streakLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -Layout.padding),
             streakLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
 
-            nameLabel.leadingAnchor.constraint(equalTo: checkboxButton.trailingAnchor, constant: 12),
+            nameLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
             nameLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
             nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.smallPadding)
         ])
@@ -100,15 +86,12 @@ class TodayRoutineCell: UITableViewCell {
         let iconSize: CGFloat = 16
         
         attachment.image = UIImage(systemName: "link")?
-            .withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
+            .withTintColor(AppColors.tertiary, renderingMode: .alwaysOriginal)
         
         attachment.bounds = CGRect(x: 0, y: -1, width: iconSize, height: iconSize)
         
         let attributedString = NSMutableAttributedString(attachment: attachment)
-        attributedString.append(NSAttributedString(string: " \(streak)", attributes: [
-            .font: AppFonts.regular(16),
-            .foregroundColor: AppColors.secondary
-        ]))
+        attributedString.append(NSAttributedString(string: " \(streak)"))
         
         return attributedString
     }
@@ -117,7 +100,11 @@ class TodayRoutineCell: UITableViewCell {
         nameLabel.text = routine.name
         
         let isCompleted = routine.isCompletedToday
-        checkboxButton.setTitle(isCompleted ? "✅" : "⬜️", for: .normal)
+        if isCompleted {
+            cardView.backgroundColor = AppColors.progressLow
+        } else {
+            cardView.backgroundColor = AppColors.cardBackground
+        }
         
         let streak = routine.currentStreak
         streakLabel.attributedText = createStreakText(streak)

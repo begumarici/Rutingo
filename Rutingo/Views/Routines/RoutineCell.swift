@@ -28,7 +28,7 @@ class RoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(18)
-        label.textColor = AppColors.primary
+        label.textColor = UIColor.black
         return label
     }()
     
@@ -36,15 +36,15 @@ class RoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(14)
-        label.textColor = AppColors.secondary
+        label.textColor = AppColors.tertiary
         return label
     }()
     
     private let streakLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(24)
-        label.textColor = AppColors.accent
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.tertiary
         return label
     }()
     
@@ -109,16 +109,12 @@ class RoutineCell: UITableViewCell {
         let iconSize: CGFloat = 16
         
         attachment.image = UIImage(systemName: "link")?
-            .withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
+            .withTintColor(AppColors.tertiary, renderingMode: .alwaysOriginal)
         
         attachment.bounds = CGRect(x: 0, y: -1, width: iconSize, height: iconSize)
         
         let attributedString = NSMutableAttributedString(attachment: attachment)
-        attributedString.append(NSAttributedString(string: " \(streak)", attributes: [
-            .font: AppFonts.regular(16),
-            .foregroundColor: AppColors.secondary
-        ]))
-        
+        attributedString.append(NSAttributedString(string: " \(streak)"))
         return attributedString
     }
 

@@ -57,6 +57,21 @@ class RoutinesViewController: UIViewController {
     }
     
     private func setupNavigationBar() {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.largeTitleDisplayMode = .always
+        title = "Routines"
+        
+        if let navigationBar = navigationController?.navigationBar {
+                navigationBar.largeTitleTextAttributes = [
+                    .font: AppFonts.bold(34),
+                    .foregroundColor: AppColors.primary
+                ]
+            navigationBar.titleTextAttributes = [
+                        .font: AppFonts.semibold(17),
+                        .foregroundColor: AppColors.primary
+                    ]
+                }
+            
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .add,
             target: self,
@@ -66,7 +81,7 @@ class RoutinesViewController: UIViewController {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
