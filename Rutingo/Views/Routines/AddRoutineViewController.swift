@@ -24,13 +24,31 @@ class AddRoutineViewController: UIViewController {
         view.endEditing(true)
     }
     
+    private let nameLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Name"
+        label.font = AppFonts.semibold(14)
+        label.textColor = AppColors.secondary
+        return label
+    }()
+    
     private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "Routine name"
+        textField.placeholder = "Enter routine name"
         textField.borderStyle = .roundedRect
         textField.font = AppFonts.regular(16)
         return textField
+    }()
+    
+    private let frequencyLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Frequency"
+        label.font = AppFonts.semibold(14)
+        label.textColor = AppColors.secondary
+        return label
     }()
     
     private let frequencyControl: UISegmentedControl = {
@@ -39,6 +57,16 @@ class AddRoutineViewController: UIViewController {
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         segmentedControl.selectedSegmentIndex = 0
         return segmentedControl
+    }()
+    
+    private let daysLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Days of Week"
+        label.font = AppFonts.semibold(14)
+        label.textColor = AppColors.secondary
+        label.isHidden = true
+        return label
     }()
     
     private let dayStackView: UIStackView = {
@@ -82,29 +110,45 @@ class AddRoutineViewController: UIViewController {
     }
     
     private func addSubviews() {
+        view.addSubview(nameLabel)
         view.addSubview(nameTextField)
+        view.addSubview(frequencyLabel)
         view.addSubview(frequencyControl)
+        view.addSubview(daysLabel)
         view.addSubview(dayStackView)
         view.addSubview(saveButton)
     }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            nameTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
+            nameLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
+            nameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            nameLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+  
+            nameTextField.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
             nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             nameTextField.heightAnchor.constraint(equalToConstant: 44),
-            
-            frequencyControl.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 24),
+
+            frequencyLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 24),
+            frequencyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            frequencyLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+
+            frequencyControl.topAnchor.constraint(equalTo: frequencyLabel.bottomAnchor, constant: 8),
             frequencyControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             frequencyControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            
-            dayStackView.topAnchor.constraint(equalTo: frequencyControl.bottomAnchor, constant: 16),
+            frequencyControl.heightAnchor.constraint(equalToConstant: 32),
+
+            daysLabel.topAnchor.constraint(equalTo: frequencyControl.bottomAnchor, constant: 24),
+            daysLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            daysLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+
+            dayStackView.topAnchor.constraint(equalTo: daysLabel.bottomAnchor, constant: 8),
             dayStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             dayStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             dayStackView.heightAnchor.constraint(equalToConstant: 44),
             
-            saveButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -24),
+            saveButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -32),
             saveButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             saveButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             saveButton.heightAnchor.constraint(equalToConstant: 50)
@@ -123,9 +167,14 @@ class AddRoutineViewController: UIViewController {
             let button = UIButton(type: .system)
             button.setTitle(day, for: .normal)
             button.tag = index + 1
+            button.titleLabel?.font = AppFonts.semibold(16)
+
             button.backgroundColor = AppColors.cardBackground
-            button.layer.cornerRadius = 8
-            button.addTarget(self, action: #selector(dayButtonTapped(_ :)), for: .touchUpInside)
+            button.setTitleColor(UIColor.black, for: .normal)
+            button.layer.cornerRadius = 22
+            button.clipsToBounds = true
+            
+            button.addTarget(self, action: #selector(dayButtonTapped(_:)), for: .touchUpInside)
             dayStackView.addArrangedSubview(button)
         }
     }
@@ -138,8 +187,10 @@ class AddRoutineViewController: UIViewController {
         if frequencyControl.selectedSegmentIndex == 0 {
             selectedFrequency = .daily
             dayStackView.isHidden = true
+            daysLabel.isHidden = true
         } else {
             dayStackView.isHidden = false
+            daysLabel.isHidden = false
         }
     }
     
@@ -149,10 +200,11 @@ class AddRoutineViewController: UIViewController {
         if selectedDays.contains(day) {
             selectedDays.removeAll { $0 == day }
             sender.backgroundColor = AppColors.cardBackground
+            sender.setTitleColor(UIColor.black, for: .normal)
         } else {
             selectedDays.append(day)
-            sender.backgroundColor = AppColors.accent
-            
+            sender.backgroundColor = AppColors.progressLow
+
             if selectedDays.count == 7 {
                 switchToDaily()
             }
@@ -168,6 +220,7 @@ class AddRoutineViewController: UIViewController {
         }
         
         dayStackView.isHidden = true
+        daysLabel.isHidden = true
     }
     
     @objc private func saveButtonTapped() {
