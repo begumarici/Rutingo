@@ -49,6 +49,11 @@ class DateHelper {
         return abs(components.day ?? 0)
     }
     
+    static func getDayName(for dayNumber: Int) -> String {
+        let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        return dayNames[dayNumber - 1]
+    }
+    
     func greetingText(name: String = "Begüm") -> String {
         let hour = Calendar.current.component(.hour, from: Date())
         let timeOfDay: String

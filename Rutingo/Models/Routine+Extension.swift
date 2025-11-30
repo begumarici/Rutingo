@@ -25,6 +25,10 @@ extension Routine {
         }
     }
     
+    var completionDates: [Date] {
+        return completionArray.compactMap { $0.date }
+    }
+    
     func isScheduled(on date: Date) -> Bool {
         let weekday = Calendar.current.component(.weekday, from: date)
         switch frequency {

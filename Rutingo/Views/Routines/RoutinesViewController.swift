@@ -150,6 +150,10 @@ extension RoutinesViewController: UITableViewDataSource {
 extension RoutinesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        let routine = viewModel.allRoutines[indexPath.row]
+        let detailVC = RoutineDetailViewController(routine: routine, viewModel: viewModel)
+        navigationController?.pushViewController(detailVC, animated: true)
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
