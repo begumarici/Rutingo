@@ -14,6 +14,8 @@ class MainTabBarController: UITabBarController {
     
         setupViewControllers()
         setupTabBarAppereance()
+        
+        self.delegate = self
     }
 
     private func setupViewControllers() {
@@ -51,4 +53,12 @@ class MainTabBarController: UITabBarController {
         tabBar.scrollEdgeAppearance = appereance
     }
     
+}
+
+extension MainTabBarController: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        if let navController = viewController as? UINavigationController {
+            navController.popToRootViewController(animated: false)
+        }
+    }
 }
