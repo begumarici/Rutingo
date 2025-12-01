@@ -155,12 +155,4 @@ extension RoutinesViewController: UITableViewDelegate {
         let detailVC = RoutineDetailViewController(routine: routine, viewModel: viewModel)
         navigationController?.pushViewController(detailVC, animated: true)
     }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            let routine = viewModel.allRoutines[indexPath.row]
-            viewModel.deleteRoutine(routine)
-            tableView.reloadData()
-        }
-    }
 }

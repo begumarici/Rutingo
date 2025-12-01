@@ -7,8 +7,19 @@
 
 import UIKit
 
+
+
 class AddRoutineViewController: UIViewController {
     var onSave: ((String, Frequency) -> Void)?
+    var onUpdate: ((Routine, String, Frequency) -> Void)?
+    var onDelete: (() -> Void)?
+    
+    enum Mode {
+        case add
+        case edit(Routine)
+    }
+    var mode: Mode = .add
+    
     private var selectedFrequency: Frequency = .daily
     private var selectedDays: [Int] = []
     
@@ -18,6 +29,10 @@ class AddRoutineViewController: UIViewController {
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
+        
+        if case .edit(let routine) = mode {
+            populateFields(with: routine)
+        }
     }
     
     @objc private func dismissKeyboard() {
@@ -79,6 +94,20 @@ class AddRoutineViewController: UIViewController {
         return stackView
     }()
     
+    private lazy var deleteButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Delete Routine", for: .normal)
+        button.titleLabel?.font = AppFonts.semibold(16)
+        button.setTitleColor(.systemRed, for: .normal)
+        button.backgroundColor = .clear
+        button.layer.cornerRadius = Layout.cornerRadius
+        button.layer.borderWidth = 2
+        button.layer.borderColor = UIColor.systemRed.cgColor
+        button.isHidden = true
+        return button
+    }()
+    
     private let saveButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -92,7 +121,16 @@ class AddRoutineViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = AppColors.background
-        title = "Add Routine"
+        switch mode {
+        case .add:
+            title = "Add Routine"
+            saveButton.setTitle("Save", for: .normal)
+            deleteButton.isHidden = true
+        case .edit:
+            title = "Edit Routine"
+            saveButton.setTitle("Update", for: .normal)
+            deleteButton.isHidden = false
+        }
         
         setupNavigationBar()
         addSubviews()
@@ -117,6 +155,7 @@ class AddRoutineViewController: UIViewController {
         view.addSubview(daysLabel)
         view.addSubview(dayStackView)
         view.addSubview(saveButton)
+        view.addSubview(deleteButton)
     }
     
     private func setupConstraints() {
@@ -148,16 +187,22 @@ class AddRoutineViewController: UIViewController {
             dayStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             dayStackView.heightAnchor.constraint(equalToConstant: 44),
             
-            saveButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -32),
             saveButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             saveButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            saveButton.heightAnchor.constraint(equalToConstant: 50)
+            saveButton.heightAnchor.constraint(equalToConstant: 50),
+            saveButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -100),
+
+            deleteButton.topAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: 12),
+            deleteButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            deleteButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
     
     private func setupActions() {
         frequencyControl.addTarget(self, action: #selector(frequencyChanged), for: .valueChanged)
         saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
+        deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
     }
     
     private func createDayButtons() {
@@ -238,8 +283,62 @@ class AddRoutineViewController: UIViewController {
             selectedFrequency = .daily
         }
         
-        onSave?(name, selectedFrequency)
+        switch mode {
+        case .add:
+            onSave?(name, selectedFrequency)
+        case .edit(let routine):
+            onUpdate?(routine, name, selectedFrequency)
+        }
+        
         dismiss(animated: true)
+    }
+    
+    @objc private func deleteButtonTapped() {
+        let alert = UIAlertController(
+            title: "Delete Routine",
+            message: "Are you sure you want to delete this routine? This action cannot be undone.",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        
+        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+            guard case .edit(let routine) = self?.mode else { return }
+            
+            CoreDataManager.shared.deleteRoutine(routine)
+            
+            self?.onDelete?()
+      
+            self?.dismiss(animated: true)
+        })
+        
+        present(alert, animated: true)
+    }
+    
+    private func populateFields(with routine: Routine) {
+        nameTextField.text = routine.name
+        
+        switch routine.frequency {
+        case .daily:
+            frequencyControl.selectedSegmentIndex = 0
+            dayStackView.isHidden = true
+            daysLabel.isHidden = true
+            
+        case .specificDays(let days):
+            frequencyControl.selectedSegmentIndex = 1
+            selectedDays = days
+            dayStackView.isHidden = false
+            daysLabel.isHidden = false
+            
+            for day in days {
+                for case let button as UIButton in dayStackView.arrangedSubviews {
+                    if button.tag == day {
+                        button.backgroundColor = AppColors.progressLow
+                        button.setTitleColor(.black, for: .normal)
+                    }
+                }
+            }
+        }
     }
     
     private func validate() -> Bool {

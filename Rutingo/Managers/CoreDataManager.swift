@@ -53,6 +53,12 @@ class CoreDataManager: DataManager {
         return routine
     }
     
+    func updateRoutine(routine: Routine, name: String, frequency: Frequency) {
+        routine.name = name
+        routine.frequencyData = try? JSONEncoder().encode(frequency)
+        save()
+    }
+    
     func deleteRoutine(_ routine: Routine) {
         viewContext.delete(routine)
         save()

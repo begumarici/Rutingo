@@ -333,6 +333,26 @@ class RoutineDetailViewController: UIViewController {
     }
     
     @objc private func editTapped() {
-        print("Edit tapped")
+        let addVC = AddRoutineViewController()
+        addVC.mode = .edit(routine)
+        
+        addVC.onUpdate = { [weak self] routine, name, frequency in
+            guard let self = self else { return }
+       
+            CoreDataManager.shared.updateRoutine(
+                routine: routine,
+                name: name,
+                frequency: frequency
+            )
+            
+            self.routine = routine
+            self.configureWithRoutine()
+        }
+        
+        addVC.onDelete = {[weak self] in
+            self?.navigationController?.popViewController(animated: true)}
+        
+        let navVC = UINavigationController(rootViewController: addVC)
+        present(navVC, animated: true)
     }
 }
