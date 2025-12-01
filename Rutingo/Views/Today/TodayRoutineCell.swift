@@ -24,6 +24,14 @@ class TodayRoutineCell: UITableViewCell {
         return view
     }()
     
+    private let checkmarkView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = .white
+        return imageView
+    }()
+    
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -36,6 +44,14 @@ class TodayRoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.tertiary
+        return label
+    }()
+    
+    private let frequencyLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.regular(12)
         label.textColor = AppColors.tertiary
         return label
     }()
@@ -60,8 +76,10 @@ class TodayRoutineCell: UITableViewCell {
     
     private func addSubviews() {
         contentView.addSubview(cardView)
+        cardView.addSubview(checkmarkView)
         cardView.addSubview(nameLabel)
         cardView.addSubview(streakLabel)
+        cardView.addSubview(frequencyLabel)
     }
     
     private func setupConstraints() {
@@ -70,14 +88,24 @@ class TodayRoutineCell: UITableViewCell {
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
             cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
             cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.smallPadding),
-            cardView.heightAnchor.constraint(equalToConstant: 50),
+            cardView.heightAnchor.constraint(equalToConstant: 60),
             
             streakLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -Layout.padding),
             streakLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
 
-            nameLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            nameLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
-            nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.smallPadding)
+            checkmarkView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
+            checkmarkView.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
+            checkmarkView.widthAnchor.constraint(equalToConstant: 24),
+            checkmarkView.heightAnchor.constraint(equalToConstant: 24),
+
+            nameLabel.leadingAnchor.constraint(equalTo: checkmarkView.trailingAnchor, constant: 12),
+            nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 8),
+            nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.smallPadding),
+
+            frequencyLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 2),
+            frequencyLabel.leadingAnchor.constraint(equalTo: checkmarkView.trailingAnchor, constant: 12),
+            frequencyLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.smallPadding),
+            frequencyLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -8)
         ])
     }
     
@@ -98,13 +126,20 @@ class TodayRoutineCell: UITableViewCell {
         
     func configure(with routine: Routine) {
         nameLabel.text = routine.name
+        frequencyLabel.text = routine.frequency.displayText
         
         let isCompleted = routine.isCompletedToday
-        if isCompleted {
-            cardView.backgroundColor = AppColors.progressLow
-        } else {
-            cardView.backgroundColor = AppColors.cardBackground
-        }
+            if isCompleted {
+                cardView.backgroundColor = AppColors.progressLow
+                cardView.alpha = 0.8
+                checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")
+                checkmarkView.tintColor = AppColors.progressComplete
+            } else {
+                cardView.backgroundColor = AppColors.cardBackground
+                cardView.alpha = 1.0
+                checkmarkView.image = UIImage(systemName: "circle")
+                checkmarkView.tintColor = AppColors.tertiary
+            }
         
         let streak = routine.currentStreak
         streakLabel.attributedText = createStreakText(streak)

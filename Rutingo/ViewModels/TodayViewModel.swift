@@ -29,6 +29,13 @@ class TodayViewModel {
     
     func loadData() {
         todayRoutines = dataManager.fetchTodayRoutines()
+        
+        todayRoutines.sort { routine1, routine2 in
+            if routine1.isCompletedToday == routine2.isCompletedToday {
+                return false
+            }
+            return !routine1.isCompletedToday
+        }
     }
     
     func toggleRoutine(_ routine: Routine) {
