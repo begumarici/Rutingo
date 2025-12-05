@@ -15,6 +15,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        NotificationManager.shared.requestAuthorization { granted in
+            if granted {
+                print("notification permission granted")
+            } else {
+                print("notification permission denied")
+            }
+        }
         return true
     }
 

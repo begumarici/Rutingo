@@ -21,17 +21,20 @@ class RoutinesViewModel {
     }
     
     func addRoutine(name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date?) {
-        _ = dataManager.saveRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
+        let newRoutine = dataManager.saveRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
+        NotificationManager.shared.scheduleNotification(for: newRoutine)
         loadData()
     }
     
     func deleteRoutine(_ routine: Routine) {
+        NotificationManager.shared.cancelNotification(for: routine)
         dataManager.deleteRoutine(routine)
         loadData()
     }
     
     func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date? = nil) {
         dataManager.updateRoutine(routine: routine, name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
+        NotificationManager.shared.scheduleNotification(for: routine)
         loadData()
     }
         
