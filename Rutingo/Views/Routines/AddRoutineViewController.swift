@@ -10,8 +10,8 @@ import UIKit
 
 
 class AddRoutineViewController: UIViewController {
-    var onSave: ((String, Frequency) -> Void)?
-    var onUpdate: ((Routine, String, Frequency) -> Void)?
+    var onSave: ((String, Frequency, Bool, Date?) -> Void)?
+    var onUpdate: ((Routine, String, Frequency, Bool, Date?) -> Void)?
     var onDelete: (() -> Void)?
     
     enum Mode {
@@ -22,6 +22,8 @@ class AddRoutineViewController: UIViewController {
     
     private var selectedFrequency: Frequency = .daily
     private var selectedDays: [Int] = []
+    private var hasReminder: Bool = false
+    private var reminderTime: Date = Date()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -94,6 +96,37 @@ class AddRoutineViewController: UIViewController {
         return stackView
     }()
     
+    private let reminderLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Reminder"
+        label.font = AppFonts.semibold(14)
+        label.textColor = AppColors.secondary
+        return label
+    }()
+
+    private let reminderSwitch: UISwitch = {
+        let toggle = UISwitch()
+        toggle.translatesAutoresizingMaskIntoConstraints = false
+        toggle.isOn = false
+        return toggle
+    }()
+
+    private let timePickerContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+
+    private let timePicker: UIDatePicker = {
+        let picker = UIDatePicker()
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.datePickerMode = .time
+        picker.preferredDatePickerStyle = .wheels
+        return picker
+    }()
+    
     private lazy var deleteButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -154,6 +187,10 @@ class AddRoutineViewController: UIViewController {
         view.addSubview(frequencyControl)
         view.addSubview(daysLabel)
         view.addSubview(dayStackView)
+        view.addSubview(reminderLabel)   
+        view.addSubview(reminderSwitch)
+        view.addSubview(timePickerContainer)
+        timePickerContainer.addSubview(timePicker)
         view.addSubview(saveButton)
         view.addSubview(deleteButton)
     }
@@ -163,7 +200,7 @@ class AddRoutineViewController: UIViewController {
             nameLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
             nameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             nameLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-  
+      
             nameTextField.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
             nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
@@ -187,10 +224,26 @@ class AddRoutineViewController: UIViewController {
             dayStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             dayStackView.heightAnchor.constraint(equalToConstant: 44),
             
+            reminderLabel.topAnchor.constraint(equalTo: dayStackView.bottomAnchor, constant: 24),
+            reminderLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            
+            reminderSwitch.centerYAnchor.constraint(equalTo: reminderLabel.centerYAnchor),
+            reminderSwitch.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            
+            timePickerContainer.topAnchor.constraint(equalTo: reminderLabel.bottomAnchor, constant: 12),
+            timePickerContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            timePickerContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            timePickerContainer.heightAnchor.constraint(equalToConstant: 150),
+            
+            timePicker.topAnchor.constraint(equalTo: timePickerContainer.topAnchor),
+            timePicker.leadingAnchor.constraint(equalTo: timePickerContainer.leadingAnchor),
+            timePicker.trailingAnchor.constraint(equalTo: timePickerContainer.trailingAnchor),
+            timePicker.bottomAnchor.constraint(equalTo: timePickerContainer.bottomAnchor),
+            
+            saveButton.topAnchor.constraint(equalTo: timePickerContainer.bottomAnchor, constant: 24),
             saveButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             saveButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             saveButton.heightAnchor.constraint(equalToConstant: 50),
-            saveButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -100),
 
             deleteButton.topAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: 12),
             deleteButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
@@ -201,6 +254,7 @@ class AddRoutineViewController: UIViewController {
     
     private func setupActions() {
         frequencyControl.addTarget(self, action: #selector(frequencyChanged), for: .valueChanged)
+        reminderSwitch.addTarget(self, action: #selector(reminderSwitchChanged), for: .valueChanged)
         saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
     }
@@ -236,6 +290,15 @@ class AddRoutineViewController: UIViewController {
         } else {
             dayStackView.isHidden = false
             daysLabel.isHidden = false
+        }
+    }
+    
+    @objc private func reminderSwitchChanged() {
+        hasReminder = reminderSwitch.isOn
+        timePickerContainer.isHidden = !reminderSwitch.isOn
+        
+        if reminderSwitch.isOn {
+            reminderTime = timePicker.date
         }
     }
     
@@ -283,11 +346,14 @@ class AddRoutineViewController: UIViewController {
             selectedFrequency = .daily
         }
         
+        let reminderEnabled = reminderSwitch.isOn
+        let reminderDate = reminderEnabled ? timePicker.date : nil
+        
         switch mode {
         case .add:
-            onSave?(name, selectedFrequency)
+            onSave?(name, selectedFrequency, reminderEnabled, reminderDate)
         case .edit(let routine):
-            onUpdate?(routine, name, selectedFrequency)
+            onUpdate?(routine, name, selectedFrequency, reminderEnabled, reminderDate)
         }
         
         dismiss(animated: true)
@@ -339,6 +405,16 @@ class AddRoutineViewController: UIViewController {
                 }
             }
         }
+        
+        reminderSwitch.isOn = routine.hasReminder
+        hasReminder = routine.hasReminder
+        
+        if let time = routine.reminderTime {
+            timePicker.date = time
+            reminderTime = time
+        }
+        
+        timePickerContainer.isHidden = !routine.hasReminder
     }
     
     private func validate() -> Bool {

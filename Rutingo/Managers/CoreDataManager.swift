@@ -43,19 +43,23 @@ class CoreDataManager: DataManager {
         return allRoutines.filter { $0.isScheduledToday }
     }
     
-    func saveRoutine(name: String, frequency: Frequency) -> Routine {
+    func saveRoutine(name: String, frequency: Frequency, hasReminder: Bool = false, reminderTime: Date? = nil) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()
         routine.name = name
         routine.frequency = frequency
         routine.createdAt = Date()
+        routine.hasReminder = hasReminder
+        routine.reminderTime = reminderTime
         save()
         return routine
     }
     
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency) {
+    func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool = false, reminderTime: Date? = nil) {
         routine.name = name
         routine.frequencyData = try? JSONEncoder().encode(frequency)
+        routine.hasReminder = hasReminder
+        routine.reminderTime = reminderTime
         save()
     }
     

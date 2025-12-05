@@ -20,13 +20,18 @@ class RoutinesViewModel {
         allRoutines = fetchedAllRoutines
     }
     
-    func addRoutine(name: String, frequency: Frequency) {
-        _ = dataManager.saveRoutine(name: name, frequency: frequency)
+    func addRoutine(name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date?) {
+        _ = dataManager.saveRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
         loadData()
     }
     
     func deleteRoutine(_ routine: Routine) {
         dataManager.deleteRoutine(routine)
+        loadData()
+    }
+    
+    func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date? = nil) {
+        dataManager.updateRoutine(routine: routine, name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
         loadData()
     }
         

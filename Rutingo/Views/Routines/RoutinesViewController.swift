@@ -11,7 +11,7 @@ class RoutinesViewController: UIViewController {
     private let viewModel = RoutinesViewModel()
     
     private let tableView: UITableView = {
-       let table = UITableView()
+        let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
         table.register(RoutineCell.self, forCellReuseIdentifier: RoutineCell.identifier)
         table.backgroundColor = AppColors.background
@@ -62,16 +62,16 @@ class RoutinesViewController: UIViewController {
         title = "Routines"
         
         if let navigationBar = navigationController?.navigationBar {
-                navigationBar.largeTitleTextAttributes = [
-                    .font: AppFonts.bold(34),
-                    .foregroundColor: AppColors.primary
-                ]
+            navigationBar.largeTitleTextAttributes = [
+                .font: AppFonts.bold(34),
+                .foregroundColor: AppColors.primary
+            ]
             navigationBar.titleTextAttributes = [
-                        .font: AppFonts.semibold(17),
-                        .foregroundColor: AppColors.primary
-                    ]
-                }
-            
+                .font: AppFonts.semibold(17),
+                .foregroundColor: AppColors.primary
+            ]
+        }
+        
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .add,
             target: self,
@@ -115,14 +115,14 @@ class RoutinesViewController: UIViewController {
         let isEmpty = viewModel.allRoutines.isEmpty
         tableView.isHidden = isEmpty
         emptyStateView.isHidden = !isEmpty
-
+        
         tableView.reloadData()
     }
     
     @objc private func addRoutineTapped() {
         let addVC = AddRoutineViewController()
-        addVC.onSave = { [weak self] name, frequency in
-            self?.viewModel.addRoutine(name: name, frequency: frequency)
+        addVC.onSave = { [weak self] name, frequency, hasReminder, reminderTime in
+            self?.viewModel.addRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
             self?.loadData()
         }
         let navVC = UINavigationController(rootViewController: addVC)

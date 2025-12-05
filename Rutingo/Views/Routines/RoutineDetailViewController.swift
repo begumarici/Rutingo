@@ -336,21 +336,22 @@ class RoutineDetailViewController: UIViewController {
         let addVC = AddRoutineViewController()
         addVC.mode = .edit(routine)
         
-        addVC.onUpdate = { [weak self] routine, name, frequency in
+        addVC.onUpdate = { [weak self] routine, name, frequency, hasReminder, reminderTime in
             guard let self = self else { return }
        
-            CoreDataManager.shared.updateRoutine(
-                routine: routine,
-                name: name,
-                frequency: frequency
-            )
+            self.viewModel.updateRoutine(routine: routine,
+                                         name: name,
+                                         frequency: frequency,
+                                         hasReminder: hasReminder,
+                                         reminderTime: reminderTime)
             
             self.routine = routine
             self.configureWithRoutine()
         }
         
-        addVC.onDelete = {[weak self] in
-            self?.navigationController?.popViewController(animated: true)}
+        addVC.onDelete = { [weak self] in
+            self?.navigationController?.popViewController(animated: true)
+        }
         
         let navVC = UINavigationController(rootViewController: addVC)
         present(navVC, animated: true)
