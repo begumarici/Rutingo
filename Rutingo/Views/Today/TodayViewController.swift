@@ -9,8 +9,10 @@ import UIKit
 
 class TodayViewController: UIViewController {
     
+    // MARK: - Properties
     private let viewModel = TodayViewModel()
     
+    // MARK: - UI Components
     private let greetingLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -77,6 +79,7 @@ class TodayViewController: UIViewController {
         return label
     }()
     
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -88,6 +91,7 @@ class TodayViewController: UIViewController {
         loadData()
     }
     
+    // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = AppColors.background
         
@@ -151,19 +155,28 @@ class TodayViewController: UIViewController {
         tableView.delegate = self
     }
     
+    // MARK: - Data Loading
     private func loadData() {
         viewModel.loadData()
+        updateUIWithViewModel()
+    }
+    
+    private func updateUIWithViewModel() {
+        // Header
         greetingLabel.text = viewModel.greeting
         dateLabel.text = viewModel.dateText
         
+        // Week Calendar
         let dates = viewModel.lastSevenDays
         let progressMap = viewModel.getCompletionProgress()
         weekCalendarView.configure(with: dates, progressMap: progressMap)
         
+        // Progress Info
         let completed = viewModel.todayRoutines.filter { $0.isCompletedToday }.count
         let total = viewModel.todayRoutines.count
         progressInfoLabel.text = "\(completed) of \(total) completed"
         
+        // Empty State
         let isEmpty = viewModel.todayRoutines.isEmpty
         tableView.isHidden = isEmpty
         emptyStateView.isHidden = !isEmpty
@@ -171,6 +184,8 @@ class TodayViewController: UIViewController {
     }
 }
 
+
+// MARK: - UITableViewDataSource
 extension TodayViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.todayRoutines.count
@@ -188,6 +203,7 @@ extension TodayViewController: UITableViewDataSource {
     }
 }
 
+// MARK: - UITableViewDelegate
 extension TodayViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)

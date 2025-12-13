@@ -8,16 +8,19 @@
 import Foundation
 
 class RoutinesViewModel {
+    
+    // MARK: - Properties
     private let dataManager: DataManager
     var allRoutines: [Routine] = []
     
+    // MARK: - Initialization
     init(dataManager: DataManager = CoreDataManager.shared) {
         self.dataManager = dataManager
     }
     
+    // MARK: - Data Management
     func loadData() {
-        let fetchedAllRoutines = dataManager.fetchAllRoutines()
-        allRoutines = fetchedAllRoutines
+        allRoutines = dataManager.fetchAllRoutines()
     }
     
     func addRoutine(name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date?) {
@@ -37,7 +40,8 @@ class RoutinesViewModel {
         NotificationManager.shared.scheduleNotification(for: routine)
         loadData()
     }
-        
+
+    // MARK: - Statistics Calculation
     func getBestStreak(for routine: Routine) -> Int {
         var bestStreak = 0
         var currentStreak = 0
@@ -77,6 +81,16 @@ class RoutinesViewModel {
         
         let totalDays = DateHelper.shared.daysBetween(startDate, today) + 1
         
+       let scheduledDays = countScheduledDays(for: routine, from: startDate, totalDays: totalDays)
+        
+        guard scheduledDays > 0 else { return 0 }
+        
+        let completedDays = routine.completionDates.count
+        let rate = Double(completedDays) / Double(scheduledDays) * 100
+        return Int(rate)
+    }
+    
+    private func countScheduledDays(for routine: Routine, from startDate: Date, totalDays: Int) -> Int {
         var scheduledDays = 0
         for i in 0..<totalDays {
             guard let date = Calendar.current.date(byAdding: .day, value: i, to: startDate) else { continue }
@@ -84,11 +98,6 @@ class RoutinesViewModel {
                 scheduledDays += 1
             }
         }
-        
-        guard scheduledDays > 0 else { return 0 }
-        
-        let completedDays = routine.completionDates.count
-        let rate = Double(completedDays) / Double(scheduledDays) * 100
-        return Int(rate)
+        return scheduledDays
     }
 }

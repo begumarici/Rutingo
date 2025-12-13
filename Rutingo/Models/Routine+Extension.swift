@@ -8,6 +8,8 @@
 import Foundation
 
 extension Routine {
+    
+    // MARK: - Computed Properties
     var frequency: Frequency {
         get {
             guard let data = frequencyData else { return .daily }
@@ -27,30 +29,6 @@ extension Routine {
     
     var completionDates: [Date] {
         return completionArray.compactMap { $0.date }
-    }
-    
-    func isScheduled(on date: Date) -> Bool {
-        let weekday = Calendar.current.component(.weekday, from: date)
-        switch frequency {
-        case .daily:
-            return true
-        case .specificDays(let days):
-            return days.contains(weekday)
-        }
-    }
-    
-    func completionRate(in days: [Date]) -> Double {
-        let scheduledDays = days.filter { isScheduled(on: $0) }
-        guard !scheduledDays.isEmpty else { return 0 }
-        
-        let completedCount = scheduledDays.filter { date in
-            completionArray.contains {
-                guard let completionDate = $0.date else { return false }
-                return Calendar.current.isDate(completionDate, inSameDayAs: date)
-            }
-        }.count
-        
-        return Double(completedCount) / Double(scheduledDays.count)
     }
     
     var isScheduledToday: Bool {
@@ -104,4 +82,30 @@ extension Routine {
         }
         return streak
     }
+    
+    // MARK: - Methods
+    func isScheduled(on date: Date) -> Bool {
+        let weekday = Calendar.current.component(.weekday, from: date)
+        switch frequency {
+        case .daily:
+            return true
+        case .specificDays(let days):
+            return days.contains(weekday)
+        }
+    }
+    
+    func completionRate(in days: [Date]) -> Double {
+        let scheduledDays = days.filter { isScheduled(on: $0) }
+        guard !scheduledDays.isEmpty else { return 0 }
+        
+        let completedCount = scheduledDays.filter { date in
+            completionArray.contains {
+                guard let completionDate = $0.date else { return false }
+                return Calendar.current.isDate(completionDate, inSameDayAs: date)
+            }
+        }.count
+        
+        return Double(completedCount) / Double(scheduledDays.count)
+    }
+    
 }

@@ -8,8 +8,11 @@
 import UIKit
 
 class RoutineCell: UITableViewCell {
+    
+    // MARK: - Properties
     static let identifier = "RoutineCell"
     
+    // MARK: - UI Components
     private let cardView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -48,6 +51,7 @@ class RoutineCell: UITableViewCell {
         return label
     }()
     
+    // MARK: - Initialization
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -57,6 +61,7 @@ class RoutineCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Setup
     private func setupUI() {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
@@ -95,6 +100,7 @@ class RoutineCell: UITableViewCell {
         ])
     }
     
+    // MARK: - Tap Animation
     override func setHighlighted(_ highlighted: Bool, animated: Bool) {
         super.setHighlighted(highlighted, animated: animated)
         
@@ -104,6 +110,14 @@ class RoutineCell: UITableViewCell {
         }
     }
     
+    // MARK: - Configuration
+    func configure(with routine: Routine) {
+        nameLabel.text = routine.name
+        frequencyLabel.text = routine.frequency.displayText
+        streakLabel.attributedText = createStreakText(routine.currentStreak)
+    }
+    
+    // MARK: - Helpers
     private func createStreakText(_ streak: Int) -> NSAttributedString {
         let attachment = NSTextAttachment()
         let iconSize: CGFloat = 16
@@ -118,10 +132,4 @@ class RoutineCell: UITableViewCell {
         return attributedString
     }
 
-    func configure(with routine: Routine) {
-        nameLabel.text = routine.name
-        frequencyLabel.text = routine.frequency.displayText
-        let streak = routine.currentStreak
-        streakLabel.attributedText = createStreakText(streak)
-    }
 }

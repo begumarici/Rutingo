@@ -9,9 +9,12 @@ import Foundation
 import CoreData
 
 class CoreDataManager: DataManager {
+    
+    // MARK: - Singleton
     static let shared = CoreDataManager()
     private init() {}
     
+    // MARK: - Core Data Stack
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Rutingo")
         container.loadPersistentStores { description, error in
@@ -26,6 +29,7 @@ class CoreDataManager: DataManager {
         return persistentContainer.viewContext
     }
     
+    // MARK: - Fetch Methods
     func fetchAllRoutines() -> [Routine] {
         let request: NSFetchRequest<Routine> = Routine.fetchRequest()
         
@@ -43,6 +47,7 @@ class CoreDataManager: DataManager {
         return allRoutines.filter { $0.isScheduledToday }
     }
     
+    // MARK: - CRUD Operations
     func saveRoutine(name: String, frequency: Frequency, hasReminder: Bool = false, reminderTime: Date? = nil) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()

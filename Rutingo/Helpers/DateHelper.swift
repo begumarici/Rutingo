@@ -8,9 +8,12 @@
 import Foundation
 
 class DateHelper {
+    
+    // MARK: - Singleton
     static let shared = DateHelper()
     private init() {}
     
+    // MARK: - Date Normalization
     func startOfDay(_ date: Date = Date()) -> Date {
         Calendar.current.startOfDay(for: date)
     }
@@ -23,6 +26,7 @@ class DateHelper {
         Calendar.current.component(.weekday, from: date)
     }
     
+    // MARK: - Date Formatting
     func dayOfWeekShort(_ date: Date = Date()) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "E"
@@ -35,6 +39,13 @@ class DateHelper {
         return formatter.string(from: date)
     }
     
+    func formattedDateShort(_ date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE, MMM d"
+        return formatter.string(from: date)
+    }
+    
+    // MARK: - Date Calculations
     func lastSevenDays() -> [Date] {
         let today = startOfDay()
         return (0..<7).compactMap { offset in
@@ -49,6 +60,7 @@ class DateHelper {
         return abs(components.day ?? 0)
     }
     
+    // MARK: - Helpers
     static func getDayName(for dayNumber: Int) -> String {
         let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         return dayNames[dayNumber - 1]
@@ -68,11 +80,5 @@ class DateHelper {
         }
         
         return "\(timeOfDay), \(name)."
-    }
-    
-    func formattedDateShort(_ date: Date = Date()) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE, MMM d"
-        return formatter.string(from: date)
     }
 }

@@ -8,28 +8,12 @@
 import UIKit
 
 class RoutineDetailViewController: UIViewController {
+    
+    // MARK: - Properties
     var routine: Routine!
     private let viewModel: RoutinesViewModel
     
-    init(routine: Routine, viewModel: RoutinesViewModel) {
-        self.routine = routine
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = AppColors.background
-        
-        setupNavigationBar()
-        setupUI()
-        configureWithRoutine()
-    }
-    
+    // MARK: - UI Components
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -150,6 +134,27 @@ class RoutineDetailViewController: UIViewController {
         return view
     }()
 
+    // MARK: - Initialization
+    init(routine: Routine, viewModel: RoutinesViewModel) {
+        self.routine = routine
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - Lifecycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = AppColors.background
+        setupNavigationBar()
+        setupUI()
+        configureWithRoutine()
+    }
+    
+    // MARK: - Setup
     private func setupNavigationBar() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Edit",
@@ -249,10 +254,16 @@ class RoutineDetailViewController: UIViewController {
         ])
     }
     
+    // MARK: - Configuration
     private func configureWithRoutine() {
         nameLabel.text = routine.name
-        
-        // Current Streak
+        configureStreakLabels()
+        configureCompletionRate()
+        configureFrequency()
+        configureCalendar()
+    }
+    
+    private func configureStreakLabels() {
         let currentStreak = routine.currentStreak
         let streakAttachment = NSTextAttachment()
         let streakIconSize: CGFloat = 24
@@ -289,15 +300,17 @@ class RoutineDetailViewController: UIViewController {
         let attributedString = NSMutableAttributedString(attachment: attachment)
         attributedString.append(NSAttributedString(string: " Best: \(bestStreak)"))
         bestStreakLabel.attributedText = attributedString
-        
-        // Completion Rate
+    }
+    
+    private func configureCompletionRate() {
         let completionRate = viewModel.getCompletionRate(for: routine)
         let totalCompletions = routine.completionDates.count
         
         completionRateValueLabel.text = "\(completionRate)%"
         completionRateDetailLabel.text = "\(totalCompletions) total completions"
-        
-        // Frequency
+    }
+    
+    private func configureFrequency() {
         let frequencyAttachment = NSTextAttachment()
         let frequencyIconSize: CGFloat = 15
         frequencyAttachment.image = UIImage(systemName: "calendar")?
@@ -315,8 +328,9 @@ class RoutineDetailViewController: UIViewController {
         }
 
         frequencyValueLabel.attributedText = frequencyAttributedString
-        
-        // Calendar
+    }
+    
+    private func configureCalendar() {
         let dates = DateHelper.shared.lastSevenDays()
         var progressMap: [Date: Double] = [:]
         
@@ -332,6 +346,7 @@ class RoutineDetailViewController: UIViewController {
         calendarView.configure(with: dates, progressMap: progressMap)
     }
     
+    // MARK: - Actions
     @objc private func editTapped() {
         let addVC = AddRoutineViewController()
         addVC.mode = .edit(routine)

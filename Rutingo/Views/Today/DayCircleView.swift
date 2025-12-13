@@ -8,6 +8,15 @@
 import UIKit
 
 class DayCircleView: UIView {
+    
+    // MARK: - Constants
+    private enum ProgressThreshold {
+        static let low: Double = 0.34
+        static let medium: Double = 0.67
+        static let high: Double = 1.0
+    }
+    
+    // MARK: - UI Components
     private let dayLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -26,6 +35,7 @@ class DayCircleView: UIView {
         return label
     }()
     
+    // MARK: - Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -35,6 +45,7 @@ class DayCircleView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Setup
     private func setupUI() {
         backgroundColor = AppColors.progressEmpty
         layer.cornerRadius = 14
@@ -58,22 +69,35 @@ class DayCircleView: UIView {
         ])
     }
     
+    // MARK: - Configuration
     func configure(with date: Date, progress: Double, isToday: Bool) {
+        setDateLabels(for: date)
+        setProgressColor(progress)
+        setTodayBorder(isToday)
+    }
+    
+    // MARK: - Helpers
+    private func setDateLabels(for date: Date) {
         dayLabel.text = DateHelper.shared.dayOfWeekShort(date)
         dateLabel.text = DateHelper.shared.dayOfMonth(date)
-        
-        if progress == 0.0 {
-           backgroundColor = AppColors.progressEmpty
-        } else if progress < 0.34 {
-           backgroundColor = AppColors.progressLow
-        } else if progress < 0.67 {
-           backgroundColor = AppColors.progressMedium
-        } else if progress < 1.0 {
-           backgroundColor = AppColors.progressHigh
-        } else {
-           backgroundColor = AppColors.progressComplete
+    }
+    
+    private func setProgressColor(_ progress: Double) {
+        switch progress {
+        case 0.0:
+            backgroundColor = AppColors.progressEmpty
+        case 0.0..<ProgressThreshold.low:
+            backgroundColor = AppColors.progressLow
+        case ProgressThreshold.low..<ProgressThreshold.medium:
+            backgroundColor = AppColors.progressMedium
+        case ProgressThreshold.medium..<ProgressThreshold.high:
+            backgroundColor = AppColors.progressHigh
+        default:
+            backgroundColor = AppColors.progressComplete
         }
-        
+    }
+    
+    private func setTodayBorder(_ isToday: Bool) {
         if isToday {
             layer.borderWidth = 1
             layer.borderColor = AppColors.accent.cgColor

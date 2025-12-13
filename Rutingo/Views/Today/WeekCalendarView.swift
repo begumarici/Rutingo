@@ -8,9 +8,12 @@
 import UIKit
 
 class WeekCalendarView: UIView {
+    
+    // MARK: - Properties
     private var dates: [Date] = []
     private var progressMap: [Date: Double] = [:]
     
+    // MARK: - UI Components
     private let stackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -20,6 +23,7 @@ class WeekCalendarView: UIView {
         return stackView
     }()
     
+    // MARK: - Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -29,6 +33,7 @@ class WeekCalendarView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Setup
     private func setupUI() {
         backgroundColor = AppColors.background
         layer.cornerRadius = Layout.cornerRadius
@@ -44,22 +49,33 @@ class WeekCalendarView: UIView {
         ])
     }
     
+    // MARK: - Configuration
     func configure(with dates: [Date], progressMap: [Date: Double]) {
         self.dates = dates
         self.progressMap = progressMap
  
+        updateDayViews()
+    }
+    
+    // MARK: - Helpers
+    private func updateDayViews() {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         let today = DateHelper.shared.startOfDay()
         
         for date in dates {
-            let dayView = DayCircleView()
-            let normalizedDate = DateHelper.shared.startOfDay(date)
-            let progress = progressMap[normalizedDate] ?? 0.0
-            let isToday = Calendar.current.isDate(normalizedDate, inSameDayAs: today)
-            
-            dayView.configure(with: date, progress: progress, isToday: isToday)
+            let dayView = createDayView(for: date, today: today)
             stackView.addArrangedSubview(dayView)
         }
+    }
+    
+    private func createDayView(for date: Date, today: Date) -> DayCircleView {
+        let dayView = DayCircleView()
+        let normalizedDate = DateHelper.shared.startOfDay(date)
+        let progress = progressMap[normalizedDate] ?? 0.0
+        let isToday = Calendar.current.isDate(normalizedDate, inSameDayAs: today)
+        
+        dayView.configure(with: date, progress: progress, isToday: isToday)
+        return dayView
     }
 }

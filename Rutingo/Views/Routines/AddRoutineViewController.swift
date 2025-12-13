@@ -7,9 +7,9 @@
 
 import UIKit
 
-
-
 class AddRoutineViewController: UIViewController {
+    
+    // MARK: - Properties
     var onSave: ((String, Frequency, Bool, Date?) -> Void)?
     var onUpdate: ((Routine, String, Frequency, Bool, Date?) -> Void)?
     var onDelete: (() -> Void)?
@@ -25,22 +25,7 @@ class AddRoutineViewController: UIViewController {
     private var hasReminder: Bool = false
     private var reminderTime: Date = Date()
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
-        
-        if case .edit(let routine) = mode {
-            populateFields(with: routine)
-        }
-    }
-    
-    @objc private func dismissKeyboard() {
-        view.endEditing(true)
-    }
-    
+    // MARK: - UI Components
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -152,8 +137,29 @@ class AddRoutineViewController: UIViewController {
         return button
     }()
     
+    // MARK: - Lifecycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        setupKeyboardDismiss()
+        
+        if case .edit(let routine) = mode {
+            populateFields(with: routine)
+        }
+    }
+    
+    // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = AppColors.background
+        configureModeUI()
+        setupNavigationBar()
+        addSubviews()
+        setupConstraints()
+        setupActions()
+        createDayButtons()
+    }
+    
+    private func configureModeUI() {
         switch mode {
         case .add:
             title = "Add Routine"
@@ -164,12 +170,11 @@ class AddRoutineViewController: UIViewController {
             saveButton.setTitle("Update", for: .normal)
             deleteButton.isHidden = false
         }
-        
-        setupNavigationBar()
-        addSubviews()
-        setupConstraints()
-        setupActions()
-        createDayButtons()
+    }
+    
+    private func setupKeyboardDismiss() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
     }
     
     private func setupNavigationBar() {
@@ -278,6 +283,11 @@ class AddRoutineViewController: UIViewController {
         }
     }
     
+    // MARK: - Actions
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
     @objc private func cancelTapped() {
         dismiss(animated: true)
     }
@@ -317,18 +327,6 @@ class AddRoutineViewController: UIViewController {
                 switchToDaily()
             }
         }
-    }
-    
-    private func switchToDaily() {
-        frequencyControl.selectedSegmentIndex = 0
-        selectedDays.removeAll()
-        
-        for case let button as UIButton in dayStackView.arrangedSubviews {
-            button.backgroundColor = AppColors.cardBackground
-        }
-        
-        dayStackView.isHidden = true
-        daysLabel.isHidden = true
     }
     
     @objc private func saveButtonTapped() {
@@ -381,6 +379,19 @@ class AddRoutineViewController: UIViewController {
         present(alert, animated: true)
     }
     
+    // MARK: - Helpers
+    private func switchToDaily() {
+        frequencyControl.selectedSegmentIndex = 0
+        selectedDays.removeAll()
+        
+        for case let button as UIButton in dayStackView.arrangedSubviews {
+            button.backgroundColor = AppColors.cardBackground
+        }
+        
+        dayStackView.isHidden = true
+        daysLabel.isHidden = true
+    }
+    
     private func populateFields(with routine: Routine) {
         nameTextField.text = routine.name
         
@@ -417,6 +428,7 @@ class AddRoutineViewController: UIViewController {
         timePickerContainer.isHidden = !routine.hasReminder
     }
     
+    // MARK: - Validation
     private func validate() -> Bool {
         guard let name = nameTextField.text, !name.isEmpty else {
             showAlert(message: "Please enter a routine name")

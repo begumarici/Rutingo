@@ -8,8 +8,11 @@
 import UIKit
 
 class RoutinesViewController: UIViewController {
+    
+    // MARK: - Properties
     private let viewModel = RoutinesViewModel()
     
+    // MARK: - UI Components
     private let tableView: UITableView = {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
@@ -37,6 +40,7 @@ class RoutinesViewController: UIViewController {
         return label
     }()
     
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -47,7 +51,8 @@ class RoutinesViewController: UIViewController {
         super.viewWillAppear(animated)
         loadData()
     }
-
+    
+    // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = AppColors.background
         
@@ -61,22 +66,32 @@ class RoutinesViewController: UIViewController {
         navigationItem.largeTitleDisplayMode = .always
         title = "Routines"
         
-        if let navigationBar = navigationController?.navigationBar {
-            navigationBar.largeTitleTextAttributes = [
-                .font: AppFonts.bold(34),
-                .foregroundColor: AppColors.primary
-            ]
-            navigationBar.titleTextAttributes = [
-                .font: AppFonts.semibold(17),
-                .foregroundColor: AppColors.primary
-            ]
-        }
+        configureNavigationBarAppearance()
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .add,
             target: self,
             action: #selector(addRoutineTapped)
         )
+    }
+    
+    private func configureNavigationBarAppearance() {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+        
+        navigationBar.largeTitleTextAttributes = [
+            .font: AppFonts.bold(34),
+            .foregroundColor: AppColors.primary
+        ]
+        navigationBar.titleTextAttributes = [
+            .font: AppFonts.semibold(17),
+            .foregroundColor: AppColors.primary
+        ]
+    }
+    
+    private func addSubviews() {
+        view.addSubview(tableView)
+        emptyStateView.addSubview(emptyStateLabel)
+        view.addSubview(emptyStateView)
     }
     
     private func setupConstraints() {
@@ -98,27 +113,25 @@ class RoutinesViewController: UIViewController {
         ])
     }
     
-    private func addSubviews() {
-        view.addSubview(tableView)
-        
-        emptyStateView.addSubview(emptyStateLabel)
-        view.addSubview(emptyStateView)
-    }
-    
     private func setupTableView() {
         tableView.dataSource = self
         tableView.delegate = self
     }
     
+    // MARK: - Data Loading
     private func loadData() {
         viewModel.loadData()
-        let isEmpty = viewModel.allRoutines.isEmpty
-        tableView.isHidden = isEmpty
-        emptyStateView.isHidden = !isEmpty
-        
+        updateEmptyState()
         tableView.reloadData()
     }
     
+    private func updateEmptyState() {
+        let isEmpty = viewModel.allRoutines.isEmpty
+        tableView.isHidden = isEmpty
+        emptyStateView.isHidden = !isEmpty
+    }
+    
+    // MARK: - Actions
     @objc private func addRoutineTapped() {
         let addVC = AddRoutineViewController()
         addVC.onSave = { [weak self] name, frequency, hasReminder, reminderTime in
@@ -130,6 +143,7 @@ class RoutinesViewController: UIViewController {
     }
 }
 
+// MARK: - UITableViewDataSource
 extension RoutinesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.allRoutines.count
@@ -147,6 +161,7 @@ extension RoutinesViewController: UITableViewDataSource {
     }
 }
 
+// MARK: - UITableViewDelegate
 extension RoutinesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)

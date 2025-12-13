@@ -9,6 +9,7 @@ import UIKit
 
 class MainTabBarController: UITabBarController {
     
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
     
@@ -18,28 +19,33 @@ class MainTabBarController: UITabBarController {
         self.delegate = self
     }
 
+    // MARK: - Private Setup Methods
     private func setupViewControllers() {
+        let todayVC = createTodayTab()
+        let routinesVC = createRoutinesTab()
+        
+        viewControllers = [todayVC, routinesVC]
+    }
+    
+    private func createTodayTab() -> UINavigationController {
         let todayVC = TodayViewController()
         todayVC.tabBarItem = UITabBarItem(
             title: "Today",
             image: UIImage(systemName: "calendar"),
             tag: 0
         )
-        
-        let todayNav = UINavigationController(rootViewController: todayVC)
-        
+        return UINavigationController(rootViewController: todayVC)
+    }
+    
+    private func createRoutinesTab() -> UINavigationController {
         let routinesVC = RoutinesViewController()
         routinesVC.tabBarItem = UITabBarItem(
             title: "Routines",
             image: UIImage(systemName: "list.bullet"),
             tag: 1
         )
-        
-        let routinesNav = UINavigationController(rootViewController: routinesVC)
-        
-        viewControllers = [todayNav, routinesNav]
+        return UINavigationController(rootViewController: routinesVC)
     }
-    
     
     private func setupTabBarAppereance() {
         let appereance = UITabBarAppearance()
@@ -52,8 +58,9 @@ class MainTabBarController: UITabBarController {
         tabBar.standardAppearance = appereance
         tabBar.scrollEdgeAppearance = appereance
     }
-    
 }
+
+// MARK: - UITabBarControllerDelegate
 
 extension MainTabBarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {

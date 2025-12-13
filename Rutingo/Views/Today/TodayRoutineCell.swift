@@ -8,9 +8,11 @@
 import UIKit
 
 class TodayRoutineCell: UITableViewCell {
+    
+    // MARK: - Properties
     static let identifier = "TodayRoutineCell"
     
-    
+    // MARK: - UI Components
     private let cardView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -56,6 +58,7 @@ class TodayRoutineCell: UITableViewCell {
         return label
     }()
     
+    // MARK: - Initialization
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -65,6 +68,7 @@ class TodayRoutineCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    // MARK: - Setup
     private func setupUI() {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
@@ -109,6 +113,32 @@ class TodayRoutineCell: UITableViewCell {
         ])
     }
     
+    // MARK: - Configuration
+    func configure(with routine: Routine) {
+        nameLabel.text = routine.name
+        frequencyLabel.text = routine.frequency.displayText
+        
+        updateCompletionState(isCompleted: routine.isCompletedToday)
+        
+        let streak = routine.currentStreak
+        streakLabel.attributedText = createStreakText(streak)
+    }
+    
+    // MARK: - Helpers
+    private func updateCompletionState(isCompleted: Bool) {
+        if isCompleted {
+            cardView.backgroundColor = AppColors.progressLow
+            cardView.alpha = 0.8
+            checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")
+            checkmarkView.tintColor = AppColors.progressComplete
+        } else {
+            cardView.backgroundColor = AppColors.cardBackground
+            cardView.alpha = 1.0
+            checkmarkView.image = UIImage(systemName: "circle")
+            checkmarkView.tintColor = AppColors.tertiary
+        }
+    }
+    
     private func createStreakText(_ streak: Int) -> NSAttributedString {
         let attachment = NSTextAttachment()
         let iconSize: CGFloat = 16
@@ -124,24 +154,4 @@ class TodayRoutineCell: UITableViewCell {
         return attributedString
     }
         
-    func configure(with routine: Routine) {
-        nameLabel.text = routine.name
-        frequencyLabel.text = routine.frequency.displayText
-        
-        let isCompleted = routine.isCompletedToday
-            if isCompleted {
-                cardView.backgroundColor = AppColors.progressLow
-                cardView.alpha = 0.8
-                checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")
-                checkmarkView.tintColor = AppColors.progressComplete
-            } else {
-                cardView.backgroundColor = AppColors.cardBackground
-                cardView.alpha = 1.0
-                checkmarkView.image = UIImage(systemName: "circle")
-                checkmarkView.tintColor = AppColors.tertiary
-            }
-        
-        let streak = routine.currentStreak
-        streakLabel.attributedText = createStreakText(streak)
-    }
 }

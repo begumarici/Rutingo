@@ -9,9 +9,12 @@ import Foundation
 import UserNotifications
 
 class NotificationManager {
+    
+    // MARK: - Singleton
     static let shared = NotificationManager()
     private init() {}
     
+    // MARK: - Authorization
     func requestAuthorization(completion: @escaping (Bool) -> Void) {
         let center = UNUserNotificationCenter.current()
         
@@ -25,6 +28,7 @@ class NotificationManager {
         }
     }
     
+    // MARK: - Notification Management
     func scheduleNotification(for routine: Routine) {
         cancelNotification(for: routine)
         
