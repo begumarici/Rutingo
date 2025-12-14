@@ -11,6 +11,7 @@
     </entity>
     <entity name="RoutineCompletion" representedClassName="RoutineCompletion" syncable="YES" codeGenerationType="class">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="frequencySnapshot" optional="YES" attributeType="Binary"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="routine" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Routine" inverseName="completions" inverseEntity="Routine"/>
     </entity>

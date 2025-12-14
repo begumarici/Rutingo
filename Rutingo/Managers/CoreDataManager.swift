@@ -85,6 +85,7 @@ class CoreDataManager: DataManager {
             completion.id = UUID()
             completion.date = today
             completion.routine = routine
+            completion.frequencySnapshot = routine.frequencyData
         }
         save()
     }

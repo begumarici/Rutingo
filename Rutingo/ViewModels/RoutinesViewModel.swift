@@ -43,34 +43,7 @@ class RoutinesViewModel {
 
     // MARK: - Statistics Calculation
     func getBestStreak(for routine: Routine) -> Int {
-        var bestStreak = 0
-        var currentStreak = 0
-        
-        let sortedDates = routine.completionDates.sorted()
-        
-        guard !sortedDates.isEmpty else { return 0 }
-        
-        var previousDate: Date? = nil
-        
-        for date in sortedDates {
-            if let prev = previousDate {
-                let daysBetween = DateHelper.shared.daysBetween(prev, date)
-                
-                if daysBetween == 1 {
-                    currentStreak += 1
-                } else {
-                    bestStreak = max(bestStreak, currentStreak)
-                    currentStreak = 1
-                }
-            } else {
-                currentStreak = 1
-            }
-            
-            previousDate = date
-        }
-        
-        bestStreak = max(bestStreak, currentStreak)
-        return bestStreak
+        return routine.bestStreak
     }
     
     func getCompletionRate(for routine: Routine) -> Int {
@@ -94,7 +67,7 @@ class RoutinesViewModel {
         var scheduledDays = 0
         for i in 0..<totalDays {
             guard let date = Calendar.current.date(byAdding: .day, value: i, to: startDate) else { continue }
-            if routine.isScheduled(on: date) {
+            if routine.wasScheduled(on: date) {
                 scheduledDays += 1
             }
         }
