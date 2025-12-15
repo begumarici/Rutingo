@@ -367,12 +367,7 @@ class AddRoutineViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
-            guard case .edit(let routine) = self?.mode else { return }
-            
-            CoreDataManager.shared.deleteRoutine(routine)
-            
             self?.onDelete?()
-      
             self?.dismiss(animated: true)
         })
         

@@ -11,7 +11,7 @@ class RoutinesViewModel {
     
     // MARK: - Properties
     private let dataManager: DataManager
-    var allRoutines: [Routine] = []
+    private(set) var allRoutines: [Routine] = []
     
     // MARK: - Initialization
     init(dataManager: DataManager = CoreDataManager.shared) {
