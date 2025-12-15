@@ -336,10 +336,7 @@ class RoutineDetailViewController: UIViewController {
         
         for date in dates {
             let normalizedDate = DateHelper.shared.startOfDay(date)
-            let isCompleted = routine.completionArray.contains { completion in
-                guard let completionDate = completion.date else { return false }
-                return Calendar.current.isDate(completionDate, inSameDayAs: normalizedDate)
-            }
+            let isCompleted = routine.isCompleted(on: normalizedDate)
             progressMap[normalizedDate] = isCompleted ? 1.0 : 0.0
         }
         
@@ -365,10 +362,13 @@ class RoutineDetailViewController: UIViewController {
         }
         
         addVC.onDelete = { [weak self] in
-            self?.navigationController?.popViewController(animated: true)
+            guard let self = self else { return }
+            self.viewModel.deleteRoutine(self.routine)
+            self.navigationController?.popViewController(animated: true)
         }
         
         let navVC = UINavigationController(rootViewController: addVC)
         present(navVC, animated: true)
     }
 }
+

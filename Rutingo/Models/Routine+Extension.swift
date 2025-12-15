@@ -134,6 +134,13 @@ extension Routine {
         return isScheduled(on: date)
     }
     
+    func isCompleted(on date: Date) -> Bool {
+        return completionArray.contains { completion in
+            guard let completionDate = completion.date else { return false }
+            return Calendar.current.isDate(completionDate, inSameDayAs: date)
+        }
+    }
+    
     func missedScheduledDay(between startDate: Date, and endDate: Date) -> Bool {
         var currentDate = Calendar.current.date(byAdding: .day, value: 1, to: startDate)!
         

@@ -75,7 +75,7 @@ class TodayViewModel {
             guard !scheduledRoutines.isEmpty else { continue }
             
             let allCompleted = scheduledRoutines.allSatisfy { routine in
-                isRoutineCompleted(routine, on: normalizedDate)
+                routine.isCompleted(on: normalizedDate)
             }
 
             if allCompleted {
@@ -118,20 +118,7 @@ class TodayViewModel {
     
     private func countCompletedRoutines(_ routines: [Routine], on date: Date) -> Int {
         return routines.filter { routine in
-            isRoutineCompleted(routine, on: date)
+            routine.isCompleted(on: date)
         }.count
-    }
-    
-    private func isRoutineCompleted(_ routine: Routine, on date: Date) -> Bool {
-        return routine.completionArray.contains { completion in
-            guard let completionDate = completion.date else { return false }
-            return Calendar.current.isDate(completionDate, inSameDayAs: date)
-        }
-    }
-    
-    func isCompleted(on date: Date) -> Bool {
-        return todayRoutines.contains { routine in
-            isRoutineCompleted(routine, on: date)
-        }
     }
 }
