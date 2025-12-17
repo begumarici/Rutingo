@@ -32,14 +32,24 @@ class TodayViewModel {
     }
     
     // MARK: - Data Management
-    func loadData() {
-        todayRoutines = dataManager.fetchTodayRoutines()
-        sortRoutinesByCompletion()
+    func loadData(completion: @escaping () -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            
+            self.todayRoutines = self.dataManager.fetchTodayRoutines()
+            self.sortRoutinesByCompletion()
+            
+            DispatchQueue.main.async {
+                completion()
+            }
+        }
     }
     
-    func toggleRoutine(_ routine: Routine) {
+    func toggleRoutine(_ routine: Routine, completion: @escaping () -> Void) {
         dataManager.toggleCompletion(routine)
-        loadData()
+        loadData {
+            completion()
+        }
     }
     
     // MARK: - Progress Calculation

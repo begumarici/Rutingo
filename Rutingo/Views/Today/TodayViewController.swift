@@ -157,8 +157,8 @@ class TodayViewController: UIViewController {
     
     // MARK: - Data Loading
     private func loadData() {
-        viewModel.loadData()
-        updateUIWithViewModel()
+        viewModel.loadData { [weak self] in
+            self?.updateUIWithViewModel()}
     }
     
     private func updateUIWithViewModel() {
@@ -209,7 +209,8 @@ extension TodayViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         
         let routine = viewModel.todayRoutines[indexPath.row]
-        viewModel.toggleRoutine(routine)
-        loadData()
+        viewModel.toggleRoutine(routine) { [weak self] in
+            self?.updateUIWithViewModel()
+        }
     }
 }

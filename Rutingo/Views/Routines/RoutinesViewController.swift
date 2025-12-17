@@ -120,9 +120,13 @@ class RoutinesViewController: UIViewController {
     
     // MARK: - Data Loading
     private func loadData() {
-        viewModel.loadData()
-        updateEmptyState()
-        tableView.reloadData()
+        viewModel.loadData { [weak self] in
+            self?.tableView.reloadData()
+            
+            let isEmpty = self?.viewModel.allRoutines.isEmpty ?? true
+            self?.tableView.isHidden = isEmpty
+            self?.emptyStateView.isHidden = !isEmpty
+        }
     }
     
     private func updateEmptyState() {
@@ -135,8 +139,9 @@ class RoutinesViewController: UIViewController {
     @objc private func addRoutineTapped() {
         let addVC = AddRoutineViewController()
         addVC.onSave = { [weak self] name, frequency, hasReminder, reminderTime in
-            self?.viewModel.addRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
-            self?.loadData()
+            self?.viewModel.addRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime) {
+                self?.loadData()
+            }
         }
         let navVC = UINavigationController(rootViewController: addVC)
         present(navVC, animated: true)

@@ -355,16 +355,18 @@ class RoutineDetailViewController: UIViewController {
                                          name: name,
                                          frequency: frequency,
                                          hasReminder: hasReminder,
-                                         reminderTime: reminderTime)
-            
-            self.routine = routine
-            self.configureWithRoutine()
+                                         reminderTime: reminderTime) {
+                
+                self.routine = routine
+                self.configureWithRoutine()
+            }
         }
         
         addVC.onDelete = { [weak self] in
             guard let self = self else { return }
-            self.viewModel.deleteRoutine(self.routine)
-            self.navigationController?.popViewController(animated: true)
+            self.viewModel.deleteRoutine(self.routine) {
+                self.navigationController?.popViewController(animated: true)
+            }
         }
         
         let navVC = UINavigationController(rootViewController: addVC)
