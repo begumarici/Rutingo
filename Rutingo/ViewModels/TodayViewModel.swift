@@ -11,6 +11,7 @@ class TodayViewModel {
     
     // MARK: - Properties
     private var dataManager: DataManager
+    private var statisticsService: StatisticsService
     var todayRoutines: [Routine] = []
     
     // MARK: - Computed Properties
@@ -27,8 +28,9 @@ class TodayViewModel {
     }
     
     // MARK: - Initialization
-    init(dataManager: DataManager = CoreDataManager.shared) {
+    init(dataManager: DataManager = CoreDataManager.shared, statisticsService: StatisticsService = StatisticsService()) {
         self.dataManager = dataManager
+        self.statisticsService = statisticsService
     }
     
     // MARK: - Data Management
@@ -54,46 +56,11 @@ class TodayViewModel {
     
     // MARK: - Progress Calculation
     func getCompletionProgress() -> [Date: Double] {
-        var progressMap: [Date: Double] = [:]
-        let allRoutines = dataManager.fetchAllRoutines()
-        
-        for date in lastSevenDays {
-            let normalizedDate = DateHelper.shared.startOfDay(date)
-            let scheduledRoutines = getScheduledRoutines(allRoutines, for: normalizedDate)
-            
-            guard !scheduledRoutines.isEmpty else {
-                progressMap[normalizedDate] = 0.0
-                continue
-            }
-            
-            let completedCount = countCompletedRoutines(scheduledRoutines, on: normalizedDate)
-            let progress = Double(completedCount) / Double(scheduledRoutines.count)
-            progressMap[normalizedDate] = progress
-        }
-        
-        return progressMap
+        return statisticsService.getWeeklyCompletionProgress()
     }
     
     func getCompletedDays() -> Set<Date> {
-        var completed = Set<Date>()
-        let allRoutines = dataManager.fetchAllRoutines()
-        
-        for date in lastSevenDays {
-            let normalizedDate = DateHelper.shared.startOfDay(date)
-            let scheduledRoutines = getScheduledRoutines(allRoutines, for: normalizedDate)
-            
-            guard !scheduledRoutines.isEmpty else { continue }
-            
-            let allCompleted = scheduledRoutines.allSatisfy { routine in
-                routine.isCompleted(on: normalizedDate)
-            }
-
-            if allCompleted {
-                completed.insert(normalizedDate)
-            }
-        }
-        
-        return completed
+        return statisticsService.getFullyCompletedDays()
     }
     
     // MARK: - Helper Methods
@@ -104,31 +71,5 @@ class TodayViewModel {
             }
             return !routine1.isCompletedToday
         }
-    }
-    
-    private func getScheduledRoutines(_ routines: [Routine], for date: Date) -> [Routine] {
-        let weekday = Calendar.current.component(.weekday, from: date)
-        
-        return routines.filter { routine in
-            guard let createdAt = routine.createdAt else { return false}
-            let createdAtNormalized = DateHelper.shared.startOfDay(createdAt)
-            
-            guard createdAtNormalized <= date else {
-                return false
-            }
-            
-            switch routine.frequency {
-            case .daily:
-                return true
-            case .specificDays(let days):
-                return days.contains(weekday)
-            }
-        }
-    }
-    
-    private func countCompletedRoutines(_ routines: [Routine], on date: Date) -> Int {
-        return routines.filter { routine in
-            routine.isCompleted(on: date)
-        }.count
     }
 }

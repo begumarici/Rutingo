@@ -107,6 +107,28 @@ extension Routine {
         return bestStreak
     }
     
+    var completionRate: Int {
+        guard let createdAt = self.createdAt else { return 0 }
+        
+        let today = DateHelper.shared.startOfDay()
+        let startDate = DateHelper.shared.startOfDay(createdAt)
+        let totalDays = DateHelper.shared.daysBetween(startDate, today) + 1
+        
+        var scheduledDays = 0
+        for i in 0..<totalDays {
+            guard let date = Calendar.current.date(byAdding: .day, value: i, to: startDate) else { continue }
+            if self.wasScheduled(on: date) {
+                scheduledDays += 1
+            }
+        }
+        
+        guard scheduledDays > 0 else { return 0 }
+        
+        let completedDays = self.completionDates.count
+        let rate = Double(completedDays) / Double(scheduledDays) * 100
+        return Int(rate)
+    }
+    
     // MARK: - Methods
     func isScheduled(on date: Date) -> Bool {
         let weekday = Calendar.current.component(.weekday, from: date)

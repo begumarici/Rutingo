@@ -53,6 +53,13 @@ class DateHelper {
         }.reversed()
     }
     
+    func lastWeekDays() -> [Date] {
+        let today = startOfDay()
+        return(8...14).compactMap { offset in
+            Calendar.current.date(byAdding: .day, value: -offset, to: today)
+        }.reversed()
+    }
+    
     func daysBetween(_ start: Date, _ end: Date) -> Int {
         let startDay = startOfDay(start)
         let endDay = startOfDay(end)
@@ -64,6 +71,11 @@ class DateHelper {
     static func getDayName(for dayNumber: Int) -> String {
         let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         return dayNames[dayNumber - 1]
+    }
+    
+    static func getFullDayName(for weekday: Int) -> String {
+        let formatter = DateFormatter()
+        return formatter.weekdaySymbols[weekday - 1]
     }
     
     func greetingText(name: String = "Begüm") -> String {
