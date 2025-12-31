@@ -23,8 +23,9 @@ class MainTabBarController: UITabBarController {
     private func setupViewControllers() {
         let todayVC = createTodayTab()
         let routinesVC = createRoutinesTab()
+        let statisticsVC = createStatisticsTab()
         
-        viewControllers = [todayVC, routinesVC]
+        viewControllers = [todayVC, routinesVC, statisticsVC]
     }
     
     private func createTodayTab() -> UINavigationController {
@@ -47,6 +48,16 @@ class MainTabBarController: UITabBarController {
         return UINavigationController(rootViewController: routinesVC)
     }
     
+    private func createStatisticsTab() -> UINavigationController {
+        let statisticsVC = StatisticsViewController()
+        statisticsVC.tabBarItem = UITabBarItem(
+            title: "Statistics",
+            image: UIImage(systemName: "chart.line.uptrend.xyaxis"),
+            tag: 2
+        )
+        return UINavigationController(rootViewController: statisticsVC)
+    }
+    
     private func setupTabBarAppereance() {
         let appereance = UITabBarAppearance()
         appereance.configureWithOpaqueBackground()
@@ -61,7 +72,6 @@ class MainTabBarController: UITabBarController {
 }
 
 // MARK: - UITabBarControllerDelegate
-
 extension MainTabBarController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         if let navController = viewController as? UINavigationController {
