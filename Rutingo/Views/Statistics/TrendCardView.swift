@@ -1,5 +1,5 @@
 //
-//  StatCardView.swift
+//  TrendCardView.swift
 //  Rutingo
 //
 //  Created by Begüm Arıcı on 30.12.2025.
@@ -7,23 +7,49 @@
 
 import UIKit
 
-class StatCardView: UIView {
+class TrendCardView: UIView {
     
     // MARK: - UI Components
-    private let valueLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.bold(36)
-        label.textColor = AppColors.primary
-        return label
+    private let mainStack: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.alignment = .leading
+        return stack
     }()
     
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.regular(12)
-        label.textColor = AppColors.secondary
-        label.numberOfLines = 2
+        label.text = "Weekly Trend"
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.tertiary
+        return label
+    }()
+    
+    private let completionLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.bold(32)
+        label.textColor = .black
+        return label
+    }()
+    
+    private let chartStack: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
+        stack.spacing = 4
+        stack.alignment = .bottom
+        return stack
+    }()
+    
+    private let comparisonLabel: UILabel = {
+        let label = UILabel()
+        label.font = AppFonts.regular(14)
+        label.textColor = AppColors.tertiary
         return label
     }()
     
@@ -43,28 +69,108 @@ class StatCardView: UIView {
         backgroundColor = AppColors.cardBackground
         layer.cornerRadius = Layout.cornerRadius
         
-        addSubview(valueLabel)
-        addSubview(titleLabel)
-        
+        addSubviews()
         setupConstraints()
+    }
+    
+    private func addSubviews() {
+        addSubview(mainStack)
+        mainStack.addArrangedSubview(titleLabel)
+        mainStack.addArrangedSubview(completionLabel)
+        mainStack.setCustomSpacing(16, after: completionLabel)
+        mainStack.addArrangedSubview(chartStack)
+        mainStack.setCustomSpacing(12, after: chartStack)
+        mainStack.addArrangedSubview(comparisonLabel)
     }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            // Value (sol üstte)
-            valueLabel.topAnchor.constraint(equalTo: topAnchor, constant: 16),
-            valueLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            mainStack.topAnchor.constraint(equalTo: topAnchor, constant: 16),
+            mainStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            mainStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            mainStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
             
-            // Title (sağ altta)
-            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
-            titleLabel.widthAnchor.constraint(lessThanOrEqualToConstant: 80)
+            chartStack.widthAnchor.constraint(equalTo: mainStack.widthAnchor),
+            chartStack.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
     
     // MARK: - Configuration
-    func configure(value: String, title: String) {
-        valueLabel.text = value
-        titleLabel.text = title
+    func configure(weeklyRate: Int, lastWeekRate: Int, dailyRates: [Int]) {
+        completionLabel.text = "\(weeklyRate)%"
+        
+        let diff = weeklyRate - lastWeekRate
+        let sign = diff > 0 ? "+" : ""
+        
+        let attributedText = NSMutableAttributedString()
+        
+        let arrowAttachment = NSTextAttachment()
+        if diff > 0 {
+            arrowAttachment.image = UIImage(systemName: "arrow.up")?.withTintColor(AppColors.accent, renderingMode: .alwaysOriginal)
+        } else if diff < 0 {
+            arrowAttachment.image = UIImage(systemName: "arrow.down")?.withTintColor(.systemRed, renderingMode: .alwaysOriginal)
+        } else {
+            arrowAttachment.image = UIImage(systemName: "minus")?.withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
+        }
+        
+        arrowAttachment.bounds = CGRect(x: 0, y: -2, width: 14, height: 14)
+        
+        attributedText.append(NSAttributedString(attachment: arrowAttachment))
+        attributedText.append(NSAttributedString(string: " \(sign)\(diff)% from last week"))
+        
+        comparisonLabel.attributedText = attributedText
+        
+        drawChart(with: dailyRates)
+    }
+    
+    private func drawChart(with rates: [Int]) {
+        chartStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
+        guard rates.count > 0 else { return }
+        
+        let dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        let lastSevenDays = DateHelper.shared.lastSevenDays()
+        
+        for (index, rate) in rates.enumerated() {
+            let date = lastSevenDays[index]
+            let weekday = Calendar.current.component(.weekday, from: date)
+            let dayIndex = (weekday + 5) % 7
+            
+            let barColumn = createBarColumn(rate: rate, dayName: dayNames[dayIndex])
+            chartStack.addArrangedSubview(barColumn)
+        }
+    }
+    
+    private func createBarColumn(rate: Int, dayName: String) -> UIView {
+        let column = UIStackView()
+        column.axis = .vertical
+        column.spacing = 4
+        column.alignment = .fill
+        column.distribution = .fill
+        
+        let spacer = UIView()
+        spacer.setContentHuggingPriority(.defaultLow, for: .vertical)
+        
+        let barView = UIView()
+        barView.backgroundColor = AppColors.accent.withAlphaComponent(0.3 + (CGFloat(rate) / 100.0) * 0.7)
+        barView.layer.cornerRadius = 4
+        barView.translatesAutoresizingMaskIntoConstraints = false
+        
+        let barHeight = 40.0 * CGFloat(rate) / 100.0
+        barView.heightAnchor.constraint(equalToConstant: max(barHeight, 4)).isActive = true
+        
+        let dayLabel = UILabel()
+        dayLabel.text = dayName
+        dayLabel.font = AppFonts.regular(9)
+        dayLabel.textColor = AppColors.secondary
+        dayLabel.textAlignment = .center
+        dayLabel.translatesAutoresizingMaskIntoConstraints = false
+        dayLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        column.addArrangedSubview(spacer)
+        column.addArrangedSubview(barView)
+        column.addArrangedSubview(dayLabel)
+        
+        return column
     }
 }
