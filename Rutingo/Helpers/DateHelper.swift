@@ -60,6 +60,19 @@ class DateHelper {
         }.reversed()
     }
     
+    func currentWeekDays() -> [Date] {
+        let today = startOfDay()
+        let currentWeekday = Calendar.current.component(.weekday, from: today)
+        let daysToMonday = currentWeekday == 1 ? 6 : currentWeekday - 2
+        
+        guard let monday = Calendar.current.date(byAdding: .day, value: -daysToMonday, to: today) else {
+            return []
+        }
+        
+        return (0..<7).compactMap { offset in
+            Calendar.current.date(byAdding: .day, value: offset, to: monday)}
+    }
+    
     func daysBetween(_ start: Date, _ end: Date) -> Int {
         let startDay = startOfDay(start)
         let endDay = startOfDay(end)

@@ -23,8 +23,8 @@ class TodayViewModel {
         return DateHelper.shared.formattedDateShort()
     }
     
-    var lastSevenDays: [Date] {
-        return DateHelper.shared.lastSevenDays()
+    var currentWeekDays: [Date] {
+        return DateHelper.shared.currentWeekDays()
     }
     
     // MARK: - Initialization

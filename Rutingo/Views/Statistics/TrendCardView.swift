@@ -129,10 +129,10 @@ class TrendCardView: UIView {
         guard rates.count > 0 else { return }
         
         let dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        let lastSevenDays = DateHelper.shared.lastSevenDays()
+        let currentWeekDays = DateHelper.shared.currentWeekDays()
         
         for (index, rate) in rates.enumerated() {
-            let date = lastSevenDays[index]
+            let date = currentWeekDays[index]
             let weekday = Calendar.current.component(.weekday, from: date)
             let dayIndex = (weekday + 5) % 7
             

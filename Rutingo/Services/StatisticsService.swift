@@ -64,9 +64,9 @@ class StatisticsService {
     func getWeeklyCompletionProgress() -> [Date: Double] {
         var progressMap: [Date: Double] = [:]
         let allRoutines = dataManager.fetchAllRoutines()
-        let lastSevenDays = DateHelper.shared.lastSevenDays()
+        let currentWeekDays = DateHelper.shared.currentWeekDays()
         
-        for date in lastSevenDays {
+        for date in currentWeekDays {
             let normalizedDate = DateHelper.shared.startOfDay(date)
             let progress = calculateDayProgress(allRoutines, on: normalizedDate)
             progressMap[normalizedDate] = progress
@@ -78,9 +78,9 @@ class StatisticsService {
     func getFullyCompletedDays() -> Set<Date> {
          var completed = Set<Date>()
          let allRoutines = dataManager.fetchAllRoutines()
-         let lastSevenDays = DateHelper.shared.lastSevenDays()
+         let currentWeekDays = DateHelper.shared.currentWeekDays()
          
-         for date in lastSevenDays {
+         for date in currentWeekDays {
              let normalizedDate = DateHelper.shared.startOfDay(date)
              if isDayFullyCompleted(allRoutines, on: normalizedDate) {
                  completed.insert(normalizedDate)
@@ -93,10 +93,10 @@ class StatisticsService {
     // MARK: - Weekly Insights
     func getBestDayOfWeek() -> String? {
         let allRoutines = dataManager.fetchAllRoutines()
-        let lastSevenDays = DateHelper.shared.lastSevenDays()
+        let currentWeekDays = DateHelper.shared.currentWeekDays()
         
-        let completions = countWeekdayCompletions(allRoutines, lastSevenDays)
-        let scheduled = countWeekdayScheduled(allRoutines, lastSevenDays)
+        let completions = countWeekdayCompletions(allRoutines, currentWeekDays)
+        let scheduled = countWeekdayScheduled(allRoutines, currentWeekDays)
         
         var stats: [Int: (completed: Int, scheduled: Int)] = [:]
         for day in 1...7 {
@@ -112,10 +112,10 @@ class StatisticsService {
     // MARK: - Trend Data
     func getDailyCompletionRates() -> [Int] {
         let allRoutines = dataManager.fetchAllRoutines()
-        let lastSevenDays = DateHelper.shared.lastSevenDays()
+        let currentWeekDays = DateHelper.shared.currentWeekDays()
         var rates: [Int] = []
         
-        for date in lastSevenDays {
+        for date in currentWeekDays {
             let normalizedDate = DateHelper.shared.startOfDay(date)
             let scheduledRoutines = getScheduledRoutines(allRoutines, for: normalizedDate)
             
@@ -133,7 +133,7 @@ class StatisticsService {
     }
 
     func getWeeklyCompletionRate() -> Int {
-        let dates = DateHelper.shared.lastSevenDays()
+        let dates = DateHelper.shared.currentWeekDays()
         return calculateCompletionRateForDates(dates)
     }
     

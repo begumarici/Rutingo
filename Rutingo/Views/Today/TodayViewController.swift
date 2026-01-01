@@ -167,7 +167,7 @@ class TodayViewController: UIViewController {
         dateLabel.text = viewModel.dateText
         
         // Week Calendar
-        let dates = viewModel.lastSevenDays
+        let dates = viewModel.currentWeekDays
         let progressMap = viewModel.getCompletionProgress()
         weekCalendarView.configure(with: dates, progressMap: progressMap)
         
