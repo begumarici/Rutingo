@@ -38,7 +38,7 @@ class RoutineDetailViewController: UIViewController {
     private let mainStatsCard: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = UIColor(red: 240/255, green: 240/255, blue: 240/255, alpha: 1.0)
+        view.backgroundColor = AppColors.cardBackground
         view.layer.cornerRadius = Layout.cornerRadius
         return view
     }()
@@ -122,7 +122,7 @@ class RoutineDetailViewController: UIViewController {
     private let calendarTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Last 7 Days"
+        label.text = "Completed days this week"
         label.font = AppFonts.semibold(16)
         label.textColor = AppColors.primary
         return label
@@ -207,7 +207,7 @@ class RoutineDetailViewController: UIViewController {
             nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
             nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
             
-            mainStatsCard.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 24),
+            mainStatsCard.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: Layout.smallPadding),
             mainStatsCard.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
             mainStatsCard.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
             
@@ -246,7 +246,7 @@ class RoutineDetailViewController: UIViewController {
             calendarTitleLabel.topAnchor.constraint(equalTo: mainStatsCard.bottomAnchor, constant: 24),
             calendarTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
             
-            calendarView.topAnchor.constraint(equalTo: calendarTitleLabel.bottomAnchor, constant: 8),
+            calendarView.topAnchor.constraint(equalTo: calendarTitleLabel.bottomAnchor, constant: 0),
             calendarView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
             calendarView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
             calendarView.heightAnchor.constraint(equalToConstant: 80),
@@ -331,7 +331,7 @@ class RoutineDetailViewController: UIViewController {
     }
     
     private func configureCalendar() {
-        let dates = DateHelper.shared.lastSevenDays()
+        let dates = DateHelper.shared.currentWeekDays()
         var progressMap: [Date: Double] = [:]
         
         for date in dates {
