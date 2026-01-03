@@ -84,12 +84,12 @@ extension Routine {
     }
     
     var bestStreak: Int {
-        var bestStreak = 0
-        var currentStreak = 1
-        
         let sortedCompletions = completionArray.sorted { ($0.date ?? Date.distantPast) < ($1.date ?? Date.distantPast) }
         
         guard !sortedCompletions.isEmpty else { return 0 }
+        
+        var bestStreak = 1
+        var currentStreak = 1
         
         for i in 1..<sortedCompletions.count {
             let prevDate = sortedCompletions[i-1].date!

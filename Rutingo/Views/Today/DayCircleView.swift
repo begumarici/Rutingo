@@ -9,13 +9,6 @@ import UIKit
 
 class DayCircleView: UIView {
     
-    // MARK: - Constants
-    private enum ProgressThreshold {
-        static let low: Double = 0.34
-        static let medium: Double = 0.67
-        static let high: Double = 1.0
-    }
-    
     // MARK: - UI Components
     private let dayLabel: UILabel = {
         let label = UILabel()
@@ -86,12 +79,6 @@ class DayCircleView: UIView {
         switch progress {
         case 0.0:
             backgroundColor = AppColors.progressEmpty
-        case 0.0..<ProgressThreshold.low:
-            backgroundColor = AppColors.progressLow
-        case ProgressThreshold.low..<ProgressThreshold.medium:
-            backgroundColor = AppColors.progressMedium
-        case ProgressThreshold.medium..<ProgressThreshold.high:
-            backgroundColor = AppColors.progressHigh
         default:
             backgroundColor = AppColors.progressComplete
         }
@@ -99,7 +86,7 @@ class DayCircleView: UIView {
     
     private func setTodayBorder(_ isToday: Bool) {
         if isToday {
-            layer.borderWidth = 1
+            layer.borderWidth = 2
             layer.borderColor = AppColors.accent.cgColor
         } else {
             layer.borderWidth = 0

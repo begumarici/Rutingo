@@ -35,7 +35,7 @@ class WeekCalendarView: UIView {
     
     // MARK: - Setup
     private func setupUI() {
-        backgroundColor = AppColors.background
+        backgroundColor = .clear
         layer.cornerRadius = Layout.cornerRadius
         
         addSubview(stackView)
