@@ -28,18 +28,20 @@ class StatisticsService {
         let allRoutines = dataManager.fetchAllRoutines()
         guard !allRoutines.isEmpty else { return 0 }
         
+        let oldestDate = allRoutines.compactMap { $0.createdAt }.min() ?? Date()
+        let oldestDateNormalized = DateHelper.shared.startOfDay(oldestDate)
+        
         var streak = 0
         var currentDate = DateHelper.shared.startOfDay()
         
-        while let yesterday = previousDay(from: currentDate) {
+        while currentDate >= oldestDateNormalized {
             if isDayFullyCompleted(allRoutines, on: currentDate) {
                 streak += 1
-                currentDate = yesterday
             } else if hasScheduledRoutines(allRoutines, on: currentDate) {
                 break
-            } else {
-                currentDate = yesterday
             }
+            guard let yesterday = previousDay(from: currentDate) else { break }
+            currentDate = yesterday
         }
         
         return streak
