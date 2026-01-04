@@ -23,15 +23,15 @@ class CombinedStatsCardView: UIView {
     private let leftStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 12
+        stack.spacing = 6
         stack.alignment = .center
         return stack
     }()
     
     private let rateTitle: UILabel = {
         let label = UILabel()
-        label.text = "COMPLETION\nRATE"
-        label.font = AppFonts.regular(10)
+        label.text = "Completion\nRate"
+        label.font = AppFonts.regular(14)
         label.textColor = AppColors.tertiary
         label.numberOfLines = 2
         label.textAlignment = .center
@@ -71,14 +71,14 @@ class CombinedStatsCardView: UIView {
     private let streakStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 4
+        stack.spacing = 2
         return stack
     }()
     
     private let streakTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "CURRENT PERFECT STREAK"
-        label.font = AppFonts.regular(10)
+        label.text = "Current Perfect Streak"
+        label.font = AppFonts.regular(14)
         label.textColor = AppColors.tertiary
         return label
     }()
@@ -93,14 +93,14 @@ class CombinedStatsCardView: UIView {
     private let totalStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 4
+        stack.spacing = 2
         return stack
     }()
     
     private let totalTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "TOTAL COMPLETED"
-        label.font = AppFonts.regular(10)
+        label.text = "Total Completed"
+        label.font = AppFonts.regular(14)
         label.textColor = AppColors.tertiary
         return label
     }()
@@ -115,14 +115,14 @@ class CombinedStatsCardView: UIView {
     private let activeStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = 4
+        stack.spacing = 2
         return stack
     }()
     
     private let activeTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "ACTIVE ROUTINES"
-        label.font = AppFonts.regular(10)
+        label.text = "Active Routines"
+        label.font = AppFonts.regular(14)
         label.textColor = AppColors.tertiary
         return label
     }()

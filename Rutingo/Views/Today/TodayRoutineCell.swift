@@ -98,18 +98,17 @@ class TodayRoutineCell: UITableViewCell {
             streakLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
 
             checkmarkView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            checkmarkView.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
+            checkmarkView.topAnchor.constraint(equalTo: nameLabel.topAnchor),
             checkmarkView.widthAnchor.constraint(equalToConstant: 24),
             checkmarkView.heightAnchor.constraint(equalToConstant: 24),
 
             nameLabel.leadingAnchor.constraint(equalTo: checkmarkView.trailingAnchor, constant: 12),
-            nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 8),
+            nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
             nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.smallPadding),
 
             frequencyLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 2),
-            frequencyLabel.leadingAnchor.constraint(equalTo: checkmarkView.trailingAnchor, constant: 12),
-            frequencyLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.smallPadding),
-            frequencyLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -8)
+            frequencyLabel.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor), 
+            frequencyLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.smallPadding)
         ])
     }
     
@@ -127,10 +126,10 @@ class TodayRoutineCell: UITableViewCell {
     // MARK: - Helpers
     private func updateCompletionState(isCompleted: Bool) {
         if isCompleted {
-            cardView.backgroundColor = AppColors.progressLow
-            cardView.alpha = 0.8
+            cardView.backgroundColor = AppColors.accent.withAlphaComponent(0.5)
+            cardView.alpha = 1.0
             checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")
-            checkmarkView.tintColor = AppColors.progressComplete
+            checkmarkView.tintColor = .black
         } else {
             cardView.backgroundColor = AppColors.cardBackground
             cardView.alpha = 1.0

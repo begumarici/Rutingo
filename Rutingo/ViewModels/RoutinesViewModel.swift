@@ -21,19 +21,12 @@ class RoutinesViewModel {
     }
     
     // MARK: - Data Management
-    func loadData(completion: @escaping () -> Void) {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
-            
-            self.allRoutines = self.dataManager.fetchAllRoutines()
-            
-            DispatchQueue.main.async {
-                completion()
-            }
-        }
+    func loadData(completion: () -> Void) {
+        allRoutines = self.dataManager.fetchAllRoutines()
+        completion()
     }
     
-    func addRoutine(name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date?, completion: @escaping () -> Void) {
+    func addRoutine(name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date?, completion: () -> Void) {
         let newRoutine = dataManager.saveRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
         NotificationManager.shared.scheduleNotification(for: newRoutine)
         loadData {
@@ -41,20 +34,16 @@ class RoutinesViewModel {
         }
     }
     
-    func deleteRoutine(_ routine: Routine, completion: @escaping () -> Void) {
+    func deleteRoutine(_ routine: Routine, completion: () -> Void) {
         NotificationManager.shared.cancelNotification(for: routine)
         dataManager.deleteRoutine(routine)
-        loadData {
-            completion()
-        }
+        loadData(completion: completion)
     }
     
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date? = nil, completion: @escaping () -> Void) {
+    func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date? = nil, completion: () -> Void) {
         dataManager.updateRoutine(routine: routine, name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
         NotificationManager.shared.scheduleNotification(for: routine)
-        loadData {
-            completion()
-        }
+        loadData(completion: completion)
     }
 
     // MARK: - Statistics Calculation

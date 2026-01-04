@@ -8,7 +8,7 @@
 import UIKit
 
 enum AppColors {
-    static let background = UIColor(red: 37/255, green: 37/255, blue: 37/255, alpha: 1.0)
+    static let background = UIColor.black
     static let cardBackground = UIColor(red: 217/255, green: 217/255, blue: 217/255, alpha: 1.0)
     static let primary = UIColor.white
     static let secondary = UIColor.lightGray

@@ -13,6 +13,12 @@ class TodayViewController: UIViewController {
     private let viewModel = TodayViewModel()
     
     // MARK: - UI Components
+    private let ovalProgressView: OvalProgressView = {
+        let view = OvalProgressView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private let greetingLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -21,27 +27,10 @@ class TodayViewController: UIViewController {
         return label
     }()
     
-    private let dateLabel : UILabel = {
+    private let dateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(16)
-        label.textColor = AppColors.secondary
-        return label
-    }()
-    
-    private let dailyFocusLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(22)
-        label.textColor = AppColors.primary
-        label.text = "Your daily focus"
-        return label
-    }()
-    
-    private let progressInfoLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.regular(14)
         label.textColor = AppColors.secondary
         return label
     }()
@@ -50,22 +39,9 @@ class TodayViewController: UIViewController {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
         table.register(TodayRoutineCell.self, forCellReuseIdentifier: TodayRoutineCell.identifier)
-        table.backgroundColor = AppColors.background
+        table.backgroundColor = .clear
         table.separatorStyle = .none
         return table
-    }()
-    
-    private let weekCalendarView: WeekCalendarView = {
-        let view = WeekCalendarView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    private let emptyStateView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.isHidden = true
-        return view
     }()
     
     private let emptyStateLabel: UILabel = {
@@ -76,6 +52,7 @@ class TodayViewController: UIViewController {
         label.textColor = AppColors.secondary
         label.textAlignment = .center
         label.numberOfLines = 0
+        label.isHidden = true
         return label
     }()
     
@@ -102,13 +79,9 @@ class TodayViewController: UIViewController {
     private func addSubviews() {
         view.addSubview(greetingLabel)
         view.addSubview(dateLabel)
-        view.addSubview(weekCalendarView)
-        view.addSubview(dailyFocusLabel)
-        view.addSubview(progressInfoLabel)
-        view.addSubview(tableView)
-        
-        emptyStateView.addSubview(emptyStateLabel)
-        view.addSubview(emptyStateView)
+        view.addSubview(ovalProgressView)
+        ovalProgressView.contentView.addSubview(tableView)
+        ovalProgressView.contentView.addSubview(emptyStateLabel)
     }
     
     private func setupConstraints() {
@@ -117,36 +90,22 @@ class TodayViewController: UIViewController {
             greetingLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             greetingLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
-            dateLabel.topAnchor.constraint(equalTo: greetingLabel.bottomAnchor, constant: Layout.smallPadding),
+            dateLabel.topAnchor.constraint(equalTo: greetingLabel.bottomAnchor, constant: 4),
             dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             dateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
-            weekCalendarView.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: Layout.padding),
-            weekCalendarView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            weekCalendarView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            ovalProgressView.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 8 ),
+            ovalProgressView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 4),
+            ovalProgressView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -4),
+            ovalProgressView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8),
             
-            dailyFocusLabel.topAnchor.constraint(equalTo: weekCalendarView.bottomAnchor, constant: Layout.padding),
-            dailyFocusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            dailyFocusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            tableView.topAnchor.constraint(equalTo: ovalProgressView.contentView.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: ovalProgressView.contentView.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: ovalProgressView.contentView.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: ovalProgressView.contentView.bottomAnchor),
             
-            progressInfoLabel.topAnchor.constraint(equalTo: dailyFocusLabel.bottomAnchor, constant: 4),
-            progressInfoLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            progressInfoLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-          
-            tableView.topAnchor.constraint(equalTo: progressInfoLabel.bottomAnchor, constant: Layout.smallPadding),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            emptyStateView.topAnchor.constraint(equalTo: progressInfoLabel.bottomAnchor, constant: 40),
-            emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            emptyStateView.heightAnchor.constraint(equalToConstant: 100),
-            
-            emptyStateLabel.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
-            emptyStateLabel.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor),
-            emptyStateLabel.leadingAnchor.constraint(equalTo: emptyStateView.leadingAnchor, constant: Layout.padding),
-            emptyStateLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor, constant: -Layout.padding)
+            emptyStateLabel.centerXAnchor.constraint(equalTo: ovalProgressView.contentView.centerXAnchor),
+            emptyStateLabel.centerYAnchor.constraint(equalTo: ovalProgressView.contentView.centerYAnchor)
         ])
     }
     
@@ -158,7 +117,8 @@ class TodayViewController: UIViewController {
     // MARK: - Data Loading
     private func loadData() {
         viewModel.loadData { [weak self] in
-            self?.updateUIWithViewModel()}
+            self?.updateUIWithViewModel()
+        }
     }
     
     private func updateUIWithViewModel() {
@@ -166,24 +126,24 @@ class TodayViewController: UIViewController {
         greetingLabel.text = viewModel.greeting
         dateLabel.text = viewModel.dateText
         
-        // Week Calendar
-        let dates = viewModel.currentWeekDays
-        let progressMap = viewModel.getCompletionProgress()
-        weekCalendarView.configure(with: dates, progressMap: progressMap)
-        
-        // Progress Info
+        // Progress
         let completed = viewModel.todayRoutines.filter { $0.isCompletedToday }.count
         let total = viewModel.todayRoutines.count
-        progressInfoLabel.text = "\(completed) of \(total) completed"
+        let progress = total > 0 ? Double(completed) / Double(total) : 0.0
+        
+        if progress == 1.0 && total > 0 {
+            ovalProgressView.setCompleted()
+        } else {
+            ovalProgressView.setProgress(progress)
+        }
         
         // Empty State
         let isEmpty = viewModel.todayRoutines.isEmpty
         tableView.isHidden = isEmpty
-        emptyStateView.isHidden = !isEmpty
+        emptyStateLabel.isHidden = !isEmpty
         tableView.reloadData()
     }
 }
-
 
 // MARK: - UITableViewDataSource
 extension TodayViewController: UITableViewDataSource {
