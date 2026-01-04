@@ -23,7 +23,7 @@ class TrendCardView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Weekly Trend"
-        label.font = AppFonts.semibold(16)
+        label.font = AppFonts.semibold(18)
         label.textColor = AppColors.tertiary
         return label
     }()
@@ -161,7 +161,7 @@ class TrendCardView: UIView {
         
         let dayLabel = UILabel()
         dayLabel.text = dayName
-        dayLabel.font = AppFonts.regular(9)
+        dayLabel.font = AppFonts.regular(11)
         dayLabel.textColor = AppColors.secondary
         dayLabel.textAlignment = .center
         dayLabel.translatesAutoresizingMaskIntoConstraints = false

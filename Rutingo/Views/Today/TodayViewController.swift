@@ -70,7 +70,7 @@ class TodayViewController: UIViewController {
     
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = .black
+        view.backgroundColor = AppColors.background
         
         addSubviews()
         setupConstraints()

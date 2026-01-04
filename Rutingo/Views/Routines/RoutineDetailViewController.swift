@@ -276,7 +276,7 @@ class RoutineDetailViewController: UIViewController {
             let streakAttributedString = NSMutableAttributedString(attachment: streakAttachment)
             streakAttributedString.append(NSAttributedString(
                 string: " No Streak",
-                attributes: [.foregroundColor: AppColors.tertiary]
+                attributes: [.foregroundColor: UIColor.black]
             ))
             currentStreakLabel.attributedText = streakAttributedString
         } else {
@@ -285,7 +285,10 @@ class RoutineDetailViewController: UIViewController {
             streakAttachment.bounds = CGRect(x: 0, y: -4, width: streakIconSize, height: streakIconSize)
             
             let streakAttributedString = NSMutableAttributedString(attachment: streakAttachment)
-            streakAttributedString.append(NSAttributedString(string: " \(currentStreak) Days"))
+            streakAttributedString.append(NSAttributedString(
+                string: " \(currentStreak) Days",
+                attributes: [.foregroundColor: UIColor.black]
+            ))
             currentStreakLabel.attributedText = streakAttributedString
         }
         
