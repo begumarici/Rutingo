@@ -57,12 +57,8 @@ class StatisticsViewModel {
     }
     
     // MARK: - Data MAnagement
-    func loadData(completion: @escaping () -> Void) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            DispatchQueue.main.async {
-                completion()
-            }
-        }
+    func loadData(completion: () -> Void) {
+        completion()
     }
     
     func getCompletionProgress() -> [Date: Double] {
