@@ -35,7 +35,12 @@ class CoreDataManager: DataManager {
         
         do {
             let routines = try viewContext.fetch(request)
-            return routines
+            let today = DateHelper.shared.startOfDay()
+            return routines.filter { routine in
+                guard let createdAt = routine.createdAt else { return false }
+                let createdAtStart = DateHelper.shared.startOfDay(createdAt)
+                return createdAtStart <= today
+            }
         } catch {
             print("failed to fethc: \(error)")
             return []
