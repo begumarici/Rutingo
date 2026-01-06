@@ -25,83 +25,153 @@ class AddRoutineViewController: UIViewController {
     private var hasReminder: Bool = false
     private var reminderTime: Date = Date()
     
+    // MARK: - UI Containers
+    private let nameContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = 16
+        return view
+    }()
+    
+    private let frequencyContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = 16
+        return view
+    }()
+    
+    private let reminderContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = 16
+        return view
+    }()
+    
     // MARK: - UI Components
+    private let scrollView: UIScrollView = {
+        let scroll = UIScrollView()
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        scroll.showsVerticalScrollIndicator = true
+        return scroll
+    }()
+
+    private let contentView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    // Name
+    private let nameStack: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 8
+        return stack
+    }()
+
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Name"
-        label.font = AppFonts.semibold(14)
-        label.textColor = AppColors.secondary
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.tertiary
         return label
     }()
     
     private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "Enter routine name"
-        textField.borderStyle = .roundedRect
+        textField.backgroundColor = AppColors.secondary
+        textField.layer.cornerRadius = 8
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 44))
+        textField.leftViewMode = .always
         textField.font = AppFonts.regular(16)
+        textField.textColor = AppColors.tertiary
+        textField.attributedPlaceholder = NSAttributedString(
+            string: "Enter routine name",
+            attributes: [.foregroundColor: AppColors.tertiary]
+        )
         return textField
+    }()
+    
+    // Frequency
+    private let frequencyStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 12
+        return stack
     }()
     
     private let frequencyLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Frequency"
-        label.font = AppFonts.semibold(14)
-        label.textColor = AppColors.secondary
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.tertiary
         return label
     }()
     
     private let frequencyControl: UISegmentedControl = {
         let items = ["Daily", "Specific Days"]
-        let segmentedControl = UISegmentedControl(items: items)
-        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        segmentedControl.selectedSegmentIndex = 0
-        return segmentedControl
-    }()
-    
-    private let daysLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Days of Week"
-        label.font = AppFonts.semibold(14)
-        label.textColor = AppColors.secondary
-        label.isHidden = true
-        return label
+        let control = UISegmentedControl(items: items)
+        control.translatesAutoresizingMaskIntoConstraints = false
+        control.selectedSegmentIndex = 0
+        control.selectedSegmentTintColor = AppColors.accent
+        control.setTitleTextAttributes([
+            .foregroundColor: UIColor.black,
+            .font: AppFonts.semibold(14)
+        ], for: .selected)
+        control.setTitleTextAttributes([
+            .foregroundColor: AppColors.tertiary,
+            .font: AppFonts.regular(14)
+        ], for: .normal)
+        return control
     }()
     
     private let dayStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
-        stackView.distribution = .fillEqually
-        stackView.spacing = 8
+        stackView.distribution = .equalSpacing
         stackView.isHidden = true
         return stackView
     }()
     
+    // Reminder
+    private let reminderStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 0
+        return stack
+    }()
+    
+    private let reminderHeaderView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
     private let reminderLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Reminder"
-        label.font = AppFonts.semibold(14)
-        label.textColor = AppColors.secondary
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.tertiary
         return label
     }()
 
     private let reminderSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.translatesAutoresizingMaskIntoConstraints = false
+        toggle.onTintColor = AppColors.accent
         toggle.isOn = false
         return toggle
-    }()
-
-    private let timePickerContainer: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.isHidden = true
-        return view
     }()
 
     private let timePicker: UIDatePicker = {
@@ -109,7 +179,23 @@ class AddRoutineViewController: UIViewController {
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.datePickerMode = .time
         picker.preferredDatePickerStyle = .wheels
+        picker.isHidden = true
+        picker.setValue(AppColors.background, forKeyPath: "textColor")
+        picker.tintColor = AppColors.accent
+        
         return picker
+    }()
+    
+    // Buttons
+    private let saveButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Save", for: .normal)
+        button.titleLabel?.font = AppFonts.bold(18)
+        button.backgroundColor = AppColors.accent
+        button.setTitleColor(.black, for: .normal)
+        button.layer.cornerRadius = 16
+        return button
     }()
     
     private lazy var deleteButton: UIButton = {
@@ -119,21 +205,7 @@ class AddRoutineViewController: UIViewController {
         button.titleLabel?.font = AppFonts.semibold(16)
         button.setTitleColor(.systemRed, for: .normal)
         button.backgroundColor = .clear
-        button.layer.cornerRadius = Layout.cornerRadius
-        button.layer.borderWidth = 2
-        button.layer.borderColor = UIColor.systemRed.cgColor
         button.isHidden = true
-        return button
-    }()
-    
-    private let saveButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Save", for: .normal)
-        button.titleLabel?.font = AppFonts.semibold(18)
-        button.backgroundColor = AppColors.accent
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = Layout.cornerRadius
         return button
     }()
     
@@ -150,10 +222,34 @@ class AddRoutineViewController: UIViewController {
     
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = AppColors.background
+        view.backgroundColor = .black
         configureModeUI()
         setupNavigationBar()
-        addSubviews()
+        
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        
+        contentView.addSubview(nameContainer)
+        contentView.addSubview(frequencyContainer)
+        contentView.addSubview(reminderContainer)
+        contentView.addSubview(deleteButton) 
+        contentView.addSubview(saveButton)
+     
+        nameContainer.addSubview(nameStack)
+        nameStack.addArrangedSubview(nameLabel)
+        nameStack.addArrangedSubview(nameTextField)
+        
+        frequencyContainer.addSubview(frequencyStackView)
+        frequencyStackView.addArrangedSubview(frequencyLabel)
+        frequencyStackView.addArrangedSubview(frequencyControl)
+        frequencyStackView.addArrangedSubview(dayStackView)
+        
+        reminderContainer.addSubview(reminderStackView)
+        reminderHeaderView.addSubview(reminderLabel)
+        reminderHeaderView.addSubview(reminderSwitch)
+        reminderStackView.addArrangedSubview(reminderHeaderView)
+        reminderStackView.addArrangedSubview(timePicker)
+        
         setupConstraints()
         setupActions()
         createDayButtons()
@@ -170,91 +266,95 @@ class AddRoutineViewController: UIViewController {
             saveButton.setTitle("Update", for: .normal)
             deleteButton.isHidden = false
         }
+        
+        navigationController?.navigationBar.barStyle = .black
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
+    }
+    
+    private func setupNavigationBar() {
+        let closeButton = UIBarButtonItem(
+            image: UIImage(systemName: "xmark.circle.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(cancelTapped)
+        )
+        closeButton.tintColor = .systemGray
+        navigationItem.leftBarButtonItem = closeButton
+    }
+    
+    private func setupConstraints() {
+        let padding: CGFloat = 20
+        let cardPadding: CGFloat = 16
+        
+        NSLayoutConstraint.activate([
+            // ScrollView
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            // ContentView
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            
+            // name container
+            nameContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: padding),
+            nameContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            nameContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+            
+            nameStack.topAnchor.constraint(equalTo: nameContainer.topAnchor, constant: cardPadding),
+            nameStack.leadingAnchor.constraint(equalTo: nameContainer.leadingAnchor, constant: cardPadding),
+            nameStack.trailingAnchor.constraint(equalTo: nameContainer.trailingAnchor, constant: -cardPadding),
+            nameStack.bottomAnchor.constraint(equalTo: nameContainer.bottomAnchor, constant: -cardPadding),
+            nameTextField.heightAnchor.constraint(equalToConstant: 44),
+            
+            // frequency container
+            frequencyContainer.topAnchor.constraint(equalTo: nameContainer.bottomAnchor, constant: padding),
+            frequencyContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            frequencyContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+            
+            frequencyStackView.topAnchor.constraint(equalTo: frequencyContainer.topAnchor, constant: cardPadding),
+            frequencyStackView.leadingAnchor.constraint(equalTo: frequencyContainer.leadingAnchor, constant: cardPadding),
+            frequencyStackView.trailingAnchor.constraint(equalTo: frequencyContainer.trailingAnchor, constant: -cardPadding),
+            frequencyStackView.bottomAnchor.constraint(equalTo: frequencyContainer.bottomAnchor, constant: -cardPadding),
+            dayStackView.heightAnchor.constraint(equalToConstant: 40),
+
+            // reminder container
+            reminderContainer.topAnchor.constraint(equalTo: frequencyContainer.bottomAnchor, constant: padding),
+            reminderContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            reminderContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+            
+            reminderStackView.topAnchor.constraint(equalTo: reminderContainer.topAnchor, constant: cardPadding),
+            reminderStackView.leadingAnchor.constraint(equalTo: reminderContainer.leadingAnchor, constant: cardPadding),
+            reminderStackView.trailingAnchor.constraint(equalTo: reminderContainer.trailingAnchor, constant: -cardPadding),
+            reminderStackView.bottomAnchor.constraint(equalTo: reminderContainer.bottomAnchor, constant: -cardPadding),
+            reminderHeaderView.heightAnchor.constraint(equalToConstant: 31),
+            
+            reminderLabel.centerYAnchor.constraint(equalTo: reminderHeaderView.centerYAnchor),
+            reminderLabel.leadingAnchor.constraint(equalTo: reminderHeaderView.leadingAnchor),
+            reminderSwitch.centerYAnchor.constraint(equalTo: reminderHeaderView.centerYAnchor),
+            reminderSwitch.trailingAnchor.constraint(equalTo: reminderHeaderView.trailingAnchor),
+            
+            // buttons
+            deleteButton.topAnchor.constraint(equalTo: reminderContainer.bottomAnchor, constant: 10),
+            deleteButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            
+            saveButton.topAnchor.constraint(equalTo: deleteButton.bottomAnchor, constant: 10),
+            saveButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            saveButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+            saveButton.heightAnchor.constraint(equalToConstant: 56),
+            
+            contentView.bottomAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: padding)
+        ])
     }
     
     private func setupKeyboardDismiss() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
-    }
-    
-    private func setupNavigationBar() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .cancel,
-            target: self,
-            action: #selector(cancelTapped)
-        )
-    }
-    
-    private func addSubviews() {
-        view.addSubview(nameLabel)
-        view.addSubview(nameTextField)
-        view.addSubview(frequencyLabel)
-        view.addSubview(frequencyControl)
-        view.addSubview(daysLabel)
-        view.addSubview(dayStackView)
-        view.addSubview(reminderLabel)   
-        view.addSubview(reminderSwitch)
-        view.addSubview(timePickerContainer)
-        timePickerContainer.addSubview(timePicker)
-        view.addSubview(saveButton)
-        view.addSubview(deleteButton)
-    }
-    
-    private func setupConstraints() {
-        NSLayoutConstraint.activate([
-            nameLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
-            nameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            nameLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-      
-            nameTextField.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
-            nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            nameTextField.heightAnchor.constraint(equalToConstant: 44),
-
-            frequencyLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 24),
-            frequencyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            frequencyLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-
-            frequencyControl.topAnchor.constraint(equalTo: frequencyLabel.bottomAnchor, constant: 8),
-            frequencyControl.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            frequencyControl.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            frequencyControl.heightAnchor.constraint(equalToConstant: 32),
-
-            daysLabel.topAnchor.constraint(equalTo: frequencyControl.bottomAnchor, constant: 24),
-            daysLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            daysLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-
-            dayStackView.topAnchor.constraint(equalTo: daysLabel.bottomAnchor, constant: 8),
-            dayStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            dayStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            dayStackView.heightAnchor.constraint(equalToConstant: 44),
-            
-            reminderLabel.topAnchor.constraint(equalTo: dayStackView.bottomAnchor, constant: 24),
-            reminderLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            
-            reminderSwitch.centerYAnchor.constraint(equalTo: reminderLabel.centerYAnchor),
-            reminderSwitch.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            
-            timePickerContainer.topAnchor.constraint(equalTo: reminderLabel.bottomAnchor, constant: 12),
-            timePickerContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            timePickerContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            timePickerContainer.heightAnchor.constraint(equalToConstant: 150),
-            
-            timePicker.topAnchor.constraint(equalTo: timePickerContainer.topAnchor),
-            timePicker.leadingAnchor.constraint(equalTo: timePickerContainer.leadingAnchor),
-            timePicker.trailingAnchor.constraint(equalTo: timePickerContainer.trailingAnchor),
-            timePicker.bottomAnchor.constraint(equalTo: timePickerContainer.bottomAnchor),
-            
-            saveButton.topAnchor.constraint(equalTo: timePickerContainer.bottomAnchor, constant: 24),
-            saveButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            saveButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            saveButton.heightAnchor.constraint(equalToConstant: 50),
-
-            deleteButton.topAnchor.constraint(equalTo: saveButton.bottomAnchor, constant: 12),
-            deleteButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
-            deleteButton.heightAnchor.constraint(equalToConstant: 50)
-        ])
     }
     
     private func setupActions() {
@@ -265,18 +365,22 @@ class AddRoutineViewController: UIViewController {
     }
     
     private func createDayButtons() {
-        let days = ["S", "M", "T", "W", "T", "F", "S"]
+        let dayOrder = [2, 3, 4, 5, 6, 7, 1]
         
-        for (index, day) in days.enumerated() {
-            let button = UIButton(type: .system)
-            button.setTitle(day, for: .normal)
-            button.tag = index + 1
-            button.titleLabel?.font = AppFonts.semibold(16)
+        for dayNumber in dayOrder {
+            let button = UIButton(type: .custom)
+            let dayName = DateHelper.getDayName(for: dayNumber)
+            button.setTitle(String(dayName.prefix(3)), for: .normal)
+            button.tag = dayNumber
+            button.titleLabel?.font = AppFonts.bold(14)
+            button.backgroundColor = AppColors.secondary
+            button.setTitleColor(.black, for: .normal)
+            button.layer.cornerRadius = 20
+            
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.widthAnchor.constraint(equalToConstant: 40).isActive = true
+            button.heightAnchor.constraint(equalToConstant: 40).isActive = true
 
-            button.backgroundColor = AppColors.cardBackground
-            button.setTitleColor(UIColor.black, for: .normal)
-            button.layer.cornerRadius = 22
-            button.clipsToBounds = true
             
             button.addTarget(self, action: #selector(dayButtonTapped(_:)), for: .touchUpInside)
             dayStackView.addArrangedSubview(button)
@@ -293,22 +397,26 @@ class AddRoutineViewController: UIViewController {
     }
     
     @objc private func frequencyChanged() {
-        if frequencyControl.selectedSegmentIndex == 0 {
-            selectedFrequency = .daily
-            dayStackView.isHidden = true
-            daysLabel.isHidden = true
-        } else {
-            dayStackView.isHidden = false
-            daysLabel.isHidden = false
+        UIView.animate(withDuration: 0.3) {
+            let isSpecific = self.frequencyControl.selectedSegmentIndex == 1
+            
+            self.dayStackView.isHidden = !isSpecific
+            self.dayStackView.alpha = isSpecific ? 1.0 : 0.0
+            
+            self.view.layoutIfNeeded()
         }
     }
     
     @objc private func reminderSwitchChanged() {
         hasReminder = reminderSwitch.isOn
-        timePickerContainer.isHidden = !reminderSwitch.isOn
-        
         if reminderSwitch.isOn {
             reminderTime = timePicker.date
+        }
+        
+        UIView.animate(withDuration: 0.3) {
+            self.timePicker.isHidden = !self.reminderSwitch.isOn
+            self.timePicker.alpha = self.reminderSwitch.isOn ? 1.0 : 0.0
+            self.view.layoutIfNeeded()
         }
     }
     
@@ -317,15 +425,10 @@ class AddRoutineViewController: UIViewController {
         
         if selectedDays.contains(day) {
             selectedDays.removeAll { $0 == day }
-            sender.backgroundColor = AppColors.cardBackground
-            sender.setTitleColor(UIColor.black, for: .normal)
+            sender.backgroundColor = AppColors.secondary
         } else {
             selectedDays.append(day)
-            sender.backgroundColor = AppColors.progressLow
-
-            if selectedDays.count == 7 {
-                switchToDaily()
-            }
+            sender.backgroundColor = AppColors.accent
         }
     }
     
@@ -359,34 +462,19 @@ class AddRoutineViewController: UIViewController {
     
     @objc private func deleteButtonTapped() {
         let alert = UIAlertController(
-            title: "Delete Routine",
-            message: "Are you sure you want to delete this routine? This action cannot be undone.",
+            title: "Delete Routine?",
+            message: "This cannot be undone. All progress and streaks will be permanently lost.",
             preferredStyle: .alert
         )
-        
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
             self?.onDelete?()
             self?.dismiss(animated: true)
         })
-        
         present(alert, animated: true)
     }
     
     // MARK: - Helpers
-    private func switchToDaily() {
-        frequencyControl.selectedSegmentIndex = 0
-        selectedDays.removeAll()
-        
-        for case let button as UIButton in dayStackView.arrangedSubviews {
-            button.backgroundColor = AppColors.cardBackground
-        }
-        
-        dayStackView.isHidden = true
-        daysLabel.isHidden = true
-    }
-    
     private func populateFields(with routine: Routine) {
         nameTextField.text = routine.name
         
@@ -394,19 +482,17 @@ class AddRoutineViewController: UIViewController {
         case .daily:
             frequencyControl.selectedSegmentIndex = 0
             dayStackView.isHidden = true
-            daysLabel.isHidden = true
             
         case .specificDays(let days):
             frequencyControl.selectedSegmentIndex = 1
             selectedDays = days
             dayStackView.isHidden = false
-            daysLabel.isHidden = false
+            dayStackView.alpha = 1.0
             
             for day in days {
                 for case let button as UIButton in dayStackView.arrangedSubviews {
                     if button.tag == day {
-                        button.backgroundColor = AppColors.progressLow
-                        button.setTitleColor(.black, for: .normal)
+                        button.backgroundColor = AppColors.accent
                     }
                 }
             }
@@ -420,10 +506,9 @@ class AddRoutineViewController: UIViewController {
             reminderTime = time
         }
         
-        timePickerContainer.isHidden = !routine.hasReminder
+        timePicker.isHidden = !routine.hasReminder
     }
     
-    // MARK: - Validation
     private func validate() -> Bool {
         guard let name = nameTextField.text, !name.isEmpty else {
             showAlert(message: "Please enter a routine name")

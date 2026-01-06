@@ -82,8 +82,11 @@ class DateHelper {
     
     // MARK: - Helpers
     static func getDayName(for dayNumber: Int) -> String {
-        let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        return dayNames[dayNumber - 1]
+        let dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        
+        // convert: Sunday(1) -> 6, Monday(2) -> 0...
+        let index = dayNumber == 1 ? 6 : dayNumber - 2
+        return dayNames[index]
     }
     
     static func getFullDayName(for weekday: Int) -> String {
