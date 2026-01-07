@@ -32,6 +32,8 @@ class RoutineCell: UITableViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(18)
         label.textColor = UIColor.black
+        label.numberOfLines = 1
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     
@@ -67,6 +69,12 @@ class RoutineCell: UITableViewCell {
         contentView.backgroundColor = .clear
         selectionStyle = .none
         
+        streakLabel.setContentHuggingPriority(.required, for: .horizontal)
+        streakLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        nameLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
         addSubviews()
         setupConstraints()
     }
