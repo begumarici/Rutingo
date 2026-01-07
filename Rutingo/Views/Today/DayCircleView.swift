@@ -80,14 +80,14 @@ class DayCircleView: UIView {
         case 0.0:
             backgroundColor = AppColors.progressEmpty
         default:
-            backgroundColor = AppColors.progressComplete
+            backgroundColor = AppColors.accent
         }
     }
     
     private func setTodayBorder(_ isToday: Bool) {
         if isToday {
             layer.borderWidth = 2
-            layer.borderColor = AppColors.accent.cgColor
+            layer.borderColor = UIColor.black.cgColor
         } else {
             layer.borderWidth = 0
         }

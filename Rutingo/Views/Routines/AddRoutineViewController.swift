@@ -182,7 +182,6 @@ class AddRoutineViewController: UIViewController {
         picker.isHidden = true
         picker.setValue(AppColors.background, forKeyPath: "textColor")
         picker.tintColor = AppColors.accent
-        
         return picker
     }()
     
@@ -273,12 +272,12 @@ class AddRoutineViewController: UIViewController {
     
     private func setupNavigationBar() {
         let closeButton = UIBarButtonItem(
-            image: UIImage(systemName: "xmark.circle.fill"),
+            image: UIImage(systemName: "xmark"),
             style: .plain,
             target: self,
             action: #selector(cancelTapped)
         )
-        closeButton.tintColor = .systemGray
+        closeButton.tintColor = AppColors.primary
         navigationItem.leftBarButtonItem = closeButton
     }
     
