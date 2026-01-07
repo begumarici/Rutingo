@@ -19,22 +19,22 @@ class RoutineDetailViewController: UIViewController {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
-    
+
     private let contentView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-    
-    private let nameLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.bold(32)
-        label.textColor = AppColors.primary
-        label.numberOfLines = 0
-        return label
+
+    private let mainStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 16
+        return stack
     }()
-    
+
+    // Stats Card
     private let mainStatsCard: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -42,21 +42,67 @@ class RoutineDetailViewController: UIViewController {
         view.layer.cornerRadius = Layout.cornerRadius
         return view
     }()
-    
-    private let streakContainerView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
+
+    private let statsStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 16
+        return stack
+    }()
+
+    private let nameLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.bold(28)
+        label.textColor = UIColor.black
+        label.numberOfLines = 0
+        label.textAlignment = .center
+        return label
     }()
     
+    private let frequencyValueLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.medium(14)
+        label.textAlignment = .center
+        label.textColor = AppColors.tertiary
+        return label
+    }()
+
+    private let separatorLine: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.secondary
+        return view
+    }()
+
+    private let streakStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .horizontal
+        stack.distribution = .equalSpacing
+        stack.alignment = .center
+        return stack
+    }()
+
+    private let currentStreakStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 2
+        stack.alignment = .leading
+        return stack
+    }()
+
     private let currentStreakLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(28)
-        label.textColor = .black
+        label.textColor = AppColors.tertiary
         return label
     }()
-    
+
     private let currentStreakTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -65,21 +111,22 @@ class RoutineDetailViewController: UIViewController {
         label.textColor = AppColors.tertiary
         return label
     }()
-    
+
     private let bestStreakLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(16)
         label.textColor = AppColors.tertiary
-        label.textAlignment = .right
         return label
     }()
 
-    private let separatorLine: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = UIColor(red: 200/255, green: 200/255, blue: 200/255, alpha: 1.0)
-        return view
+    private let completionRateStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 4
+        stack.alignment = .center
+        return stack
     }()
 
     private let completionRateValueLabel: UILabel = {
@@ -87,47 +134,52 @@ class RoutineDetailViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(56)
         label.textColor = AppColors.accent
-        label.textAlignment = .center
         return label
     }()
-    
+
     private let completionRateTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Overall Completion"
         label.font = AppFonts.regular(15)
         label.textColor = AppColors.tertiary
-        label.textAlignment = .center
         return label
     }()
-    
+
     private let completionRateDetailLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(13)
         label.textColor = AppColors.tertiary
-        label.textAlignment = .center
         return label
     }()
 
-    private let frequencyValueLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(15)
-        label.textColor = .black
-        label.textAlignment = .center
-        return label
+    // Calendar Card
+    private let calendarCardView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = Layout.cornerRadius
+        return view
     }()
-    
+
+    private let calendarSectionStack: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 4
+        return stack
+    }()
+
     private let calendarTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Completed days this week"
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.primary
+        label.textColor = AppColors.tertiary
         return label
     }()
-    
+
     private lazy var calendarView: WeekCalendarView = {
         let view = WeekCalendarView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -154,8 +206,19 @@ class RoutineDetailViewController: UIViewController {
         configureWithRoutine()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = false
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.navigationBar.prefersLargeTitles = true
+    }
+    
     // MARK: - Setup
     private func setupNavigationBar() {
+        navigationItem.largeTitleDisplayMode = .never
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: "Edit",
             style: .plain,
@@ -172,22 +235,37 @@ class RoutineDetailViewController: UIViewController {
     private func addSubviews() {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
-        
-        contentView.addSubview(nameLabel)
-        contentView.addSubview(mainStatsCard)
-        contentView.addSubview(calendarTitleLabel)
-        contentView.addSubview(calendarView)
-
-        mainStatsCard.addSubview(streakContainerView)
-        mainStatsCard.addSubview(separatorLine)
-        mainStatsCard.addSubview(completionRateValueLabel)
-        mainStatsCard.addSubview(completionRateTitleLabel)
-        mainStatsCard.addSubview(completionRateDetailLabel)
-        mainStatsCard.addSubview(frequencyValueLabel)
+        contentView.addSubview(mainStackView)
  
-        streakContainerView.addSubview(currentStreakLabel)
-        streakContainerView.addSubview(currentStreakTitleLabel)
-        streakContainerView.addSubview(bestStreakLabel)
+        mainStackView.addArrangedSubview(mainStatsCard)
+        mainStackView.addArrangedSubview(calendarCardView)
+        
+        mainStatsCard.addSubview(statsStackView)
+        
+        statsStackView.addArrangedSubview(nameLabel)
+        statsStackView.addArrangedSubview(frequencyValueLabel)
+        
+        statsStackView.setCustomSpacing(4, after: nameLabel)
+        
+        statsStackView.setCustomSpacing(12, after: frequencyValueLabel)
+        statsStackView.addArrangedSubview(separatorLine)
+        statsStackView.setCustomSpacing(20, after: separatorLine)
+        
+        currentStreakStackView.addArrangedSubview(currentStreakLabel)
+        currentStreakStackView.addArrangedSubview(currentStreakTitleLabel)
+        
+        streakStackView.addArrangedSubview(currentStreakStackView)
+        streakStackView.addArrangedSubview(bestStreakLabel)
+        statsStackView.addArrangedSubview(streakStackView)
+        
+        completionRateStackView.addArrangedSubview(completionRateValueLabel)
+        completionRateStackView.addArrangedSubview(completionRateTitleLabel)
+        completionRateStackView.addArrangedSubview(completionRateDetailLabel)
+        statsStackView.addArrangedSubview(completionRateStackView)
+        
+        calendarCardView.addSubview(calendarSectionStack)
+        calendarSectionStack.addArrangedSubview(calendarTitleLabel)
+        calendarSectionStack.addArrangedSubview(calendarView)
     }
     
     private func setupConstraints() {
@@ -196,61 +274,31 @@ class RoutineDetailViewController: UIViewController {
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        
+            
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
             
-            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
-            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
+            mainStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
+            mainStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
+            mainStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
+            mainStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24),
             
-            mainStatsCard.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: Layout.smallPadding),
-            mainStatsCard.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
-            mainStatsCard.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
+            statsStackView.topAnchor.constraint(equalTo: mainStatsCard.topAnchor, constant: 24),
+            statsStackView.leadingAnchor.constraint(equalTo: mainStatsCard.leadingAnchor, constant: 20),
+            statsStackView.trailingAnchor.constraint(equalTo: mainStatsCard.trailingAnchor, constant: -20),
+            statsStackView.bottomAnchor.constraint(equalTo: mainStatsCard.bottomAnchor, constant: -24),
             
-            streakContainerView.topAnchor.constraint(equalTo: mainStatsCard.topAnchor, constant: 20),
-            streakContainerView.leadingAnchor.constraint(equalTo: mainStatsCard.leadingAnchor, constant: 20),
-            streakContainerView.trailingAnchor.constraint(equalTo: mainStatsCard.trailingAnchor, constant: -20),
-            
-            currentStreakLabel.topAnchor.constraint(equalTo: streakContainerView.topAnchor),
-            currentStreakLabel.leadingAnchor.constraint(equalTo: streakContainerView.leadingAnchor),
-            
-            currentStreakTitleLabel.topAnchor.constraint(equalTo: currentStreakLabel.bottomAnchor, constant: 2),
-            currentStreakTitleLabel.leadingAnchor.constraint(equalTo: streakContainerView.leadingAnchor),
-            currentStreakTitleLabel.bottomAnchor.constraint(equalTo: streakContainerView.bottomAnchor),
-            
-            bestStreakLabel.centerYAnchor.constraint(equalTo: currentStreakLabel.centerYAnchor),
-            bestStreakLabel.trailingAnchor.constraint(equalTo: streakContainerView.trailingAnchor),
-            
-            separatorLine.topAnchor.constraint(equalTo: streakContainerView.bottomAnchor, constant: 20),
-            separatorLine.leadingAnchor.constraint(equalTo: mainStatsCard.leadingAnchor, constant: 20),
-            separatorLine.trailingAnchor.constraint(equalTo: mainStatsCard.trailingAnchor, constant: -20),
             separatorLine.heightAnchor.constraint(equalToConstant: 1),
             
-            completionRateValueLabel.topAnchor.constraint(equalTo: separatorLine.bottomAnchor, constant: 24),
-            completionRateValueLabel.centerXAnchor.constraint(equalTo: mainStatsCard.centerXAnchor),
+            calendarSectionStack.topAnchor.constraint(equalTo: calendarCardView.topAnchor, constant: 20),
+            calendarSectionStack.leadingAnchor.constraint(equalTo: calendarCardView.leadingAnchor, constant: 20),
+            calendarSectionStack.trailingAnchor.constraint(equalTo: calendarCardView.trailingAnchor, constant: -20),
+            calendarSectionStack.bottomAnchor.constraint(equalTo: calendarCardView.bottomAnchor, constant: -20),
             
-            completionRateTitleLabel.topAnchor.constraint(equalTo: completionRateValueLabel.bottomAnchor, constant: 4),
-            completionRateTitleLabel.centerXAnchor.constraint(equalTo: mainStatsCard.centerXAnchor),
-            
-            completionRateDetailLabel.topAnchor.constraint(equalTo: completionRateTitleLabel.bottomAnchor, constant: 2),
-            completionRateDetailLabel.centerXAnchor.constraint(equalTo: mainStatsCard.centerXAnchor),
-            
-            frequencyValueLabel.topAnchor.constraint(equalTo: completionRateDetailLabel.bottomAnchor, constant: 24),
-            frequencyValueLabel.centerXAnchor.constraint(equalTo: mainStatsCard.centerXAnchor),
-            frequencyValueLabel.bottomAnchor.constraint(equalTo: mainStatsCard.bottomAnchor, constant: -20),
-            
-            calendarTitleLabel.topAnchor.constraint(equalTo: mainStatsCard.bottomAnchor, constant: 24),
-            calendarTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
-            
-            calendarView.topAnchor.constraint(equalTo: calendarTitleLabel.bottomAnchor, constant: 0),
-            calendarView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
-            calendarView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
-            calendarView.heightAnchor.constraint(equalToConstant: 80),
-            calendarView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24)
+            calendarView.heightAnchor.constraint(equalToConstant: 80)
         ])
     }
     
@@ -265,44 +313,46 @@ class RoutineDetailViewController: UIViewController {
     
     private func configureStreakLabels() {
         let currentStreak = routine.currentStreak
-        let streakAttachment = NSTextAttachment()
-        let streakIconSize: CGFloat = 24
         
-        if currentStreak == 0 {
-            streakAttachment.image = UIImage(systemName: "link")?
-                .withTintColor(AppColors.tertiary, renderingMode: .alwaysOriginal)
-            streakAttachment.bounds = CGRect(x: 0, y: -4, width: streakIconSize, height: streakIconSize)
-            
-            let streakAttributedString = NSMutableAttributedString(attachment: streakAttachment)
-            streakAttributedString.append(NSAttributedString(
-                string: " No Streak",
-                attributes: [.foregroundColor: UIColor.black]
-            ))
-            currentStreakLabel.attributedText = streakAttributedString
-        } else {
-            streakAttachment.image = UIImage(systemName: "link")?
-                .withTintColor(.black, renderingMode: .alwaysOriginal)
-            streakAttachment.bounds = CGRect(x: 0, y: -4, width: streakIconSize, height: streakIconSize)
-            
-            let streakAttributedString = NSMutableAttributedString(attachment: streakAttachment)
-            streakAttributedString.append(NSAttributedString(
-                string: " \(currentStreak) Days",
-                attributes: [.foregroundColor: UIColor.black]
-            ))
-            currentStreakLabel.attributedText = streakAttributedString
-        }
+        let streakText = currentStreak == 0 ? " No streak" : " \(currentStreak) days"
+
+        currentStreakLabel.attributedText = createAttributedText(
+            icon: "link",
+            text: streakText,
+            iconColor: AppColors.tertiary,
+            iconSize: 24,
+            yOffset: -4
+        )
         
-        // Best Streak
         let bestStreak = viewModel.getBestStreak(for: routine)
+        bestStreakLabel.attributedText = createAttributedText(
+            icon: "trophy.fill",
+            text: " Best: \(bestStreak)",
+            iconColor: AppColors.tertiary,
+            iconSize: 16,
+            yOffset: -2
+        )
+    }
+
+    private func createAttributedText(
+        icon: String,
+        text: String,
+        iconColor: UIColor,
+        iconSize: CGFloat,
+        yOffset: CGFloat
+    ) -> NSAttributedString {
         let attachment = NSTextAttachment()
-        let iconSize: CGFloat = 16
-        attachment.image = UIImage(systemName: "trophy.fill")?
-            .withTintColor(AppColors.tertiary, renderingMode: .alwaysOriginal)
-        attachment.bounds = CGRect(x: 0, y: -2, width: iconSize, height: iconSize)
+        attachment.image = UIImage(systemName: icon)?
+            .withTintColor(iconColor, renderingMode: .alwaysOriginal)
+        attachment.bounds = CGRect(x: 0, y: yOffset, width: iconSize, height: iconSize)
         
         let attributedString = NSMutableAttributedString(attachment: attachment)
-        attributedString.append(NSAttributedString(string: " Best: \(bestStreak)"))
-        bestStreakLabel.attributedText = attributedString
+        attributedString.append(NSAttributedString(
+            string: text,
+            attributes: [.foregroundColor: AppColors.tertiary]
+        ))
+        
+        return attributedString
     }
     
     private func configureCompletionRate() {
@@ -314,23 +364,16 @@ class RoutineDetailViewController: UIViewController {
     }
     
     private func configureFrequency() {
-        let frequencyAttachment = NSTextAttachment()
-        let frequencyIconSize: CGFloat = 15
-        frequencyAttachment.image = UIImage(systemName: "calendar")?
-            .withTintColor(.black, renderingMode: .alwaysOriginal)
-        frequencyAttachment.bounds = CGRect(x: 0, y: -2, width: frequencyIconSize, height: frequencyIconSize)
-
-        let frequencyAttributedString = NSMutableAttributedString(attachment: frequencyAttachment)
-
+        var frequencyText = ""
         switch routine.frequency {
         case .daily:
-            frequencyAttributedString.append(NSAttributedString(string: " Daily"))
+            frequencyText = "Every day"
         case .specificDays(let days):
             let dayNames = days.map { DateHelper.getDayName(for: $0) }
-            frequencyAttributedString.append(NSAttributedString(string: " " + dayNames.joined(separator: ", ")))
+            frequencyText = dayNames.joined(separator: ", ")
         }
-
-        frequencyValueLabel.attributedText = frequencyAttributedString
+        
+        frequencyValueLabel.text = frequencyText
     }
     
     private func configureCalendar() {
@@ -376,4 +419,3 @@ class RoutineDetailViewController: UIViewController {
         present(navVC, animated: true)
     }
 }
-
