@@ -129,6 +129,8 @@ class StatisticsViewController: UIViewController {
     }
     
     @objc private func settingsTapped() {
-        print("Settings tapped!")
+        let settingsVC = SettingsViewController()
+
+        navigationController?.pushViewController(settingsVC, animated: true)
     }
 }

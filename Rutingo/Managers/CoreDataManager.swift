@@ -100,4 +100,16 @@ class CoreDataManager: DataManager {
             try? viewContext.save()
         }
     }
+    
+    func clearAllData() {
+        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Routine.fetchRequest()
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        do {
+            try viewContext.execute(deleteRequest)
+            try viewContext.save()
+        } catch {
+            print("Error clearing all data: \(error)")
+        }
+    }
 }
