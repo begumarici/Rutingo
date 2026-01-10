@@ -12,14 +12,6 @@ class SettingCell: UITableViewCell {
     static let identifier = "SettingCell"
     
     // MARK: - UI Components
-    private let cardView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.cardBackground
-        view.layer.cornerRadius = 12
-        return view
-    }()
-    
     private let iconImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -65,38 +57,33 @@ class SettingCell: UITableViewCell {
     
     // MARK: - Setup
     private func setupUI() {
-        backgroundColor = .clear
-        contentView.backgroundColor = .clear
+        backgroundColor = AppColors.cardBackground
+        
         selectionStyle = .none
         
-        contentView.addSubview(cardView)
-        cardView.addSubview(iconImageView)
-        cardView.addSubview(titleLabel)
-        cardView.addSubview(chevronImageView)
-        cardView.addSubview(detailLabel)
+        contentView.addSubview(iconImageView)
+        contentView.addSubview(titleLabel)
+        contentView.addSubview(chevronImageView)
+        contentView.addSubview(detailLabel)
         
         NSLayoutConstraint.activate([
-            cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
-            cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
-            cardView.heightAnchor.constraint(equalToConstant: 56),
+            contentView.heightAnchor.constraint(greaterThanOrEqualToConstant: 56),
             
-            iconImageView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
-            iconImageView.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
+            iconImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            iconImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             iconImageView.widthAnchor.constraint(equalToConstant: 24),
             iconImageView.heightAnchor.constraint(equalToConstant: 24),
             
             titleLabel.leadingAnchor.constraint(equalTo: iconImageView.trailingAnchor, constant: 12),
-            titleLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             
-            chevronImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
-            chevronImageView.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
+            chevronImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            chevronImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             chevronImageView.widthAnchor.constraint(equalToConstant: 12),
             chevronImageView.heightAnchor.constraint(equalToConstant: 12),
             
             detailLabel.trailingAnchor.constraint(equalTo: chevronImageView.leadingAnchor, constant: -8),
-            detailLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor)
+            detailLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
     }
     
@@ -115,5 +102,19 @@ class SettingCell: UITableViewCell {
         }
         
         chevronImageView.isHidden = detail != nil
+    }
+    
+    // MARK: - Touch Animation
+    override func setHighlighted(_ highlighted: Bool, animated: Bool) {
+        super.setHighlighted(highlighted, animated: animated)
+        
+        UIView.animate(withDuration: 0.1) {
+            let alphaValue: CGFloat = highlighted ? 0.5 : 1.0
+            
+            self.titleLabel.alpha = alphaValue
+            self.iconImageView.alpha = alphaValue
+            self.detailLabel.alpha = alphaValue
+            self.chevronImageView.alpha = alphaValue
+        }
     }
 }

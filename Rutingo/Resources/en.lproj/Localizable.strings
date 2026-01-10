@@ -55,9 +55,8 @@
 "general" = "General";
 "data" = "Data";
 "about" = "About";
-"language" = "Language";
-"english" = "English";
-"turkish" = "Turkish";
+"notifications" = "Notifications";
+"send_feedback" = "Send Feedback";
 "clear_all_data" = "Clear All Data";
 "version" = "Version";
 "contact_support" = "Contact Support";

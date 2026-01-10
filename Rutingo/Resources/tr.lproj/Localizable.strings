@@ -56,9 +56,8 @@
 "general" = "Genel";
 "data" = "Veri";
 "about" = "Hakkında";
-"language" = "Dil";
-"english" = "İngilizce";
-"turkish" = "Türkçe";
+"notifications" = "Bildirimler";
+"send_feedback" = "Geri bildirim gönder";
 "clear_all_data" = "Tüm verileri sil";
 "version" = "Sürüm";
 "contact_support" = "Destek";
