@@ -1,0 +1,108 @@
+/* 
+  Localizable.strings
+  Rutingo
+
+  Created by Begüm Arıcı on 10.01.2026.
+  
+*/
+
+/* Tab Bar */
+"tab_today" = "Bugün";
+"tab_routines" = "Rutinler";
+"tab_statistics" = "İstatistikler";
+
+/* Today Screen */
+"greeting_morning" = "Günaydın";
+"greeting_afternoon" = "İyi günler";
+"greeting_evening" = "İyi akşamlar";
+"greeting_night" = "İyi geceler";
+"no_routines_today" = "Bugün için planlanmış bir rutin yok";
+"daily_focus" = "Günlük odağın";
+
+/* Routines Screen */
+"routines" = "Rutinler";
+"no_routines_message" = "Henüz rutin yok\nİlk rutinini eklemek için + butonuna dokun";
+
+/* Add/Edit Routine Screen */
+"add_routine" = "Rutin Ekle";
+"edit_routine" = "Rutini Düzenle";
+"routine_name" = "Rutin adı";
+"routine_name_placeholder" = "örn. Sabah sporu";
+"frequency" = "Rutin sıklığı";
+"daily" = "Her gün";
+"specific_days" = "Belirli günler";
+"reminder" = "Hatırlatıcı";
+"save" = "Kaydet";
+"delete_routine" = "Rutini sil";
+"delete_routine_message" = "Bu rutini silmek istediğinden emin misin? Bu işlem geri alınamaz.";
+"cancel" = "İptal";
+"update" = "Güncelle";
+"delete" = "Sil";
+"validation_name_empty" = "Lütfen rutin adını gir.";
+"validation_select_day" = "Lütfen en az bir gün seç.";
+"error" = "Hata";
+
+/* Statistics Screen */
+"statistics" = "İstatistikler";
+"weekly_trend" = "Haftalık trend";
+"from_last_week" = "geçen haftaya göre";
+"completion_rate" = "Tamamlama\noranı";
+"current_perfect_streak" = "Mevcut mükemmel seri";
+"total_completed" = "Toplam tamamlanan";
+"active_routines" = "Aktif rutinler";
+
+/* Settings Screen */
+"settings" = "Ayarlar";
+"general" = "Genel";
+"data" = "Veri";
+"about" = "Hakkında";
+"language" = "Dil";
+"english" = "İngilizce";
+"turkish" = "Türkçe";
+"clear_all_data" = "Tüm verileri sil";
+"version" = "Sürüm";
+"contact_support" = "Destek";
+"clear_data_title" = "Tüm verileri sil";
+"clear_data_message" = "Tüm rutinlerini ve ilerlemeni silmek istediğinden emin misin? Bu işlem geri alınamaz.";
+"data_cleared" = "Veriler silindi";
+"data_cleared_message" = "Tüm rutinlerin ve ilerlemen silindi.";
+"ok" = "Tamam";
+
+/* Routine Detail Screen */
+"current_streak" = "Mevcut seri";
+"no_streak" = "Seri yok";
+"best" = "En iyi";
+"overall_completion" = "Genel tamamlama";
+"total_completions" = "toplam tamamlama";
+"completed_days_this_week" = "Bu hafta tamamlanan günler";
+"every_day" = "Her gün";
+"edit" = "Düzenle";
+"days_suffix" = "gün";
+
+/* Short day names */
+"day_mon" = "Pzt";
+"day_tue" = "Sal";
+"day_wed" = "Çar";
+"day_thu" = "Per";
+"day_fri" = "Cum";
+"day_sat" = "Cmt";
+"day_sun" = "Paz";
+
+/* Long day names */
+"day_monday" = "Pazartesi";
+"day_tuesday" = "Salı";
+"day_wednesday" = "Çarşamba";
+"day_thursday" = "Perşembe";
+"day_friday" = "Cuma";
+"day_saturday" = "Cumartesi";
+"day_sunday" = "Pazar";
+
+/* Notifications */
+"notification_title" = "Rutin Hatırlatıcısı";
+"notification_body" = "Hey! %@ zamanı geldi.";
+
+/* Common */
+"done" = "Tamam";
+
+/* Format */
+"percent_format" = "%%%d";

@@ -47,7 +47,7 @@ class TodayViewController: UIViewController {
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "No routines scheduled for today"
+        label.text = "no_routines_today".localized
         label.font = AppFonts.regular(16)
         label.textColor = AppColors.secondary
         label.textAlignment = .center

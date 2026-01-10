@@ -1,0 +1,108 @@
+/* 
+  Localizable.strings
+  Rutingo
+
+  Created by Begüm Arıcı on 10.01.2026.
+  
+*/
+
+/* Tab Bar */
+"tab_today" = "Today";
+"tab_routines" = "Routines";
+"tab_statistics" = "Statistics";
+
+/* Today Screen */
+"greeting_morning" = "Good Morning";
+"greeting_afternoon" = "Good Afternoon";
+"greeting_evening" = "Good Evening";
+"greeting_night" = "Good Night";
+"no_routines_today" = "No routines scheduled for today";
+"daily_focus" = "Your daily focus";
+
+/* Routines Screen */
+"routines" = "Routines";
+"no_routines_message" = "No routines yet\nTap + to add your first routine";
+
+/* Add/Edit Routine Screen */
+"add_routine" = "Add Routine";
+"edit_routine" = "Edit Routine";
+"routine_name" = "Routine Name";
+"routine_name_placeholder" = "e.g., Morning Workout";
+"frequency" = "Frequency";
+"daily" = "Daily";
+"specific_days" = "Specific Days";
+"reminder" = "Reminder";
+"save" = "Save";
+"delete_routine" = "Delete Routine";
+"delete_routine_message" = "Are you sure you want to delete this routine? This action cannot be undone.";
+"cancel" = "Cancel";
+"update" = "Update";
+"validation_name_empty" = "Please enter a routine name.";
+"validation_select_day" = "Please select at least one day.";
+"error" = "Error";
+
+/* Statistics Screen */
+"statistics" = "Statistics";
+"weekly_trend" = "Weekly Trend";
+"from_last_week" = "from last week";
+"completion_rate" = "Completion\nRate";
+"current_perfect_streak" = "Current Perfect Streak";
+"total_completed" = "Total Completed";
+"active_routines" = "Active Routines";
+
+/* Settings Screen */
+"settings" = "Settings";
+"general" = "General";
+"data" = "Data";
+"about" = "About";
+"language" = "Language";
+"english" = "English";
+"turkish" = "Turkish";
+"clear_all_data" = "Clear All Data";
+"version" = "Version";
+"contact_support" = "Contact Support";
+"clear_data_title" = "Clear All Data";
+"clear_data_message" = "Are you sure you want to delete all your routines and progress? This action cannot be undone.";
+"data_cleared" = "Data Cleared";
+"data_cleared_message" = "All your routines and progress have been deleted.";
+"ok" = "OK";
+
+/* Routine Detail Screen */
+"current_streak" = "Current Streak";
+"no_streak" = "No streak";
+"best" = "Best";
+"overall_completion" = "Overall Completion";
+"total_completions" = "total completions";
+"completed_days_this_week" = "Completed days this week";
+"every_day" = "Every day";
+"edit" = "Edit";
+"days_suffix" = "days";
+
+/* Short day names */
+"day_mon" = "Mon";
+"day_tue" = "Tue";
+"day_wed" = "Wed";
+"day_thu" = "Thu";
+"day_fri" = "Fri";
+"day_sat" = "Sat";
+"day_sun" = "Sun";
+
+/* Long day names */
+"day_monday" = "Monday";
+"day_tuesday" = "Tuesday";
+"day_wednesday" = "Wednesday";
+"day_thursday" = "Thursday";
+"day_friday" = "Friday";
+"day_saturday" = "Saturday";
+"day_sunday" = "Sunday";
+
+/* Notifications */
+"notification_title" = "Routine Reminder";
+"notification_body" = "Hey! It's time for %@.";
+
+/* Common */
+"done" = "Done";
+
+
+/* Format */
+"percent_format" = "%d%%";

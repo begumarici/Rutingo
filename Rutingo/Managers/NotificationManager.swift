@@ -35,8 +35,8 @@ class NotificationManager {
         guard routine.hasReminder, let reminderTime = routine.reminderTime else { return }
         
         let content = UNMutableNotificationContent()
-        content.title = "Routine Reminder"
-        content.body = "Hey! It's time for \(routine.name ?? "your routine")."
+        content.title = "notification_title".localized
+        content.body = "notification_body".localized(with: routine.name ?? "")
         content.sound = .default
         
         let calendar = Calendar.current

@@ -30,7 +30,7 @@ class CombinedStatsCardView: UIView {
     
     private let rateTitle: UILabel = {
         let label = UILabel()
-        label.text = "Completion\nRate"
+        label.text = "completion_rate".localized
         label.font = AppFonts.regular(14)
         label.textColor = AppColors.tertiary
         label.numberOfLines = 2
@@ -77,7 +77,7 @@ class CombinedStatsCardView: UIView {
     
     private let streakTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Current Perfect Streak"
+        label.text = "current_perfect_streak".localized
         label.font = AppFonts.regular(14)
         label.textColor = AppColors.tertiary
         return label
@@ -99,7 +99,7 @@ class CombinedStatsCardView: UIView {
     
     private let totalTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Total Completed"
+        label.text = "total_completed".localized
         label.font = AppFonts.regular(14)
         label.textColor = AppColors.tertiary
         return label
@@ -121,7 +121,7 @@ class CombinedStatsCardView: UIView {
     
     private let activeTitleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Active Routines"
+        label.text = "active_routines".localized
         label.font = AppFonts.regular(14)
         label.textColor = AppColors.tertiary
         return label
@@ -201,10 +201,10 @@ class CombinedStatsCardView: UIView {
     
     // MARK: - Configuration
     func configure(rate: Int, streak: Int, total: Int, active: Int) {
-        rateValue.text = "\(rate)%"
+        rateValue.text = String(format: "percent_format".localized, rate)
         progressRing.setProgress(CGFloat(rate) / 100.0, animated: true)
         
-        streakValueLabel.text = "\(streak)d"
+        streakValueLabel.text = "\(streak) \("days_suffix".localized)"
         totalValueLabel.text = "\(total)"
         activeValueLabel.text = "\(active)"
     }

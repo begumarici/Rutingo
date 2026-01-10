@@ -28,7 +28,7 @@ class OvalProgressView: UIView {
         label.font = AppFonts.semibold(18)
         label.textColor = AppColors.tertiary
         label.textAlignment = .center
-        label.text = "Your daily focus"
+        label.text = "daily_focus".localized
         return label
     }()
     
@@ -97,14 +97,14 @@ class OvalProgressView: UIView {
     // MARK: - Public Methods
     func setProgress(_ progress: Double) {
         let percentage = Int(progress * 100)
-        percentageLabel.text = "\(percentage)%"
+        percentageLabel.text = String(format: "percent_format".localized, percentage)
         
         let clampedProgress = min(max(progress, 0), 1)
         progressLayer.strokeEnd = CGFloat(clampedProgress)
     }
     
     func setCompleted() {
-        percentageLabel.text = "100%"
+        percentageLabel.text = String(format: "percent_format".localized, 100)
         progressLayer.strokeEnd = 1.0
         progressLayer.strokeColor = AppColors.accent.cgColor
     }

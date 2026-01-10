@@ -82,11 +82,11 @@ class DateHelper {
     
     // MARK: - Helpers
     static func getDayName(for dayNumber: Int) -> String {
-        let dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        let dayKeys = ["day_mon", "day_tue", "day_wed", "day_thu", "day_fri", "day_sat", "day_sun"]
         
         // convert: Sunday(1) -> 6, Monday(2) -> 0...
         let index = dayNumber == 1 ? 6 : dayNumber - 2
-        return dayNames[index]
+        return dayKeys[index].localized
     }
     
     static func getFullDayName(for weekday: Int) -> String {
@@ -96,17 +96,19 @@ class DateHelper {
     
     func greetingText(name: String = "Begüm") -> String {
         let hour = Calendar.current.component(.hour, from: Date())
-        let timeOfDay: String
+        let greeting: String
         
         switch hour {
         case 0..<12:
-            timeOfDay = "Good Morning"
+            greeting = "greeting_morning".localized
         case 12..<17:
-            timeOfDay = "Good Afternoon"
+            greeting = "greeting_afternoon".localized
+        case 17..<21:
+            greeting = "greeting_evening".localized
         default:
-            timeOfDay = "Good Evening"
+            greeting = "greeting_night".localized
         }
         
-        return "\(timeOfDay), \(name)."
+        return "\(greeting), \(name)."
     }
 }

@@ -32,7 +32,7 @@ class RoutinesViewController: UIViewController {
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "No routines yet\nTap + to add your first routine"
+        label.text = "no_routines_message".localized
         label.font = AppFonts.regular(16)
         label.textColor = AppColors.secondary
         label.textAlignment = .center
@@ -64,7 +64,7 @@ class RoutinesViewController: UIViewController {
     private func setupNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .always
-        title = "Routines"
+        title = "routines".localized
         
         configureNavigationBarAppearance()
         

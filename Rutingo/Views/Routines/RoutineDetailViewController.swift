@@ -106,7 +106,7 @@ class RoutineDetailViewController: UIViewController {
     private let currentStreakTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Current Streak"
+        label.text = "current_streak".localized
         label.font = AppFonts.regular(13)
         label.textColor = AppColors.tertiary
         return label
@@ -140,7 +140,7 @@ class RoutineDetailViewController: UIViewController {
     private let completionRateTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Overall Completion"
+        label.text = "overall_completion".localized
         label.font = AppFonts.regular(15)
         label.textColor = AppColors.tertiary
         return label
@@ -174,7 +174,7 @@ class RoutineDetailViewController: UIViewController {
     private let calendarTitleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Completed days this week"
+        label.text = "completed_days_this_week".localized
         label.font = AppFonts.semibold(16)
         label.textColor = AppColors.tertiary
         return label
@@ -220,7 +220,7 @@ class RoutineDetailViewController: UIViewController {
     private func setupNavigationBar() {
         navigationItem.largeTitleDisplayMode = .never
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Edit",
+            title: "edit".localized,
             style: .plain,
             target: self,
             action: #selector(editTapped)
@@ -314,7 +314,7 @@ class RoutineDetailViewController: UIViewController {
     private func configureStreakLabels() {
         let currentStreak = routine.currentStreak
         
-        let streakText = currentStreak == 0 ? " No streak" : " \(currentStreak) days"
+        let streakText = currentStreak == 0 ? " \("no_streak".localized)" : " \(currentStreak) \("days_suffix".localized)"
 
         currentStreakLabel.attributedText = createAttributedText(
             icon: "link",
@@ -327,7 +327,7 @@ class RoutineDetailViewController: UIViewController {
         let bestStreak = viewModel.getBestStreak(for: routine)
         bestStreakLabel.attributedText = createAttributedText(
             icon: "trophy.fill",
-            text: " Best: \(bestStreak)",
+            text: " \("best".localized): \(bestStreak)",
             iconColor: AppColors.tertiary,
             iconSize: 16,
             yOffset: -2
@@ -359,15 +359,15 @@ class RoutineDetailViewController: UIViewController {
         let completionRate = viewModel.getCompletionRate(for: routine)
         let totalCompletions = routine.completionDates.count
         
-        completionRateValueLabel.text = "\(completionRate)%"
-        completionRateDetailLabel.text = "\(totalCompletions) total completions"
+        completionRateValueLabel.text = String(format: "percent_format".localized, completionRate)
+        completionRateDetailLabel.text = "\(totalCompletions) \("total_completions".localized)"
     }
     
     private func configureFrequency() {
         var frequencyText = ""
         switch routine.frequency {
         case .daily:
-            frequencyText = "Every day"
+            frequencyText = "every_day".localized
         case .specificDays(let days):
             let dayNames = days.map { DateHelper.getDayName(for: $0) }
             frequencyText = dayNames.joined(separator: ", ")

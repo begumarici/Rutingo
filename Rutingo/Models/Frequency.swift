@@ -12,7 +12,7 @@ enum Frequency: Codable {
     var displayText: String {
         switch self {
         case .daily:
-            return "Daily"
+            return "daily".localized
         case .specificDays(let days):
             let dayNames = days.compactMap { DayOfWeek(rawValue: $0)?.shortName }
             return dayNames.joined(separator: ", ")
@@ -32,25 +32,25 @@ enum DayOfWeek: Int, CaseIterable {
     
     var shortName: String {
         switch self {
-        case .sunday: return "Sun"
-        case .monday: return "Mon"
-        case .tuesday: return "Tue"
-        case .wednesday: return "Wed"
-        case .thursday: return "Thu"
-        case .friday: return "Fri"
-        case .saturday: return "Sat"
+        case .sunday: return "day_sun".localized
+        case .monday: return "day_mon".localized
+        case .tuesday: return "day_tue".localized
+        case .wednesday: return "day_wed".localized
+        case .thursday: return "day_thu".localized
+        case .friday: return "day_fri".localized
+        case .saturday: return "day_sat".localized
         }
     }
     
     var fullName: String {
         switch self {
-        case .sunday: return "Sunday"
-        case .monday: return "Monday"
-        case .tuesday: return "Tuesday"
-        case .wednesday: return "Wednesday"
-        case .thursday: return "Thursday"
-        case .friday: return "Friday"
-        case .saturday: return "Saturday"
+        case .sunday: return "day_sunday".localized
+        case .monday: return "day_monday".localized
+        case .tuesday: return "day_tuesday".localized
+        case .wednesday: return "day_wednesday".localized
+        case .thursday: return "day_thursday".localized
+        case .friday: return "day_friday".localized
+        case .saturday: return "day_saturday".localized
         }
     }
 }

@@ -31,7 +31,7 @@ class MainTabBarController: UITabBarController {
     private func createTodayTab() -> UINavigationController {
         let todayVC = TodayViewController()
         todayVC.tabBarItem = UITabBarItem(
-            title: "Today",
+            title: "tab_today".localized,
             image: UIImage(systemName: "calendar"),
             tag: 0
         )
@@ -41,7 +41,7 @@ class MainTabBarController: UITabBarController {
     private func createRoutinesTab() -> UINavigationController {
         let routinesVC = RoutinesViewController()
         routinesVC.tabBarItem = UITabBarItem(
-            title: "Routines",
+            title: "tab_routines".localized,
             image: UIImage(systemName: "list.bullet"),
             tag: 1
         )
@@ -51,7 +51,7 @@ class MainTabBarController: UITabBarController {
     private func createStatisticsTab() -> UINavigationController {
         let statisticsVC = StatisticsViewController()
         statisticsVC.tabBarItem = UITabBarItem(
-            title: "Statistics",
+            title: "tab_statistics".localized,
             image: UIImage(systemName: "chart.line.uptrend.xyaxis"),
             tag: 2
         )

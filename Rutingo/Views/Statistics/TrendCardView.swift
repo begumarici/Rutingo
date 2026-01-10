@@ -22,7 +22,7 @@ class TrendCardView: UIView {
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Weekly Trend"
+        label.text = "weekly_trend".localized
         label.font = AppFonts.semibold(18)
         label.textColor = AppColors.tertiary
         return label
@@ -97,7 +97,7 @@ class TrendCardView: UIView {
     
     // MARK: - Configuration
     func configure(weeklyRate: Int, lastWeekRate: Int, dailyRates: [Int]) {
-        completionLabel.text = "\(weeklyRate)%"
+        completionLabel.text = String(format: "percent_format".localized, weeklyRate)
         
         let diff = weeklyRate - lastWeekRate
         let sign = diff > 0 ? "+" : ""
@@ -116,7 +116,8 @@ class TrendCardView: UIView {
         arrowAttachment.bounds = CGRect(x: 0, y: -2, width: 14, height: 14)
         
         attributedText.append(NSAttributedString(attachment: arrowAttachment))
-        attributedText.append(NSAttributedString(string: " \(sign)\(diff)% from last week"))
+        let diffText = String(format: "percent_format".localized, abs(diff))
+        attributedText.append(NSAttributedString(string: " \(sign)\(diffText) \("from_last_week".localized)"))
         
         comparisonLabel.attributedText = attributedText
         
@@ -128,7 +129,16 @@ class TrendCardView: UIView {
         
         guard rates.count > 0 else { return }
         
-        let dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        let dayNames = [
+            "day_mon".localized,
+            "day_tue".localized,
+            "day_wed".localized,
+            "day_thu".localized,
+            "day_fri".localized,
+            "day_sat".localized,
+            "day_sun".localized
+        ]
+    
         let currentWeekDays = DateHelper.shared.currentWeekDays()
         
         for (index, rate) in rates.enumerated() {

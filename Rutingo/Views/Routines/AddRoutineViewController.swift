@@ -76,7 +76,7 @@ class AddRoutineViewController: UIViewController {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Name"
+        label.text = "routine_name".localized
         label.font = AppFonts.semibold(16)
         label.textColor = AppColors.tertiary
         return label
@@ -92,7 +92,7 @@ class AddRoutineViewController: UIViewController {
         textField.font = AppFonts.regular(16)
         textField.textColor = AppColors.tertiary
         textField.attributedPlaceholder = NSAttributedString(
-            string: "Enter routine name",
+            string: "routine_name_placeholder".localized,
             attributes: [.foregroundColor: AppColors.tertiary]
         )
         return textField
@@ -110,14 +110,14 @@ class AddRoutineViewController: UIViewController {
     private let frequencyLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Frequency"
+        label.text = "frequency".localized
         label.font = AppFonts.semibold(16)
         label.textColor = AppColors.tertiary
         return label
     }()
     
     private let frequencyControl: UISegmentedControl = {
-        let items = ["Daily", "Specific Days"]
+        let items = ["daily".localized, "specific_days".localized]
         let control = UISegmentedControl(items: items)
         control.translatesAutoresizingMaskIntoConstraints = false
         control.selectedSegmentIndex = 0
@@ -160,7 +160,7 @@ class AddRoutineViewController: UIViewController {
     private let reminderLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Reminder"
+        label.text = "reminder".localized
         label.font = AppFonts.semibold(16)
         label.textColor = AppColors.tertiary
         return label
@@ -189,7 +189,7 @@ class AddRoutineViewController: UIViewController {
     private let saveButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Save", for: .normal)
+        button.setTitle("save".localized, for: .normal)
         button.titleLabel?.font = AppFonts.bold(18)
         button.backgroundColor = AppColors.accent
         button.setTitleColor(.black, for: .normal)
@@ -200,7 +200,7 @@ class AddRoutineViewController: UIViewController {
     private lazy var deleteButton: UIButton = {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Delete Routine", for: .normal)
+        button.setTitle("delete_routine".localized, for: .normal)
         button.titleLabel?.font = AppFonts.semibold(16)
         button.setTitleColor(.systemRed, for: .normal)
         button.backgroundColor = .clear
@@ -257,12 +257,12 @@ class AddRoutineViewController: UIViewController {
     private func configureModeUI() {
         switch mode {
         case .add:
-            title = "Add Routine"
-            saveButton.setTitle("Save", for: .normal)
+            title = "add_routine".localized
+            saveButton.setTitle("save".localized, for: .normal)
             deleteButton.isHidden = true
         case .edit:
-            title = "Edit Routine"
-            saveButton.setTitle("Update", for: .normal)
+            title = "edit_routine".localized
+            saveButton.setTitle("update".localized, for: .normal)
             deleteButton.isHidden = false
         }
         
@@ -461,12 +461,12 @@ class AddRoutineViewController: UIViewController {
     
     @objc private func deleteButtonTapped() {
         let alert = UIAlertController(
-            title: "Delete Routine?",
-            message: "This cannot be undone. All progress and streaks will be permanently lost.",
+            title: "delete_routine".localized,
+            message: "delete_routine_message".localized,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
+        alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+        alert.addAction(UIAlertAction(title: "delete".localized, style: .destructive) { [weak self] _ in
             self?.onDelete?()
             self?.dismiss(animated: true)
         })
@@ -510,12 +510,12 @@ class AddRoutineViewController: UIViewController {
     
     private func validate() -> Bool {
         guard let name = nameTextField.text, !name.isEmpty else {
-            showAlert(message: "Please enter a routine name")
+            showAlert(message: "validation_name_empty".localized)
             return false
         }
         
         if frequencyControl.selectedSegmentIndex == 1 && selectedDays.isEmpty {
-            showAlert(message: "Please select at least one day")
+            showAlert(message: "validation_select_day".localized)
             return false
         }
         
@@ -523,8 +523,8 @@ class AddRoutineViewController: UIViewController {
     }
     
     private func showAlert(message: String) {
-        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        let alert = UIAlertController(title: "error".localized, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "ok".localized, style: .default))
         present(alert, animated: true)
     }
 }

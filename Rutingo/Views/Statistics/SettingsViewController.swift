@@ -37,7 +37,7 @@ class SettingsViewController: UIViewController {
     private func setupNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .always
-        title = "Settings"
+        title = "settings".localized
         
         configureNavigationBarAppearance()
     }
@@ -94,14 +94,14 @@ extension SettingsViewController: UITableViewDataSource {
         
         switch indexPath.section {
         case 0: // General
-            cell.configure(icon: "globe", title: "Language", detail: "English")
+            cell.configure(icon: "globe", title: "language".localized, detail: "english".localized)
             
         case 1: // Data
-            cell.configure(icon: "trash", title: "Clear All Data", isDestructive: true)
+            cell.configure(icon: "trash", title: "clear_all_data".localized, isDestructive: true)
             
         case 2: // About
-            cell.configure(icon: "info.circle", title: "Version", detail: "1.0.0")
-            
+            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String 
+            cell.configure(icon: "info.circle", title: "version".localized, detail: version)
         default:
             break
         }
@@ -111,9 +111,9 @@ extension SettingsViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
-        case 0: return "General"
-        case 1: return "Data"
-        case 2: return "About"
+        case 0: return "general".localized
+        case 1: return "data".localized
+        case 2: return "about".localized
         default: return nil
         }
     }
@@ -139,21 +139,21 @@ extension SettingsViewController: UITableViewDelegate {
     
     private func showClearDataAlert() {
         let alert = UIAlertController(
-            title: "Clear All Data",
-            message: "Are you sure you want to delete all your routines and progress? This action cannot be undone.",
+            title: "clear_data_title".localized,
+            message: "clear_data_message".localized,
             preferredStyle: .alert
         )
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
+        alert.addAction(UIAlertAction(title:  "cancel".localized, style: .cancel))
+        alert.addAction(UIAlertAction(title: "delete".localized, style: .destructive) { _ in
             CoreDataManager.shared.clearAllData()
             
             let successAlert = UIAlertController(
-                title: "Data Cleared",
-                message: "All your routines and progress have been deleted.",
+                title: "data_cleared".localized,
+                message:"data_cleared_message".localized,
                 preferredStyle: .alert
             )
-            successAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            successAlert.addAction(UIAlertAction(title: "ok".localized, style: .default))
             self.present(successAlert, animated: true)
         })
         
