@@ -63,11 +63,21 @@ class MainTabBarController: UITabBarController {
         appereance.configureWithOpaqueBackground()
         appereance.backgroundColor = AppColors.background
         
-        appereance.stackedLayoutAppearance.selected.iconColor = AppColors.accent
-        appereance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: AppColors.accent]
+        appereance.stackedLayoutAppearance.selected.iconColor = .white
+        appereance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: UIColor.white
+        ]
+        
+        appereance.stackedLayoutAppearance.normal.iconColor = .gray
+        appereance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor.gray
+        ]
         
         tabBar.standardAppearance = appereance
         tabBar.scrollEdgeAppearance = appereance
+        
+        tabBar.tintColor = .white
+        tabBar.unselectedItemTintColor = .gray
     }
 }
 

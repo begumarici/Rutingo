@@ -40,7 +40,7 @@ class DayCircleView: UIView {
     
     // MARK: - Setup
     private func setupUI() {
-        backgroundColor = AppColors.progressEmpty
+        backgroundColor = .clear
         layer.cornerRadius = 14
         addSubviews()
         setupConstraints()
@@ -66,7 +66,6 @@ class DayCircleView: UIView {
     func configure(with date: Date, progress: Double, isToday: Bool) {
         setDateLabels(for: date)
         setProgressColor(progress)
-        setTodayBorder(isToday)
     }
     
     // MARK: - Helpers
@@ -78,18 +77,9 @@ class DayCircleView: UIView {
     private func setProgressColor(_ progress: Double) {
         switch progress {
         case 0.0:
-            backgroundColor = AppColors.progressEmpty
+            backgroundColor = AppColors.secondary
         default:
-            backgroundColor = AppColors.accent
-        }
-    }
-    
-    private func setTodayBorder(_ isToday: Bool) {
-        if isToday {
-            layer.borderWidth = 2
-            layer.borderColor = UIColor.black.cgColor
-        } else {
-            layer.borderWidth = 0
+            backgroundColor = AppColors.primary
         }
     }
 }

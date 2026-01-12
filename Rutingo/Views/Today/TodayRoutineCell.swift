@@ -16,7 +16,7 @@ class TodayRoutineCell: UITableViewCell {
     private let cardView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.cardBackground
+        view.backgroundColor = AppColors.secondaryCardBackground
         view.layer.cornerRadius = Layout.cornerRadius
         
         view.layer.shadowColor = UIColor.black.cgColor
@@ -38,7 +38,7 @@ class TodayRoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(16)
-        label.textColor = UIColor.black
+        label.textColor = AppColors.primary
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
         return label
@@ -48,7 +48,7 @@ class TodayRoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -56,7 +56,7 @@ class TodayRoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(12)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -134,15 +134,13 @@ class TodayRoutineCell: UITableViewCell {
     // MARK: - Helpers
     private func updateCompletionState(isCompleted: Bool) {
         if isCompleted {
-            cardView.backgroundColor = AppColors.accent.withAlphaComponent(0.5)
             cardView.alpha = 1.0
             checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")
-            checkmarkView.tintColor = .black
+            checkmarkView.tintColor = AppColors.primary
         } else {
-            cardView.backgroundColor = AppColors.cardBackground
             cardView.alpha = 1.0
             checkmarkView.image = UIImage(systemName: "circle")
-            checkmarkView.tintColor = AppColors.tertiary
+            checkmarkView.tintColor = AppColors.secondary
         }
     }
     
@@ -151,7 +149,7 @@ class TodayRoutineCell: UITableViewCell {
         let iconSize: CGFloat = 16
         
         attachment.image = UIImage(systemName: "link")?
-            .withTintColor(AppColors.tertiary, renderingMode: .alwaysOriginal)
+            .withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
         
         attachment.bounds = CGRect(x: 0, y: -1, width: iconSize, height: iconSize)
         

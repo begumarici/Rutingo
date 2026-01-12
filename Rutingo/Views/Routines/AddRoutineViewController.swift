@@ -78,22 +78,22 @@ class AddRoutineViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "routine_name".localized
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
     private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.backgroundColor = AppColors.secondary
+        textField.backgroundColor = AppColors.secondaryCardBackground
         textField.layer.cornerRadius = 8
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 44))
         textField.leftViewMode = .always
         textField.font = AppFonts.regular(16)
-        textField.textColor = AppColors.tertiary
+        textField.textColor = AppColors.secondary
         textField.attributedPlaceholder = NSAttributedString(
             string: "routine_name_placeholder".localized,
-            attributes: [.foregroundColor: AppColors.tertiary]
+            attributes: [.foregroundColor: AppColors.secondary]
         )
         return textField
     }()
@@ -112,7 +112,7 @@ class AddRoutineViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "frequency".localized
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -121,13 +121,13 @@ class AddRoutineViewController: UIViewController {
         let control = UISegmentedControl(items: items)
         control.translatesAutoresizingMaskIntoConstraints = false
         control.selectedSegmentIndex = 0
-        control.selectedSegmentTintColor = AppColors.accent
+        control.selectedSegmentTintColor = AppColors.primary
         control.setTitleTextAttributes([
             .foregroundColor: UIColor.black,
             .font: AppFonts.semibold(14)
         ], for: .selected)
         control.setTitleTextAttributes([
-            .foregroundColor: AppColors.tertiary,
+            .foregroundColor: AppColors.secondary,
             .font: AppFonts.regular(14)
         ], for: .normal)
         return control
@@ -162,14 +162,14 @@ class AddRoutineViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "reminder".localized
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
 
     private let reminderSwitch: UISwitch = {
         let toggle = UISwitch()
         toggle.translatesAutoresizingMaskIntoConstraints = false
-        toggle.onTintColor = AppColors.accent
+        toggle.onTintColor = AppColors.secondary
         toggle.isOn = false
         return toggle
     }()
@@ -180,8 +180,7 @@ class AddRoutineViewController: UIViewController {
         picker.datePickerMode = .time
         picker.preferredDatePickerStyle = .wheels
         picker.isHidden = true
-        picker.setValue(AppColors.background, forKeyPath: "textColor")
-        picker.tintColor = AppColors.accent
+        picker.tintColor = AppColors.primary
         return picker
     }()
     
@@ -191,7 +190,7 @@ class AddRoutineViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setTitle("save".localized, for: .normal)
         button.titleLabel?.font = AppFonts.bold(18)
-        button.backgroundColor = AppColors.accent
+        button.backgroundColor = AppColors.primary
         button.setTitleColor(.black, for: .normal)
         button.layer.cornerRadius = 16
         return button
@@ -221,7 +220,7 @@ class AddRoutineViewController: UIViewController {
     
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = .black
+        view.backgroundColor = AppColors.background
         configureModeUI()
         setupNavigationBar()
         
@@ -267,7 +266,7 @@ class AddRoutineViewController: UIViewController {
         }
         
         navigationController?.navigationBar.barStyle = .black
-        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: AppColors.navbarTitle]
     }
     
     private func setupNavigationBar() {
@@ -424,10 +423,10 @@ class AddRoutineViewController: UIViewController {
         
         if selectedDays.contains(day) {
             selectedDays.removeAll { $0 == day }
-            sender.backgroundColor = AppColors.secondary
+            sender.backgroundColor = UIColor.darkGray
         } else {
             selectedDays.append(day)
-            sender.backgroundColor = AppColors.accent
+            sender.backgroundColor = AppColors.primary
         }
     }
     
@@ -491,7 +490,7 @@ class AddRoutineViewController: UIViewController {
             for day in days {
                 for case let button as UIButton in dayStackView.arrangedSubviews {
                     if button.tag == day {
-                        button.backgroundColor = AppColors.accent
+                        button.backgroundColor = AppColors.primary
                     }
                 }
             }

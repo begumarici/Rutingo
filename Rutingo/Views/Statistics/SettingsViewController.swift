@@ -46,11 +46,11 @@ class SettingsViewController: UIViewController {
         
         navigationBar.largeTitleTextAttributes = [
             .font: AppFonts.bold(34),
-            .foregroundColor: AppColors.primary
+            .foregroundColor: AppColors.navbarTitle
         ]
         navigationBar.titleTextAttributes = [
             .font: AppFonts.semibold(17),
-            .foregroundColor: AppColors.primary
+            .foregroundColor: AppColors.navbarTitle
         ]
     }
     

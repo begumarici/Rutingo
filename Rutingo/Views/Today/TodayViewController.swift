@@ -23,7 +23,7 @@ class TodayViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(28)
-        label.textColor = AppColors.primary
+        label.textColor = AppColors.navbarTitle
         return label
     }()
     

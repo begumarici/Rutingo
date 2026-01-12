@@ -16,7 +16,7 @@ class SettingCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = UIColor.black
+        imageView.tintColor = AppColors.primary
         return imageView
     }()
     
@@ -24,7 +24,7 @@ class SettingCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(16)
-        label.textColor = UIColor.black
+        label.textColor = AppColors.primary
         return label
     }()
     
@@ -33,7 +33,7 @@ class SettingCell: UITableViewCell {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = UIImage(systemName: "chevron.right")
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = UIColor.black
+        imageView.tintColor = AppColors.secondary
         return imageView
     }()
     
@@ -41,7 +41,7 @@ class SettingCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(16)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -97,8 +97,8 @@ class SettingCell: UITableViewCell {
             titleLabel.textColor = .systemRed
             iconImageView.tintColor = .systemRed
         } else {
-            titleLabel.textColor = UIColor.black
-            iconImageView.tintColor = UIColor.black
+            titleLabel.textColor = AppColors.primary
+            iconImageView.tintColor = AppColors.primary
         }
         
         chevronImageView.isHidden = detail != nil

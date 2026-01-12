@@ -55,7 +55,7 @@ class RoutineDetailViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(28)
-        label.textColor = UIColor.black
+        label.textColor = AppColors.primary
         label.numberOfLines = 0
         label.textAlignment = .center
         return label
@@ -66,7 +66,7 @@ class RoutineDetailViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.medium(14)
         label.textAlignment = .center
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
 
@@ -99,7 +99,7 @@ class RoutineDetailViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(28)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
 
@@ -108,7 +108,7 @@ class RoutineDetailViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "current_streak".localized
         label.font = AppFonts.regular(13)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
 
@@ -116,7 +116,7 @@ class RoutineDetailViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
 
@@ -133,7 +133,7 @@ class RoutineDetailViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(56)
-        label.textColor = AppColors.accent
+        label.textColor = AppColors.primary
         return label
     }()
 
@@ -142,7 +142,7 @@ class RoutineDetailViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "overall_completion".localized
         label.font = AppFonts.regular(15)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
 
@@ -150,7 +150,7 @@ class RoutineDetailViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(13)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
 
@@ -176,7 +176,7 @@ class RoutineDetailViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "completed_days_this_week".localized
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
 
@@ -319,7 +319,7 @@ class RoutineDetailViewController: UIViewController {
         currentStreakLabel.attributedText = createAttributedText(
             icon: "link",
             text: streakText,
-            iconColor: AppColors.tertiary,
+            iconColor: AppColors.secondary,
             iconSize: 24,
             yOffset: -4
         )
@@ -328,7 +328,7 @@ class RoutineDetailViewController: UIViewController {
         bestStreakLabel.attributedText = createAttributedText(
             icon: "trophy.fill",
             text: " \("best".localized): \(bestStreak)",
-            iconColor: AppColors.tertiary,
+            iconColor: AppColors.secondary,
             iconSize: 16,
             yOffset: -2
         )
@@ -349,7 +349,7 @@ class RoutineDetailViewController: UIViewController {
         let attributedString = NSMutableAttributedString(attachment: attachment)
         attributedString.append(NSAttributedString(
             string: text,
-            attributes: [.foregroundColor: AppColors.tertiary]
+            attributes: [.foregroundColor: AppColors.secondary]
         ))
         
         return attributedString

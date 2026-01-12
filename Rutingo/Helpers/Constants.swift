@@ -9,11 +9,11 @@ import UIKit
 
 enum AppColors {
     static let background = UIColor.black
-    static let cardBackground = UIColor(red: 217/255, green: 217/255, blue: 217/255, alpha: 1.0)
+    static let cardBackground = UIColor(hex: "#141414")
+    static let secondaryCardBackground = UIColor(hex: "1B1B1B")
+    static let navbarTitle = UIColor.white
     static let primary = UIColor.white
     static let secondary = UIColor.lightGray
-    static let tertiary = UIColor.darkGray
-    static let accent = UIColor.systemGreen
     
     static let progressEmpty = UIColor(red: 187/255, green: 197/255, blue: 189/255, alpha: 1.0)
     static let progressLow = UIColor(red: 142/255, green: 177/255, blue: 149/255, alpha: 1.0)
@@ -46,3 +46,18 @@ enum Layout {
     static let smallPadding: CGFloat = 8
 }
  
+extension UIColor {
+    convenience init(hex: String, alpha: CGFloat = 1.0) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        
+        var rgb: UInt64 = 0
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+        
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+        
+        self.init(red: red, green: green, blue: blue, alpha: alpha)
+    }
+}

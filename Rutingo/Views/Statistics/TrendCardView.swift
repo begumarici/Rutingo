@@ -24,7 +24,7 @@ class TrendCardView: UIView {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "weekly_trend".localized
         label.font = AppFonts.semibold(18)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -32,7 +32,7 @@ class TrendCardView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(32)
-        label.textColor = .black
+        label.textColor = AppColors.primary
         return label
     }()
     
@@ -49,7 +49,7 @@ class TrendCardView: UIView {
     private let comparisonLabel: UILabel = {
         let label = UILabel()
         label.font = AppFonts.regular(14)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -106,9 +106,9 @@ class TrendCardView: UIView {
         
         let arrowAttachment = NSTextAttachment()
         if diff > 0 {
-            arrowAttachment.image = UIImage(systemName: "arrow.up")?.withTintColor(AppColors.accent, renderingMode: .alwaysOriginal)
+            arrowAttachment.image = UIImage(systemName: "arrow.up")?.withTintColor(AppColors.primary, renderingMode: .alwaysOriginal)
         } else if diff < 0 {
-            arrowAttachment.image = UIImage(systemName: "arrow.down")?.withTintColor(.systemRed, renderingMode: .alwaysOriginal)
+            arrowAttachment.image = UIImage(systemName: "arrow.down")?.withTintColor(AppColors.primary, renderingMode: .alwaysOriginal)
         } else {
             arrowAttachment.image = UIImage(systemName: "minus")?.withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
         }
@@ -162,7 +162,7 @@ class TrendCardView: UIView {
         spacer.setContentHuggingPriority(.defaultLow, for: .vertical)
         
         let barView = UIView()
-        barView.backgroundColor = AppColors.accent.withAlphaComponent(0.3 + (CGFloat(rate) / 100.0) * 0.7)
+        barView.backgroundColor = AppColors.primary.withAlphaComponent(0.3 + (CGFloat(rate) / 100.0) * 0.7)
         barView.layer.cornerRadius = 4
         barView.translatesAutoresizingMaskIntoConstraints = false
         

@@ -26,13 +26,13 @@ class ProgressRingView: UIView {
     // MARK: - Setup
     private func setupLayers() {
         trackLayer.fillColor = UIColor.clear.cgColor
-        trackLayer.strokeColor = UIColor(red: 0.9, green: 0.9, blue: 0.95, alpha: 1.0).cgColor
+        trackLayer.strokeColor = UIColor.darkGray.cgColor
         trackLayer.lineWidth = 8
         trackLayer.lineCap = .round
         layer.addSublayer(trackLayer)
         
         progressLayer.fillColor = UIColor.clear.cgColor
-        progressLayer.strokeColor = AppColors.accent.cgColor
+        progressLayer.strokeColor = AppColors.primary.cgColor
         progressLayer.lineWidth = 8
         progressLayer.lineCap = .round
         progressLayer.strokeEnd = 0

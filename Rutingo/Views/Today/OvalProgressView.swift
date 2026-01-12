@@ -17,7 +17,7 @@ class OvalProgressView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(64)
-        label.textColor = .black
+        label.textColor = AppColors.primary
         label.textAlignment = .center
         return label
     }()
@@ -26,7 +26,7 @@ class OvalProgressView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(18)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         label.textAlignment = .center
         label.text = "daily_focus".localized
         return label
@@ -58,7 +58,7 @@ class OvalProgressView: UIView {
         layer.addSublayer(trackLayer)
         
         progressLayer.fillColor = UIColor.clear.cgColor
-        progressLayer.strokeColor = AppColors.accent.cgColor
+        progressLayer.strokeColor = UIColor.white.cgColor
         progressLayer.lineWidth = 10
         progressLayer.lineCap = .round
         progressLayer.strokeEnd = 0
@@ -106,6 +106,6 @@ class OvalProgressView: UIView {
     func setCompleted() {
         percentageLabel.text = String(format: "percent_format".localized, 100)
         progressLayer.strokeEnd = 1.0
-        progressLayer.strokeColor = AppColors.accent.cgColor
+        progressLayer.strokeColor = UIColor.white.cgColor
     }
 }

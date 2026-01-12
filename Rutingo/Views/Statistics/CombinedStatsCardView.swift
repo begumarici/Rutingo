@@ -32,7 +32,7 @@ class CombinedStatsCardView: UIView {
         let label = UILabel()
         label.text = "completion_rate".localized
         label.font = AppFonts.regular(14)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         label.numberOfLines = 2
         label.textAlignment = .center
         return label
@@ -48,7 +48,7 @@ class CombinedStatsCardView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(28)
-        label.textColor = .black
+        label.textColor = AppColors.primary
         label.textAlignment = .center
         return label
     }()
@@ -79,14 +79,14 @@ class CombinedStatsCardView: UIView {
         let label = UILabel()
         label.text = "current_perfect_streak".localized
         label.font = AppFonts.regular(14)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
     private let streakValueLabel: UILabel = {
         let label = UILabel()
         label.font = AppFonts.bold(20)
-        label.textColor = .black
+        label.textColor = AppColors.primary
         return label
     }()
     
@@ -101,14 +101,14 @@ class CombinedStatsCardView: UIView {
         let label = UILabel()
         label.text = "total_completed".localized
         label.font = AppFonts.regular(14)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
     private let totalValueLabel: UILabel = {
         let label = UILabel()
         label.font = AppFonts.bold(20)
-        label.textColor = .black
+        label.textColor = AppColors.primary
         return label
     }()
     
@@ -123,14 +123,14 @@ class CombinedStatsCardView: UIView {
         let label = UILabel()
         label.text = "active_routines".localized
         label.font = AppFonts.regular(14)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
     private let activeValueLabel: UILabel = {
         let label = UILabel()
         label.font = AppFonts.bold(20)
-        label.textColor = .black
+        label.textColor = AppColors.primary
         return label
     }()
     

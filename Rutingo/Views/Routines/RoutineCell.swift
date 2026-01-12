@@ -16,7 +16,7 @@ class RoutineCell: UITableViewCell {
     private let cardView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.cardBackground
+        view.backgroundColor = AppColors.secondaryCardBackground
         view.layer.cornerRadius = Layout.cornerRadius
         
         view.layer.shadowColor = UIColor.black.cgColor
@@ -31,7 +31,7 @@ class RoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(18)
-        label.textColor = UIColor.black
+        label.textColor = AppColors.primary
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
         return label
@@ -41,7 +41,7 @@ class RoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(14)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -49,7 +49,7 @@ class RoutineCell: UITableViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.tertiary
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -131,7 +131,7 @@ class RoutineCell: UITableViewCell {
         let iconSize: CGFloat = 16
         
         attachment.image = UIImage(systemName: "link")?
-            .withTintColor(AppColors.tertiary, renderingMode: .alwaysOriginal)
+            .withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
         
         attachment.bounds = CGRect(x: 0, y: -1, width: iconSize, height: iconSize)
         
