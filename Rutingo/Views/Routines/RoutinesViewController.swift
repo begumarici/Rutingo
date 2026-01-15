@@ -121,11 +121,14 @@ class RoutinesViewController: UIViewController {
     // MARK: - Data Loading
     private func loadData() {
         viewModel.loadData { [weak self] in
-            self?.tableView.reloadData()
+            guard let self = self else { return }
+            self.tableView.reloadData()
             
-            let isEmpty = self?.viewModel.allRoutines.isEmpty ?? true
-            self?.tableView.isHidden = isEmpty
-            self?.emptyStateView.isHidden = !isEmpty
+            let isEmpty = self.viewModel.allRoutines.isEmpty
+            self.emptyStateView.isHidden = !isEmpty
+            if isEmpty {
+                self.view.bringSubviewToFront(self.emptyStateView)
+            }
         }
     }
     
