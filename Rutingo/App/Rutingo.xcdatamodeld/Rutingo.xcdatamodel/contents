@@ -5,6 +5,7 @@
         <attribute name="frequencyData" optional="YES" attributeType="Binary"/>
         <attribute name="hasReminder" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="lastFrequencyChangeDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="reminderTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="completions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RoutineCompletion" inverseName="routine" inverseEntity="RoutineCompletion"/>

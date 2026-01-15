@@ -59,6 +59,9 @@ class CoreDataManager: DataManager {
         routine.name = name
         routine.frequency = frequency
         routine.createdAt = Date()
+        
+        routine.lastFrequencyChangeDate = DateHelper.shared.startOfDay(Date())
+        
         routine.hasReminder = hasReminder
         routine.reminderTime = reminderTime
         save()
@@ -66,6 +69,15 @@ class CoreDataManager: DataManager {
     }
     
     func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool = false, reminderTime: Date? = nil) {
+        
+        if let oldData = routine.frequencyData {
+            let oldFrequencyData = try? JSONEncoder().encode(frequency)
+            
+            if oldData != oldFrequencyData {
+                routine.lastFrequencyChangeDate = DateHelper.shared.startOfDay(Date())
+            }
+        }
+        
         routine.name = name
         routine.frequencyData = try? JSONEncoder().encode(frequency)
         routine.hasReminder = hasReminder

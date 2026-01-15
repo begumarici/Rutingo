@@ -32,7 +32,7 @@ extension Routine {
     }
     
     var isScheduledToday: Bool {
-        return isScheduled(on: Date())
+        return isScheduled(on: Date(), using: self.frequency)
     }
     
     var isCompletedToday: Bool {
@@ -46,40 +46,33 @@ extension Routine {
     var currentStreak: Int {
         var streak = 0
         let today = DateHelper.shared.startOfDay()
-        
+
         guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today) else {
-              return 0
+              return isCompletedToday ? 1 : 0
         }
         
         var currentDate = yesterday
         
         while true {
-            guard wasScheduled(on: currentDate) else {
-                guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else {
-                    break
-                }
-                currentDate = previousDay
-                continue
-            }
-            
-            let completed = completionArray.contains {
-                guard let date = $0.date else { return false }
-                return Calendar.current.isDate(date, inSameDayAs: currentDate)
-            }
+            let scheduled = wasScheduled(on: currentDate)
+            let completed = isCompleted(on: currentDate)
             
             if completed {
                 streak += 1
-                guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else {
-                    break
-                }
+                guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else { break }
                 currentDate = previousDay
-            } else {
+                
+            } else if scheduled {
                 break
+            } else {
+                guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else { break }
+                currentDate = previousDay
             }
         }
         if isCompletedToday {
             streak += 1
         }
+        
         return streak
     }
     
@@ -129,8 +122,46 @@ extension Routine {
         return Int(rate)
     }
     
-    // MARK: - Methods
-    func isScheduled(on date: Date) -> Bool {
+    // MARK: - Helper Methods
+    
+    /// checks if a routine was scheduled for a specific date.
+    /// handles historical freq changes by checking the last change date and snapshots.
+    func wasScheduled(on date: Date) -> Bool {
+        let targetDate = DateHelper.shared.startOfDay(date)
+        
+        // 1. if there is a completion, then the snapshot for that day is definitive.
+        if let completion = completionArray.first(where: {
+            guard let d = $0.date else { return false }
+            return Calendar.current.isDate(d, inSameDayAs: targetDate)
+        }) {
+            return isScheduled(on: targetDate, using: completion.frequency)
+        }
+        
+        // 2. frequency change check
+        // if the date is after the last frequency change, apply the current settings.
+        if let changeDate = self.lastFrequencyChangeDate, targetDate >= changeDate {
+            return isScheduled(on: targetDate, using: self.frequency)
+        }
+        
+        // 3. historical check
+        // If before the change, attempt to find the nearest previous snapshot to determine the rule.
+        let previousCompletion = completionArray.first { completion in
+            guard let completionDate = completion.date else { return false }
+            return completionDate < targetDate
+        }
+        
+        if let snapshotFrequency = previousCompletion?.frequency {
+            // apply whatever the old rule was.
+            // if the old rule was "daily" and you didn't do it, this returns TRUE.
+            // since wasScheduled = True, and isCompleted = False, streak BREAKS
+            return isScheduled(on: targetDate, using: snapshotFrequency)
+        }
+        
+        // default if no records exist
+        return isScheduled(on: targetDate, using: self.frequency)
+    }
+
+    private func isScheduled(on date: Date, using frequency: Frequency) -> Bool {
         let weekday = Calendar.current.component(.weekday, from: date)
         switch frequency {
         case .daily:
@@ -138,22 +169,6 @@ extension Routine {
         case .specificDays(let days):
             return days.contains(weekday)
         }
-    }
-    
-    func wasScheduled(on date: Date) -> Bool {
-        if let completion = completionArray.first(where: {
-            guard let completionDate = $0.date else { return false }
-            return Calendar.current.isDate(completionDate, inSameDayAs: date)
-        }) {
-            let weekday = Calendar.current.component(.weekday, from: date)
-            switch completion.frequency {
-            case .daily:
-                return true
-            case .specificDays(let days):
-                return days.contains(weekday)
-            }
-        }
-        return isScheduled(on: date)
     }
     
     func isCompleted(on date: Date) -> Bool {
@@ -168,12 +183,7 @@ extension Routine {
         
         while currentDate < endDate {
             if wasScheduled(on: currentDate) {
-                let completed = completionArray.contains { completion in
-                    guard let date = completion.date else { return false }
-                    return Calendar.current.isDate(date, inSameDayAs: currentDate)
-                }
-                
-                if !completed {
+                if !isCompleted(on: currentDate) {
                     return true
                 }
             }
