@@ -7,19 +7,39 @@
 
 import UIKit
 
-class MainTabBarController: UITabBarController {
+class MainTabBarController: UIViewController {
+    
+    // MARK: - Properties
+    private var viewControllers: [UIViewController] = []
+    private var selectedIndex: Int = 0
+    
+    private let containerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var customTabBar: CustomTabBarView = {
+        let items: [String] = [
+            "calendar",
+            "list.bullet",
+            "chart.line.uptrend.xyaxis"
+        ]
+        let tabBar = CustomTabBarView(items: items)
+        tabBar.delegate = self
+        return tabBar
+    }()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-    
+        view.backgroundColor = AppColors.background
         setupViewControllers()
-        setupTabBarAppereance()
-        
-        self.delegate = self
+        setupUI()
+        showViewController(at: 0)
     }
-
-    // MARK: - Private Setup Methods
+    
+    // MARK: - Setup
     private func setupViewControllers() {
         let todayVC = createTodayTab()
         let routinesVC = createRoutinesTab()
@@ -30,62 +50,71 @@ class MainTabBarController: UITabBarController {
     
     private func createTodayTab() -> UINavigationController {
         let todayVC = TodayViewController()
-        todayVC.tabBarItem = UITabBarItem(
-            title: "tab_today".localized,
-            image: UIImage(systemName: "calendar"),
-            tag: 0
-        )
         return UINavigationController(rootViewController: todayVC)
     }
     
     private func createRoutinesTab() -> UINavigationController {
         let routinesVC = RoutinesViewController()
-        routinesVC.tabBarItem = UITabBarItem(
-            title: "tab_routines".localized,
-            image: UIImage(systemName: "list.bullet"),
-            tag: 1
-        )
         return UINavigationController(rootViewController: routinesVC)
     }
     
     private func createStatisticsTab() -> UINavigationController {
         let statisticsVC = StatisticsViewController()
-        statisticsVC.tabBarItem = UITabBarItem(
-            title: "tab_statistics".localized,
-            image: UIImage(systemName: "chart.line.uptrend.xyaxis"),
-            tag: 2
-        )
         return UINavigationController(rootViewController: statisticsVC)
     }
     
-    private func setupTabBarAppereance() {
-        let appereance = UITabBarAppearance()
-        appereance.configureWithOpaqueBackground()
-        appereance.backgroundColor = AppColors.background
+    private func setupUI() {
+        view.addSubview(containerView)
+        view.addSubview(customTabBar)
         
-        appereance.stackedLayoutAppearance.selected.iconColor = .white
-        appereance.stackedLayoutAppearance.selected.titleTextAttributes = [
-            .foregroundColor: UIColor.white
-        ]
+        let tabBarHeight: CGFloat = view.frame.height < 800 ? 65 : 90
         
-        appereance.stackedLayoutAppearance.normal.iconColor = .gray
-        appereance.stackedLayoutAppearance.normal.titleTextAttributes = [
-            .foregroundColor: UIColor.gray
-        ]
+        NSLayoutConstraint.activate([
+            containerView.topAnchor.constraint(equalTo: view.topAnchor),
+            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            containerView.bottomAnchor.constraint(equalTo: customTabBar.topAnchor),
+            
+            customTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            customTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            customTabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            customTabBar.heightAnchor.constraint(equalToConstant: tabBarHeight)
+        ])
+    }
+
+    private func showViewController(at index: Int) {
+        if selectedIndex < viewControllers.count {
+            let oldVC = viewControllers[selectedIndex]
+            oldVC.view.removeFromSuperview()
+            oldVC.removeFromParent()
+        }
         
-        tabBar.standardAppearance = appereance
-        tabBar.scrollEdgeAppearance = appereance
+        selectedIndex = index
+        let newVC = viewControllers[index]
         
-        tabBar.tintColor = .white
-        tabBar.unselectedItemTintColor = .gray
+        if let navVC = newVC as? UINavigationController {
+            navVC.popToRootViewController(animated: false)
+        }
+        
+        addChild(newVC)
+        newVC.view.frame = containerView.bounds
+        newVC.view.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(newVC.view)
+        
+        NSLayoutConstraint.activate([
+            newVC.view.topAnchor.constraint(equalTo: containerView.topAnchor),
+            newVC.view.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            newVC.view.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            newVC.view.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+        ])
+        
+        newVC.didMove(toParent: self)
     }
 }
 
-// MARK: - UITabBarControllerDelegate
-extension MainTabBarController: UITabBarControllerDelegate {
-    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
-        if let navController = viewController as? UINavigationController {
-            navController.popToRootViewController(animated: false)
-        }
+// MARK: - CustomTabBarDelegate
+extension MainTabBarController: CustomTabBarDelegate {
+    func didSelectTab(at index: Int) {
+        showViewController(at: index)
     }
 }
