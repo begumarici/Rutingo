@@ -11,36 +11,50 @@ class DateHelper {
     
     // MARK: - Singleton
     static let shared = DateHelper()
+
+    private var calendar: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.firstWeekday = 2
+        cal.locale = .current
+        return cal
+    }()
+    
     private init() {}
     
     // MARK: - Date Normalization
     func startOfDay(_ date: Date = Date()) -> Date {
-        Calendar.current.startOfDay(for: date)
+        return calendar.startOfDay(for: date)
     }
     
     func isToday(_ date: Date = Date()) -> Bool {
-        Calendar.current.isDateInToday(date)
+        return calendar.isDateInToday(date)
     }
     
     func weekday(_ date: Date = Date()) -> Int {
-        Calendar.current.component(.weekday, from: date)
+        return calendar.component(.weekday, from: date)
     }
     
     // MARK: - Date Formatting
     func dayOfWeekShort(_ date: Date = Date()) -> String {
         let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = .current
         formatter.dateFormat = "E"
         return String(formatter.string(from: date).prefix(3))
     }
     
     func dayOfMonth(_ date: Date = Date()) -> String {
         let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = .current
         formatter.dateFormat = "d"
         return formatter.string(from: date)
     }
     
     func formattedDateShort(_ date: Date = Date()) -> String {
         let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = .current
         formatter.dateFormat = "EEE, MMM d"
         return formatter.string(from: date)
     }
@@ -49,53 +63,78 @@ class DateHelper {
     func lastSevenDays() -> [Date] {
         let today = startOfDay()
         return (0..<7).compactMap { offset in
-            Calendar.current.date(byAdding: .day, value: -offset, to: today)
+            calendar.date(byAdding: .day, value: -offset, to: today)
         }.reversed()
     }
     
     func lastWeekDays() -> [Date] {
         let today = startOfDay()
-        return(8...14).compactMap { offset in
-            Calendar.current.date(byAdding: .day, value: -offset, to: today)
-        }.reversed()
+        
+        guard let currentWeekInterval = calendar.dateInterval(of: .weekOfYear, for: today) else { return [] }
+        let thisMonday = currentWeekInterval.start
+        
+        guard let lastMonday = calendar.date(byAdding: .day, value: -7, to: thisMonday) else { return [] }
+        
+        return (0..<7).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: lastMonday)
+        }
     }
     
     func currentWeekDays() -> [Date] {
         let today = startOfDay()
-        let currentWeekday = Calendar.current.component(.weekday, from: today)
-        let daysToMonday = currentWeekday == 1 ? 6 : currentWeekday - 2
         
-        guard let monday = Calendar.current.date(byAdding: .day, value: -daysToMonday, to: today) else {
-            return []
-        }
+        guard let currentWeekInterval = calendar.dateInterval(of: .weekOfYear, for: today) else { return [] }
+        let thisMonday = currentWeekInterval.start
         
         return (0..<7).compactMap { offset in
-            Calendar.current.date(byAdding: .day, value: offset, to: monday)}
+            calendar.date(byAdding: .day, value: offset, to: thisMonday)
+        }
     }
     
     func daysBetween(_ start: Date, _ end: Date) -> Int {
         let startDay = startOfDay(start)
         let endDay = startOfDay(end)
-        let components = Calendar.current.dateComponents([.day], from: startDay, to: endDay)
+        let components = calendar.dateComponents([.day], from: startDay, to: endDay)
         return abs(components.day ?? 0)
     }
     
     // MARK: - Helpers
     static func getDayName(for dayNumber: Int) -> String {
-        let dayKeys = ["day_mon", "day_tue", "day_wed", "day_thu", "day_fri", "day_sat", "day_sun"]
+        let formatter = DateFormatter()
+        formatter.locale = .current
+        formatter.dateFormat = "EEE"
+   
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = .current
         
-        // convert: Sunday(1) -> 6, Monday(2) -> 0...
-        let index = dayNumber == 1 ? 6 : dayNumber - 2
-        return dayKeys[index].localized
+        let refComponents = DateComponents(year: 2024, month: 1, day: 1)
+        guard let refDate = calendar.date(from: refComponents),
+              let targetDate = calendar.date(byAdding: .day, value: dayNumber - 1, to: refDate) else {
+            return ""
+        }
+        
+        return formatter.string(from: targetDate)
     }
     
-    static func getFullDayName(for weekday: Int) -> String {
+    static func getFullDayName(for index: Int) -> String {
         let formatter = DateFormatter()
-        return formatter.weekdaySymbols[weekday - 1]
+        formatter.locale = .current
+        formatter.dateFormat = "EEEE"
+        
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.locale = .current
+        
+        let refComponents = DateComponents(year: 2024, month: 1, day: 1)
+        guard let refDate = calendar.date(from: refComponents),
+              let targetDate = calendar.date(byAdding: .day, value: index - 1, to: refDate) else {
+            return ""
+        }
+        
+        return formatter.string(from: targetDate)
     }
     
     func greetingText(name: String = "Begüm") -> String {
-        let hour = Calendar.current.component(.hour, from: Date())
+        let hour = calendar.component(.hour, from: Date())
         let greeting: String
         
         switch hour {

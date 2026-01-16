@@ -364,16 +364,7 @@ class RoutineDetailViewController: UIViewController {
     }
     
     private func configureFrequency() {
-        var frequencyText = ""
-        switch routine.frequency {
-        case .daily:
-            frequencyText = "every_day".localized
-        case .specificDays(let days):
-            let dayNames = days.map { DateHelper.getDayName(for: $0) }
-            frequencyText = dayNames.joined(separator: ", ")
-        }
-        
-        frequencyValueLabel.text = frequencyText
+        frequencyValueLabel.text = routine.frequency.displayText
     }
     
     private func configureCalendar() {

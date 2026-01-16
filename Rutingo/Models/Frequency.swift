@@ -14,7 +14,13 @@ enum Frequency: Codable {
         case .daily:
             return "daily".localized
         case .specificDays(let days):
-            let dayNames = days.compactMap { DayOfWeek(rawValue: $0)?.shortName }
+            let sortedDays = days.sorted { d1, d2 in
+                let p1 = d1 == 1 ? 8 : d1
+                let p2 = d2 == 1 ? 8 : d2
+                return p1 < p2
+            }
+            
+            let dayNames = sortedDays.compactMap { DayOfWeek(rawValue: $0)?.shortName }
             return dayNames.joined(separator: ", ")
         }
     }

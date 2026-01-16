@@ -363,13 +363,15 @@ class AddRoutineViewController: UIViewController {
     }
     
     private func createDayButtons() {
-        let dayOrder = [2, 3, 4, 5, 6, 7, 1]
-        
-        for dayNumber in dayOrder {
+        for i in 1...7 {
             let button = UIButton(type: .custom)
-            let dayName = DateHelper.getDayName(for: dayNumber)
+            
+            let dayName = DateHelper.getDayName(for: i)
             button.setTitle(String(dayName.prefix(3)), for: .normal)
-            button.tag = dayNumber
+            
+            let calendarTag = (i % 7) + 1
+            button.tag = calendarTag
+            
             button.titleLabel?.font = AppFonts.bold(14)
             button.backgroundColor = AppColors.secondary
             button.setTitleColor(.black, for: .normal)

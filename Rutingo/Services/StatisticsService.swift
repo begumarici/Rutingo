@@ -136,7 +136,8 @@ class StatisticsService {
 
     func getWeeklyCompletionRate() -> Int {
         let dates = DateHelper.shared.currentWeekDays()
-        return calculateCompletionRateForDates(dates)
+        let validDates = dates.filter { $0 <= Date() }
+        return calculateCompletionRateForDates(validDates)
     }
     
     func getLastWeekCompletionRate() -> Int {
