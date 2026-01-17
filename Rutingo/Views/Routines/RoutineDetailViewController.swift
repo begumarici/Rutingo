@@ -187,7 +187,7 @@ class RoutineDetailViewController: UIViewController {
     }()
 
     // MARK: - Initialization
-    init(routine: Routine, viewModel: RoutinesViewModel) {
+    init(routine: Routine, viewModel: RoutinesViewModel = RoutinesViewModel()) {
         self.routine = routine
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)

@@ -21,8 +21,9 @@ class MainTabBarController: UIViewController {
     
     private lazy var customTabBar: CustomTabBarView = {
         let items: [String] = [
-            "calendar",
+            "calendar.badge.clock",
             "list.bullet",
+            "calendar",
             "chart.line.uptrend.xyaxis"
         ]
         let tabBar = CustomTabBarView(items: items)
@@ -43,9 +44,10 @@ class MainTabBarController: UIViewController {
     private func setupViewControllers() {
         let todayVC = createTodayTab()
         let routinesVC = createRoutinesTab()
+        let calendarVC = createCalendarTab()
         let statisticsVC = createStatisticsTab()
         
-        viewControllers = [todayVC, routinesVC, statisticsVC]
+        viewControllers = [todayVC, routinesVC, calendarVC, statisticsVC]
     }
     
     private func createTodayTab() -> UINavigationController {
@@ -56,6 +58,11 @@ class MainTabBarController: UIViewController {
     private func createRoutinesTab() -> UINavigationController {
         let routinesVC = RoutinesViewController()
         return UINavigationController(rootViewController: routinesVC)
+    }
+    
+    private func createCalendarTab() -> UINavigationController {
+        let calendarVC = CalendarViewController()
+        return UINavigationController(rootViewController: calendarVC)
     }
     
     private func createStatisticsTab() -> UINavigationController {

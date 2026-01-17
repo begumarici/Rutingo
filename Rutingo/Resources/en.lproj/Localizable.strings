@@ -12,10 +12,10 @@
 "tab_statistics" = "Statistics";
 
 /* Today Screen */
-"greeting_morning" = "Good Morning";
-"greeting_afternoon" = "Good Afternoon";
-"greeting_evening" = "Good Evening";
-"greeting_night" = "Good Night";
+"greeting_morning" = "Good morning";
+"greeting_afternoon" = "Good afternoon";
+"greeting_evening" = "Good evening";
+"greeting_night" = "Good night";
 "no_routines_today" = "No routines scheduled for today";
 "daily_focus" = "Your daily focus";
 
@@ -40,6 +40,9 @@
 "validation_name_empty" = "Please enter a routine name.";
 "validation_select_day" = "Please select at least one day.";
 "error" = "Error";
+
+/* Calendar Screen */
+"calendar" = "Calendar";
 
 /* Statistics Screen */
 "statistics" = "Statistics";
@@ -101,7 +104,7 @@
 
 /* Common */
 "done" = "Done";
-
+"delete" = "Delete";
 
 /* Format */
 "percent_format" = "%d%%";

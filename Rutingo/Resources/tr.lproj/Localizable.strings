@@ -42,6 +42,9 @@
 "validation_select_day" = "Lütfen en az bir gün seç.";
 "error" = "Hata";
 
+/* Calendar Screen */
+"calendar" = "Takvim";
+
 /* Statistics Screen */
 "statistics" = "İstatistikler";
 "weekly_trend" = "Haftalık trend";
@@ -102,6 +105,7 @@
 
 /* Common */
 "done" = "Tamam";
+"delete" = "Sil";
 
 /* Format */
 "percent_format" = "%%%d";
