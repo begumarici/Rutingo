@@ -102,6 +102,8 @@
 /* Notifications */
 "notification_title" = "Rutin Hatırlatıcısı";
 "notification_body" = "Hey! %@ zamanı geldi.";
+"notifications_disabled" = "Bildirimler Devre Dışı";
+"notifications_disabled_message" = "Hatırlatıcı ayarlamak için lütfen Ayarlar'dan bildirimleri etkinleştirin.";
 
 /* Common */
 "done" = "Tamam";

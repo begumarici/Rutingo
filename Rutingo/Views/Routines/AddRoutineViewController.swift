@@ -435,6 +435,20 @@ class AddRoutineViewController: UIViewController {
     @objc private func saveButtonTapped() {
         guard validate() else { return }
         
+        if reminderSwitch.isOn {
+            NotificationManager.shared.checkPermission { [weak self] hasPermission in
+                if hasPermission {
+                    self?.completeSaving()
+                } else {
+                    self?.showPermissionAlert()
+                }
+            }
+        } else {
+            completeSaving()
+        }
+    }
+
+    private func completeSaving() {
         let name = nameTextField.text ?? ""
         
         if frequencyControl.selectedSegmentIndex == 1 {
@@ -458,6 +472,21 @@ class AddRoutineViewController: UIViewController {
         }
         
         dismiss(animated: true)
+    }
+
+    private func showPermissionAlert() {
+        let alert = UIAlertController(
+            title: "notifications_disabled".localized,
+            message: "notifications_disabled_message".localized,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+        alert.addAction(UIAlertAction(title: "settings".localized, style: .default) { _ in
+            if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsUrl)
+            }
+        })
+        present(alert, animated: true)
     }
     
     @objc private func deleteButtonTapped() {

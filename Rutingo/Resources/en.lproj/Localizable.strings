@@ -101,6 +101,8 @@
 /* Notifications */
 "notification_title" = "Routine Reminder";
 "notification_body" = "Hey! It's time for %@.";
+"notifications_disabled" = "Notifications Disabled";
+"notifications_disabled_message" = "To set reminders, please enable notifications in Settings.";
 
 /* Common */
 "done" = "Done";

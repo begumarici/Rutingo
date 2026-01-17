@@ -1,5 +1,5 @@
 //
-//  Untitled.swift
+//  NotificationManager.swift
 //  Rutingo
 //
 //  Created by Begüm Arıcı on 5.12.2025.
@@ -25,6 +25,19 @@ class NotificationManager {
                 return
             }
             completion(granted)
+        }
+    }
+    
+    func checkPermission(completion: @escaping (Bool) -> Void) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                switch settings.authorizationStatus {
+                case .authorized, .provisional:
+                    completion(true)
+                default:
+                    completion(false)
+                }
+            }
         }
     }
     
