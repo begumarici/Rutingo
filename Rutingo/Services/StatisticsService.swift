@@ -8,36 +8,27 @@
 import Foundation
 
 class StatisticsService {
-    // MARK: - Properties
-    private let dataManager: DataManager
-    
-    // MARK: - Initialization
-    init(dataManager: DataManager = CoreDataManager.shared) {
-        self.dataManager = dataManager
-    }
     
     // MARK: - OVerall Statistics
-    func getTotalCompletions() -> Int {
-        let allRoutines = dataManager.fetchAllRoutines()
-        return allRoutines.reduce(0) { total, routine in
+    func getTotalCompletions(from routines: [Routine]) -> Int {
+        return routines.reduce(0) { total, routine in
             return total + routine.completionDates.count
         }
     }
     
-    func getOverallStreak() -> Int {
-        let allRoutines = dataManager.fetchAllRoutines()
-        guard !allRoutines.isEmpty else { return 0 }
+    func getOverallStreak(from routines: [Routine]) -> Int {
+        guard !routines.isEmpty else { return 0 }
         
-        let oldestDate = allRoutines.compactMap { $0.createdAt }.min() ?? Date()
+        let oldestDate = routines.compactMap { $0.createdAt }.min() ?? Date()
         let oldestDateNormalized = DateHelper.shared.startOfDay(oldestDate)
         
         var streak = 0
         var currentDate = DateHelper.shared.startOfDay()
         
         while currentDate >= oldestDateNormalized {
-            if isDayFullyCompleted(allRoutines, on: currentDate) {
+            if isDayFullyCompleted(routines, on: currentDate) {
                 streak += 1
-            } else if hasScheduledRoutines(allRoutines, on: currentDate) {
+            } else if hasScheduledRoutines(routines, on: currentDate) {
                 break
             }
             guard let yesterday = previousDay(from: currentDate) else { break }
@@ -47,44 +38,41 @@ class StatisticsService {
         return streak
     }
     
-    func getOverallCompletionRate() -> Int {
-        let allRoutines = dataManager.fetchAllRoutines()
-        guard !allRoutines.isEmpty else { return 0 }
+    func getOverallCompletionRate(from routines: [Routine]) -> Int {
+        guard !routines.isEmpty else { return 0 }
         
-        let rates = allRoutines.map { $0.completionRate }
+        let rates = routines.map { $0.completionRate }
         
         guard !rates.isEmpty else { return 0 }
         let totalRate = rates.reduce(0, +)
         return totalRate / rates.count
     }
     
-    func getActiveRoutinesCount() -> Int {
-        return dataManager.fetchAllRoutines().count
+    func getActiveRoutinesCount(from routines: [Routine]) -> Int {
+        return routines.count
     }
     
     // MARK: - Progress Tracking
-    func getWeeklyCompletionProgress() -> [Date: Double] {
+    func getWeeklyCompletionProgress(from routines: [Routine]) -> [Date: Double] {
         var progressMap: [Date: Double] = [:]
-        let allRoutines = dataManager.fetchAllRoutines()
         let currentWeekDays = DateHelper.shared.currentWeekDays()
         
         for date in currentWeekDays {
             let normalizedDate = DateHelper.shared.startOfDay(date)
-            let progress = calculateDayProgress(allRoutines, on: normalizedDate)
+            let progress = calculateDayProgress(routines, on: normalizedDate)
             progressMap[normalizedDate] = progress
         }
         
         return progressMap
     }
     
-    func getFullyCompletedDays() -> Set<Date> {
+    func getFullyCompletedDays(from routines: [Routine]) -> Set<Date> {
          var completed = Set<Date>()
-         let allRoutines = dataManager.fetchAllRoutines()
          let currentWeekDays = DateHelper.shared.currentWeekDays()
          
          for date in currentWeekDays {
              let normalizedDate = DateHelper.shared.startOfDay(date)
-             if isDayFullyCompleted(allRoutines, on: normalizedDate) {
+             if isDayFullyCompleted(routines, on: normalizedDate) {
                  completed.insert(normalizedDate)
              }
          }
@@ -93,12 +81,11 @@ class StatisticsService {
      }
     
     // MARK: - Weekly Insights
-    func getBestDayOfWeek() -> String? {
-        let allRoutines = dataManager.fetchAllRoutines()
+    func getBestDayOfWeek(from routines: [Routine]) -> String? {
         let currentWeekDays = DateHelper.shared.currentWeekDays()
         
-        let completions = countWeekdayCompletions(allRoutines, currentWeekDays)
-        let scheduled = countWeekdayScheduled(allRoutines, currentWeekDays)
+        let completions = countWeekdayCompletions(routines, currentWeekDays)
+        let scheduled = countWeekdayScheduled(routines, currentWeekDays)
         
         var stats: [Int: (completed: Int, scheduled: Int)] = [:]
         for day in 1...7 {
@@ -112,14 +99,13 @@ class StatisticsService {
     }
     
     // MARK: - Trend Data
-    func getDailyCompletionRates() -> [Int] {
-        let allRoutines = dataManager.fetchAllRoutines()
+    func getDailyCompletionRates(from routines: [Routine]) -> [Int] {
         let currentWeekDays = DateHelper.shared.currentWeekDays()
         var rates: [Int] = []
         
         for date in currentWeekDays {
             let normalizedDate = DateHelper.shared.startOfDay(date)
-            let scheduledRoutines = getScheduledRoutines(allRoutines, for: normalizedDate)
+            let scheduledRoutines = getScheduledRoutines(routines, for: normalizedDate)
             
             guard !scheduledRoutines.isEmpty else {
                 rates.append(0)
@@ -134,15 +120,15 @@ class StatisticsService {
         return rates
     }
 
-    func getWeeklyCompletionRate() -> Int {
+    func getWeeklyCompletionRate(from routines: [Routine]) -> Int {
         let dates = DateHelper.shared.currentWeekDays()
         let validDates = dates.filter { $0 <= Date() }
-        return calculateCompletionRateForDates(validDates)
+        return calculateCompletionRateForDates(dates: validDates, routines: routines)
     }
     
-    func getLastWeekCompletionRate() -> Int {
+    func getLastWeekCompletionRate(from routines: [Routine]) -> Int {
         let dates = DateHelper.shared.lastWeekDays()
-        return calculateCompletionRateForDates(dates)
+        return calculateCompletionRateForDates(dates: dates, routines: routines)
     }
     
     // MARK: - Helpers
@@ -244,14 +230,13 @@ class StatisticsService {
         return bestDay
     }
     
-    private func calculateCompletionRateForDates(_ dates: [Date]) -> Int {
-        let allRoutines = dataManager.fetchAllRoutines()
+    private func calculateCompletionRateForDates(dates: [Date], routines: [Routine]) -> Int {
         var totalScheduled = 0
         var totalCompleted = 0
         
         for date in dates {
             let normalizedDate = DateHelper.shared.startOfDay(date)
-            let scheduledRoutines = getScheduledRoutines(allRoutines, for: normalizedDate)
+            let scheduledRoutines = getScheduledRoutines(routines, for: normalizedDate)
             
             totalScheduled += scheduledRoutines.count
             totalCompleted += countCompletedRoutines(scheduledRoutines, on: normalizedDate)

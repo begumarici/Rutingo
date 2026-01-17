@@ -369,14 +369,7 @@ class RoutineDetailViewController: UIViewController {
     
     private func configureCalendar() {
         let dates = DateHelper.shared.currentWeekDays()
-        var progressMap: [Date: Double] = [:]
-        
-        for date in dates {
-            let normalizedDate = DateHelper.shared.startOfDay(date)
-            let isCompleted = routine.isCompleted(on: normalizedDate)
-            progressMap[normalizedDate] = isCompleted ? 1.0 : 0.0
-        }
-        
+        var progressMap = viewModel.getWeeklyProgress(for: routine)
         calendarView.configure(with: dates, progressMap: progressMap)
     }
     

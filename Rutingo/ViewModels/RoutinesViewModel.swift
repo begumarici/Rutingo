@@ -11,13 +11,11 @@ class RoutinesViewModel {
     
     // MARK: - Properties
     private let dataManager: DataManager
-    private let statisticsService: StatisticsService
     private(set) var allRoutines: [Routine] = []
     
     // MARK: - Initialization
-    init(dataManager: DataManager = CoreDataManager.shared, statisticsService: StatisticsService = StatisticsService()) {
+    init(dataManager: DataManager = CoreDataManager.shared) {
         self.dataManager = dataManager
-        self.statisticsService = statisticsService
     }
     
     // MARK: - Data Management
@@ -53,5 +51,18 @@ class RoutinesViewModel {
     
     func getCompletionRate(for routine: Routine) -> Int {
         return routine.completionRate
+    }
+    
+    func getWeeklyProgress(for routine: Routine) -> [Date: Double] {
+        let dates = DateHelper.shared.currentWeekDays()
+        var progressMap: [Date: Double] = [:]
+        
+        for date in dates {
+            let normalizedDate = DateHelper.shared.startOfDay(date)
+            let isCompleted = routine.isCompleted(on: normalizedDate)
+            progressMap[normalizedDate] = isCompleted ? 1.0 : 0.0
+        }
+        
+        return progressMap
     }
 }

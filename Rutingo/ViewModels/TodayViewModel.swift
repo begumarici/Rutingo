@@ -11,7 +11,8 @@ class TodayViewModel {
     
     // MARK: - Properties
     private var dataManager: DataManager
-    private var statisticsService: StatisticsService
+
+    private var allRoutines: [Routine] = []
     var todayRoutines: [Routine] = []
     
     // MARK: - Computed Properties
@@ -28,14 +29,14 @@ class TodayViewModel {
     }
     
     // MARK: - Initialization
-    init(dataManager: DataManager = CoreDataManager.shared, statisticsService: StatisticsService = StatisticsService()) {
+    init(dataManager: DataManager = CoreDataManager.shared) {
         self.dataManager = dataManager
-        self.statisticsService = statisticsService
     }
     
     // MARK: - Data Management
     func loadData(completion: () -> Void) {
-        self.todayRoutines = self.dataManager.fetchTodayRoutines()
+        self.allRoutines = dataManager.fetchAllRoutines()
+        self.todayRoutines = filterRoutinesForToday()
         self.sortRoutinesByCompletion()
         completion()
     }
@@ -45,16 +46,19 @@ class TodayViewModel {
         loadData(completion: completion)
     }
     
-    // MARK: - Progress Calculation
-    func getCompletionProgress() -> [Date: Double] {
-        return statisticsService.getWeeklyCompletionProgress()
-    }
-    
-    func getCompletedDays() -> Set<Date> {
-        return statisticsService.getFullyCompletedDays()
-    }
-    
     // MARK: - Helper Methods
+    private func filterRoutinesForToday() -> [Routine] {
+        let today = DateHelper.shared.startOfDay()
+        
+        return allRoutines.filter { routine in
+            guard let createdAt = routine.createdAt else { return false }
+            let createdAtNormalized = DateHelper.shared.startOfDay(createdAt)
+            guard createdAtNormalized <= today else { return false }
+
+            return routine.wasScheduled(on: today)
+        }
+    }
+    
     private func sortRoutinesByCompletion() {
         todayRoutines.sort { routine1, routine2 in
             if routine1.isCompletedToday == routine2.isCompletedToday {

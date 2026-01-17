@@ -1,5 +1,5 @@
 //
-//  ProfileViewModel.swift
+//  StatisticsViewModel.swift
 //  Rutingo
 //
 //  Created by Begüm Arıcı on 29.12.2025.
@@ -12,6 +12,8 @@ class StatisticsViewModel {
     // MARK: - Properties
     private let dataManager: DataManager
     private let statisticsService: StatisticsService
+
+    private var allRoutines: [Routine] = []
     
     // MARK: - Computed Properties
     var lastSevenDays: [Date] {
@@ -19,35 +21,35 @@ class StatisticsViewModel {
     }
     
     var totalCompletions: Int {
-        return statisticsService.getTotalCompletions()
+        return statisticsService.getTotalCompletions(from: allRoutines)
     }
     
     var completionRate: Int {
-        return statisticsService.getOverallCompletionRate()
+        return statisticsService.getOverallCompletionRate(from: allRoutines)
     }
     
     var activeRoutines: Int {
-        return statisticsService.getActiveRoutinesCount()
+        return statisticsService.getActiveRoutinesCount(from: allRoutines)
     }
     
     var bestDayOfWeek: String? {
-        return statisticsService.getBestDayOfWeek()
+        return statisticsService.getBestDayOfWeek(from: allRoutines)
     }
     
     var overallStreak: Int {
-        return statisticsService.getOverallStreak()
+        return statisticsService.getOverallStreak(from: allRoutines)
     }
     
     var dailyCompletionRates: [Int] {
-        return statisticsService.getDailyCompletionRates()
+        return statisticsService.getDailyCompletionRates(from: allRoutines)
     }
 
     var weeklyCompletionRate: Int {
-        return statisticsService.getWeeklyCompletionRate()
+        return statisticsService.getWeeklyCompletionRate(from: allRoutines)
     }
     
     var lastWeekCompletionRate: Int {
-        return statisticsService.getLastWeekCompletionRate()
+        return statisticsService.getLastWeekCompletionRate(from: allRoutines)
     }
     
     // MARK: - Initialization
@@ -56,12 +58,13 @@ class StatisticsViewModel {
         self.statisticsService = statisticsService
     }
     
-    // MARK: - Data MAnagement
+    // MARK: - Data Management
     func loadData(completion: () -> Void) {
+        self.allRoutines = dataManager.fetchAllRoutines()
         completion()
     }
     
     func getCompletionProgress() -> [Date: Double] {
-        return statisticsService.getWeeklyCompletionProgress()
+        return statisticsService.getWeeklyCompletionProgress(from: allRoutines)
     }
 }
