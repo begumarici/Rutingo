@@ -15,9 +15,9 @@ class CalendarDayCell: UICollectionViewCell {
     private let dayLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.regular(16)
-        label.textColor = AppColors.secondary
         label.textAlignment = .center
+        label.font = AppFonts.bold(16)
+        label.textColor = AppColors.secondary
         return label
     }()
     
@@ -25,23 +25,33 @@ class CalendarDayCell: UICollectionViewCell {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = AppColors.primary
+        view.layer.cornerRadius = 2
         view.isHidden = true
         return view
     }()
     
-    // MARK: - Initialization
+    // MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
     }
+    required init?(coder: NSCoder) { fatalError() }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let size = min(bounds.width, bounds.height)
+        contentView.layer.cornerRadius = size / 2.5
+        contentView.layer.masksToBounds = true
     }
     
-    // MARK: - Setup
     private func setupUI() {
-        backgroundColor = .clear
+        contentView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            contentView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            contentView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            contentView.widthAnchor.constraint(equalToConstant: 40),
+            contentView.heightAnchor.constraint(equalToConstant: 40)
+        ])
         
         contentView.addSubview(dayLabel)
         contentView.addSubview(routineIndicator)
@@ -52,36 +62,53 @@ class CalendarDayCell: UICollectionViewCell {
             
             routineIndicator.topAnchor.constraint(equalTo: dayLabel.bottomAnchor, constant: 2),
             routineIndicator.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
-            routineIndicator.widthAnchor.constraint(equalToConstant: 20),
-            routineIndicator.heightAnchor.constraint(equalToConstant: 2)
+            routineIndicator.widthAnchor.constraint(equalToConstant: 4),
+            routineIndicator.heightAnchor.constraint(equalToConstant: 4)
         ])
     }
     
-    // MARK: - Configuration
-    func configure(day: Int, isToday: Bool, isSelected: Bool, hasRoutines: Bool) {
-        dayLabel.text = "\(day)"
-        routineIndicator.isHidden = !hasRoutines
-        
-        if isToday {
-            dayLabel.font = AppFonts.bold(16)
-            dayLabel.textColor = AppColors.primary
-        } else {
-            dayLabel.font = AppFonts.regular(16)
-            dayLabel.textColor = AppColors.secondary
-        }
-        
-        if isSelected {
-            contentView.backgroundColor = AppColors.cardBackground
-            contentView.layer.cornerRadius = 8
-            dayLabel.textColor = AppColors.primary 
-        } else {
-            contentView.backgroundColor = .clear
-        }
-    }
-    
-    func configureEmpty() {
-        dayLabel.text = ""
+    // MARK: - Reuse
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        dayLabel.text = nil
+        dayLabel.textColor = AppColors.secondary
+        dayLabel.font = AppFonts.bold(16)
         contentView.backgroundColor = .clear
         routineIndicator.isHidden = true
+        routineIndicator.backgroundColor = AppColors.primary
+    }
+    
+    // MARK: - Configuration
+    func configure(with item: CalendarDayItem) {
+        dayLabel.text = item.text
+        routineIndicator.isHidden = !item.hasRoutine
+        
+        if item.date == nil {
+            contentView.backgroundColor = .clear
+            return
+        }
+
+        dayLabel.font = AppFonts.bold(16)
+        
+        if item.isSelected {
+            dayLabel.textColor = .black
+            routineIndicator.backgroundColor = .black
+            
+            if item.isToday {
+                contentView.backgroundColor = AppColors.primary
+            } else {
+                contentView.backgroundColor = AppColors.secondary
+            }
+            
+        } else {
+            contentView.backgroundColor = .clear
+            routineIndicator.backgroundColor = AppColors.primary
+            
+            if item.isToday {
+                dayLabel.textColor = AppColors.primary
+            } else {
+                dayLabel.textColor = AppColors.secondary
+            }
+        }
     }
 }

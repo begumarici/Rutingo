@@ -2,116 +2,143 @@
 //  CalendarViewModel.swift
 //  Rutingo
 //
-//  Created by Begüm Arıcı on 16.01.2026.
+//  Created by Begüm Arıcı on 19.01.2026.
 //
 
 import Foundation
+
+// MARK: - View State Item
+struct CalendarDayItem {
+    let date: Date?
+    let text: String
+    let isSelected: Bool
+    let isToday: Bool
+    let hasRoutine: Bool
+}
 
 class CalendarViewModel {
     
     // MARK: - Properties
     private let dataManager: DataManager
-    private let statisticsService: StatisticsService
+    private(set) var uiModels: [CalendarDayItem] = []
     
-    private var allRoutines: [Routine] = []
+    private(set) var currentMonth: Date
+    private(set) var selectedDate: Date
     
-    private(set) var selectedDate: Date = Date()
-    private(set) var currentMonth: Date = Date()
-    
-    // MARK: - Initialization
-    init(dataManager: DataManager = CoreDataManager.shared,
-         statisticsService: StatisticsService = StatisticsService()) {
+    // MARK: - Init
+    init(dataManager: DataManager = CoreDataManager.shared) {
         self.dataManager = dataManager
-        self.statisticsService = statisticsService
+        self.currentMonth = Date()
+        self.selectedDate = Date()
     }
     
-    // MARK: - Data Management
+    // MARK: - Public Methods
     func loadData(completion: () -> Void) {
-        self.allRoutines = dataManager.fetchAllRoutines()
+        generateGrid()
         completion()
     }
     
-    // MARK: - Date Navigation
-    func moveToNextMonth() {
-        guard let nextMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) else { return }
-        currentMonth = nextMonth
+    func selectDate(at index: Int, completion: () -> Void) {
+        guard index < uiModels.count, let date = uiModels[index].date else { return }
+        
+        self.selectedDate = date
+        generateGrid()
+        completion()
     }
     
-    func moveToPreviousMonth() {
-        currentMonth = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
-    }
+    func changeMonth(by value: Int, completion: () -> Void) {
+        guard let newDate = Calendar.current.date(byAdding: .month, value: value, to: currentMonth) else { return }
+        currentMonth = newDate
     
-    func selectDate(_ date: Date) {
-        selectedDate = DateHelper.shared.startOfDay(date)
-    }
-    
-    // MARK: - Calendar Data
-    func getMonthTitle() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        formatter.locale = .current
-        return formatter.string(from: currentMonth)
-    }
-    
-    func getDaysInMonth() -> [Date?] {
-        var days: [Date?] = []
-
-        let components = Calendar.current.dateComponents([.year, .month], from: currentMonth)
-        guard let firstDayOfMonth = Calendar.current.date(from: components) else { return [] }
-        
-        guard let range = Calendar.current.range(of: .day, in: .month, for: firstDayOfMonth) else { return [] }
-        
-        let firstWeekday = Calendar.current.component(.weekday, from: firstDayOfMonth)
-        
-        let emptyDays = (firstWeekday + 5) % 7
-        
-        for _ in 0..<emptyDays {
-            days.append(nil)
-        }
-        
-        for day in range {
-            var dayComponents = components
-            dayComponents.day = day
-            if let date = Calendar.current.date(from: dayComponents) {
-                days.append(date)
+        if Calendar.current.isDate(newDate, equalTo: Date(), toGranularity: .month) {
+            selectedDate = Date()
+        } else {
+            let components = Calendar.current.dateComponents([.year, .month], from: newDate)
+            if let startOfMonth = Calendar.current.date(from: components) {
+                selectedDate = startOfMonth
             }
         }
         
-        return days
+        generateGrid()
+        completion()
     }
     
-    func getRoutinesForSelectedDate() -> [Routine] {
-        let normalizeDate = DateHelper.shared.startOfDay(selectedDate)
+    // MARK: - The Core Logic
+    private func generateGrid() {
+        uiModels.removeAll()
         
-        return allRoutines.filter { routine in
-            guard let createdAt = routine.createdAt else { return false }
-            let createdAtNormalized = DateHelper.shared.startOfDay(createdAt)
-            guard createdAtNormalized <= normalizeDate else { return false }
-            return routine.wasScheduled(on: normalizeDate)
+        let calendar = Calendar.current
+        let allRoutines = dataManager.fetchAllRoutines()
+        
+        let components = calendar.dateComponents([.year, .month], from: currentMonth)
+        guard let startOfMonth = calendar.date(from: components),
+              let range = calendar.range(of: .day, in: .month, for: startOfMonth) else { return }
+        
+        let numDays = range.count
+        let firstWeekday = calendar.component(.weekday, from: startOfMonth)
+        let emptyDays = (firstWeekday + 5) % 7
+        
+        for _ in 0..<emptyDays {
+            uiModels.append(CalendarDayItem(
+                date: nil,
+                text: "",
+                isSelected: false,
+                isToday: false,
+                hasRoutine: false
+            ))
+        }
+        
+        for day in 1...numDays {
+            guard let date = calendar.date(byAdding: .day, value: day - 1, to: startOfMonth) else { continue }
+            
+            let isToday = calendar.isDateInToday(date)
+            let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
+            let hasRoutine = checkRoutine(for: date, in: allRoutines)
+            
+            uiModels.append(CalendarDayItem(
+                date: date,
+                text: "\(day)",
+                isSelected: isSelected,
+                isToday: isToday,
+                hasRoutine: hasRoutine
+            ))
         }
     }
     
-    func getRoutinesForDate(_ date: Date) -> [Routine] {
-        let normalizedDate = DateHelper.shared.startOfDay(date)
-        
-        return allRoutines.filter { routine in
-            guard let createdAt = routine.createdAt else { return false }
-            let createdAtNormalized = DateHelper.shared.startOfDay(createdAt)
+    private func checkRoutine(for date: Date, in routines: [Routine]) -> Bool {
+        let normalized = DateHelper.shared.startOfDay(date)
+        return routines.contains { routine in
+            guard let created = routine.createdAt else { return false }
+            let createdNorm = DateHelper.shared.startOfDay(created)
             
-            guard createdAtNormalized <= normalizedDate else { return false }
+            guard createdNorm <= normalized else { return false }
             
-            return routine.wasScheduled(on: normalizedDate)
+            return routine.wasScheduled(on: normalized)
         }
     }
     
     // MARK: - Helpers
-    func isDateInFuture(_ date: Date) -> Bool {
-        let normalizeDate = DateHelper.shared.startOfDay(date)
-        let today = DateHelper.shared.startOfDay()
-        return normalizeDate > today
+    func getMonthTitle() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        formatter.locale = .current
+        return formatter.string(from: currentMonth).capitalized
     }
     
-    func isToday(_ date: Date) -> Bool {
-        return Calendar.current.isDateInToday(date)
+    func getRoutinesForSelectedDate() -> [Routine] {
+        return getRoutinesForDate(selectedDate)
+    }
+    
+    private func getRoutinesForDate(_ date: Date) -> [Routine] {
+        let allRoutines = dataManager.fetchAllRoutines()
+        let normalized = DateHelper.shared.startOfDay(date)
+        
+        return allRoutines.filter { routine in
+            guard let created = routine.createdAt else { return false }
+            let createdNorm = DateHelper.shared.startOfDay(created)
+            guard createdNorm <= normalized else { return false }
+            
+            return routine.wasScheduled(on: normalized) || routine.isCompleted(on: normalized)
+        }
     }
 }
