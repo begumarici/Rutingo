@@ -425,7 +425,7 @@ class AddRoutineViewController: UIViewController {
         
         if selectedDays.contains(day) {
             selectedDays.removeAll { $0 == day }
-            sender.backgroundColor = UIColor.darkGray
+            sender.backgroundColor = AppColors.secondary
         } else {
             selectedDays.append(day)
             sender.backgroundColor = AppColors.primary

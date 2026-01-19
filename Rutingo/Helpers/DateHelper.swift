@@ -133,21 +133,21 @@ class DateHelper {
         return formatter.string(from: targetDate)
     }
     
-    func greetingText(name: String = "Begüm") -> String {
+    func greetingText() -> String {
         let hour = calendar.component(.hour, from: Date())
         let greeting: String
         
         switch hour {
-        case 0..<12:
+        case 6..<12:
             greeting = "greeting_morning".localized
         case 12..<17:
             greeting = "greeting_afternoon".localized
-        case 17..<21:
+        case 17..<22:
             greeting = "greeting_evening".localized
         default:
             greeting = "greeting_night".localized
         }
         
-        return "\(greeting), \(name)."
+        return "\(greeting)!"
     }
 }

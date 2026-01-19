@@ -19,20 +19,34 @@ class StatisticsService {
     func getOverallStreak(from routines: [Routine]) -> Int {
         guard !routines.isEmpty else { return 0 }
         
+        let today = DateHelper.shared.startOfDay()
+        
+        guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today) else {
+            return isDayFullyCompleted(routines, on: today) ? 1 : 0
+        }
+        
+        var streak = 0
+        var currentDate = yesterday
+        
         let oldestDate = routines.compactMap { $0.createdAt }.min() ?? Date()
         let oldestDateNormalized = DateHelper.shared.startOfDay(oldestDate)
         
-        var streak = 0
-        var currentDate = DateHelper.shared.startOfDay()
-        
         while currentDate >= oldestDateNormalized {
-            if isDayFullyCompleted(routines, on: currentDate) {
+            let isCompleted = isDayFullyCompleted(routines, on: currentDate)
+            let isScheduled = hasScheduledRoutines(routines, on: currentDate)
+            
+            if isCompleted {
                 streak += 1
-            } else if hasScheduledRoutines(routines, on: currentDate) {
+            } else if isScheduled {
                 break
             }
-            guard let yesterday = previousDay(from: currentDate) else { break }
-            currentDate = yesterday
+            
+            guard let prevDate = previousDay(from: currentDate) else { break }
+            currentDate = prevDate
+        }
+        
+        if isDayFullyCompleted(routines, on: today) {
+            streak += 1
         }
         
         return streak
@@ -41,11 +55,30 @@ class StatisticsService {
     func getOverallCompletionRate(from routines: [Routine]) -> Int {
         guard !routines.isEmpty else { return 0 }
         
-        let rates = routines.map { $0.completionRate }
+        var totalScheduled = 0
+        var totalCompleted = 0
         
-        guard !rates.isEmpty else { return 0 }
-        let totalRate = rates.reduce(0, +)
-        return totalRate / rates.count
+        for routine in routines {
+            guard let createdAt = routine.createdAt else { continue }
+            
+            let today = DateHelper.shared.startOfDay()
+            let startDate = DateHelper.shared.startOfDay(createdAt)
+            let totalDays = DateHelper.shared.daysBetween(startDate, today) + 1
+            
+            for i in 0..<totalDays {
+                guard let date = Calendar.current.date(byAdding: .day, value: i, to: startDate) else { continue }
+                if routine.wasScheduled(on: date) {
+                    totalScheduled += 1
+                    
+                    if routine.isCompleted(on: date) {
+                        totalCompleted += 1
+                    }
+                }
+            }
+        }
+        
+        guard totalScheduled > 0 else { return 0 }
+        return Int((Double(totalCompleted) / Double(totalScheduled)) * 100)
     }
     
     func getActiveRoutinesCount(from routines: [Routine]) -> Int {

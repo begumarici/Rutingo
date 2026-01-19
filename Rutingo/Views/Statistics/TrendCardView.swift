@@ -130,28 +130,28 @@ class TrendCardView: UIView {
         guard rates.count > 0 else { return }
         
         let dayNames = [
-            "day_mon".localized,
-            "day_tue".localized,
-            "day_wed".localized,
-            "day_thu".localized,
-            "day_fri".localized,
-            "day_sat".localized,
-            "day_sun".localized
+            "day_mon".localized, "day_tue".localized, "day_wed".localized,
+            "day_thu".localized, "day_fri".localized, "day_sat".localized, "day_sun".localized
         ]
     
         let currentWeekDays = DateHelper.shared.currentWeekDays()
+        let today = DateHelper.shared.startOfDay()
         
         for (index, rate) in rates.enumerated() {
             let date = currentWeekDays[index]
+            let normalizedDate = DateHelper.shared.startOfDay(date)
+            
             let weekday = Calendar.current.component(.weekday, from: date)
             let dayIndex = (weekday + 5) % 7
             
-            let barColumn = createBarColumn(rate: rate, dayName: dayNames[dayIndex])
+            let isToday = normalizedDate == today
+            
+            let barColumn = createBarColumn(rate: rate, dayName: dayNames[dayIndex], isToday: isToday)
             chartStack.addArrangedSubview(barColumn)
         }
     }
     
-    private func createBarColumn(rate: Int, dayName: String) -> UIView {
+    private func createBarColumn(rate: Int, dayName: String, isToday: Bool) -> UIView {
         let column = UIStackView()
         column.axis = .vertical
         column.spacing = 4
@@ -162,10 +162,15 @@ class TrendCardView: UIView {
         spacer.setContentHuggingPriority(.defaultLow, for: .vertical)
         
         let barView = UIView()
-        barView.backgroundColor = AppColors.primary.withAlphaComponent(0.3 + (CGFloat(rate) / 100.0) * 0.7)
         barView.layer.cornerRadius = 4
         barView.translatesAutoresizingMaskIntoConstraints = false
         
+        if isToday {
+            barView.backgroundColor = AppColors.primary
+        } else {
+            barView.backgroundColor = AppColors.secondary
+        }
+
         let barHeight = 40.0 * CGFloat(rate) / 100.0
         barView.heightAnchor.constraint(equalToConstant: max(barHeight, 4)).isActive = true
         
