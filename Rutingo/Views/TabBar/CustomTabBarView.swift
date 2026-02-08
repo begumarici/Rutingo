@@ -32,7 +32,7 @@ class CustomTabBarView: UIView {
     private let selectionIndicator: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = UIColor(white: 0.2, alpha: 1.0)
+        view.backgroundColor = AppColors.primary
         view.layer.cornerRadius = 22
         return view
     }()
@@ -93,7 +93,7 @@ class CustomTabBarView: UIView {
         let iconImageView = UIImageView()
         iconImageView.image = UIImage(systemName: icon)
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .gray
+        iconImageView.tintColor = AppColors.secondary
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconImageView.isUserInteractionEnabled = false
         iconImageView.tag = 100
@@ -139,7 +139,7 @@ class CustomTabBarView: UIView {
             let isSelected = (index == selectedIndex)
             
             if let iconView = button.viewWithTag(100) as? UIImageView {
-                iconView.tintColor = isSelected ? .white : .gray
+                iconView.tintColor = isSelected ? AppColors.cardBackground : AppColors.secondary
             }
         }
     }

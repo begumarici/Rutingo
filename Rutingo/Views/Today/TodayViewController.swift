@@ -13,12 +13,6 @@ class TodayViewController: UIViewController {
     private let viewModel = TodayViewModel()
     
     // MARK: - UI Components
-    private let ovalProgressView: OvalProgressView = {
-        let view = OvalProgressView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
     private let greetingLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -32,6 +26,21 @@ class TodayViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(16)
         label.textColor = AppColors.secondary
+        return label
+    }()
+    
+    private let weekCalendarView: WeekCalendarView = {
+        let view = WeekCalendarView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private let focusLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "daily_focus".localized
+        label.font = AppFonts.semibold(22)
+        label.textColor = AppColors.primary
         return label
     }()
     
@@ -61,12 +70,27 @@ class TodayViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupTableView()
+        setupWeekCalendar()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadData()
+        navigationController?.navigationBar.prefersLargeTitles = false
     }
+    
+    private func setupWeekCalendar() {
+        weekCalendarView.onDateSelected = { [weak self] date in
+            self?.handleDateSelection(date)
+        }
+    }
+    
+    private func handleDateSelection(_ date: Date) {
+        viewModel.setSelectedDate(date) { [weak self] in
+            self?.updateUIWithViewModel()
+        }
+    }
+
     
     // MARK: - Setup
     private func setupUI() {
@@ -79,9 +103,10 @@ class TodayViewController: UIViewController {
     private func addSubviews() {
         view.addSubview(greetingLabel)
         view.addSubview(dateLabel)
-        view.addSubview(ovalProgressView)
-        ovalProgressView.contentView.addSubview(tableView)
-        ovalProgressView.contentView.addSubview(emptyStateLabel)
+        view.addSubview(weekCalendarView)
+        view.addSubview(focusLabel)
+        view.addSubview(tableView)
+        view.addSubview(emptyStateLabel)
     }
     
     private func setupConstraints() {
@@ -94,18 +119,21 @@ class TodayViewController: UIViewController {
             dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             dateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
-            ovalProgressView.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 8 ),
-            ovalProgressView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 4),
-            ovalProgressView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -4),
-            ovalProgressView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8),
+            weekCalendarView.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: Layout.smallPadding),
+            weekCalendarView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            weekCalendarView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
-            tableView.topAnchor.constraint(equalTo: ovalProgressView.contentView.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: ovalProgressView.contentView.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: ovalProgressView.contentView.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: ovalProgressView.contentView.bottomAnchor),
+            focusLabel.topAnchor.constraint(equalTo: weekCalendarView.bottomAnchor, constant: Layout.smallPadding),
+            focusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
+            focusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
-            emptyStateLabel.centerXAnchor.constraint(equalTo: ovalProgressView.contentView.centerXAnchor),
-            emptyStateLabel.centerYAnchor.constraint(equalTo: ovalProgressView.contentView.centerYAnchor)
+            tableView.topAnchor.constraint(equalTo: focusLabel.bottomAnchor, constant: Layout.smallPadding),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            emptyStateLabel.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
+            emptyStateLabel.centerYAnchor.constraint(equalTo: tableView.centerYAnchor)
         ])
     }
     
@@ -126,16 +154,10 @@ class TodayViewController: UIViewController {
         greetingLabel.text = viewModel.greeting
         dateLabel.text = viewModel.dateText
         
-        // Progress
-        let completed = viewModel.todayRoutines.filter { $0.isCompletedToday }.count
-        let total = viewModel.todayRoutines.count
-        let progress = total > 0 ? Double(completed) / Double(total) : 0.0
-        
-        if progress == 1.0 && total > 0 {
-            ovalProgressView.setCompleted()
-        } else {
-            ovalProgressView.setProgress(progress)
-        }
+        // Week Calendar
+        let weekDates = viewModel.getCurrentWeekDates()
+        let progressMap = viewModel.getWeekProgressMap(for: weekDates)
+        weekCalendarView.configure(with: weekDates, progressMap: progressMap, selectedDate: viewModel.selectedDate)
         
         // Empty State
         let isEmpty = viewModel.todayRoutines.isEmpty
@@ -157,7 +179,10 @@ extension TodayViewController: UITableViewDataSource {
         }
         
         let routine = viewModel.todayRoutines[indexPath.row]
-        cell.configure(with: routine)
+        let today = DateHelper.shared.startOfDay()
+        let isNotToday = viewModel.selectedDate != today
+        
+        cell.configure(with: routine, isNotToday: isNotToday)
         
         return cell
     }
@@ -165,12 +190,77 @@ extension TodayViewController: UITableViewDataSource {
 
 // MARK: - UITableViewDelegate
 extension TodayViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        let today = DateHelper.shared.startOfDay()
+        guard viewModel.selectedDate == today else {
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.warning)
+            return
+        }
+        
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
         
         let routine = viewModel.todayRoutines[indexPath.row]
         viewModel.toggleRoutine(routine) { [weak self] in
             self?.updateUIWithViewModel()
         }
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let routine = viewModel.todayRoutines[indexPath.row]
+        
+        let viewAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+            
+            let detailVC = RoutineDetailViewController(routine: routine)
+            self?.navigationController?.pushViewController(detailVC, animated: true)
+            completionHandler(true)
+        }
+        
+        viewAction.image = UIImage(systemName: "info.circle")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+        viewAction.backgroundColor = AppColors.secondary
+        
+        let configuration = UISwipeActionsConfiguration(actions: [viewAction])
+        configuration.performsFirstActionWithFullSwipe = true
+        
+        return configuration
+    }
+
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let today = DateHelper.shared.startOfDay()
+        guard viewModel.selectedDate == today else {
+            return nil
+        }
+        
+        let routine = viewModel.todayRoutines[indexPath.row]
+        let isCompleted = routine.isCompletedToday
+        
+        let toggleAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
+            let generator = UIImpactFeedbackGenerator(style: .medium)
+            generator.impactOccurred()
+            
+            self?.viewModel.toggleRoutine(routine) { [weak self] in
+                self?.updateUIWithViewModel()
+                completionHandler(true)
+            }
+        }
+        
+        if isCompleted {
+            toggleAction.image = UIImage(systemName: "arrow.uturn.backward")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+            toggleAction.backgroundColor = AppColors.secondary
+        } else {
+            toggleAction.image = UIImage(systemName: "checkmark")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+            toggleAction.backgroundColor = AppColors.primary
+        }
+
+        let configuration = UISwipeActionsConfiguration(actions: [toggleAction])
+        configuration.performsFirstActionWithFullSwipe = true
+
+        return configuration
     }
 }

@@ -55,7 +55,7 @@ class DateHelper {
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.locale = .current
-        formatter.dateFormat = "EEE, MMM d"
+        formatter.dateFormat = "EEEE, MMMM d"
         return formatter.string(from: date)
     }
     

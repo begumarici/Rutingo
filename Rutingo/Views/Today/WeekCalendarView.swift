@@ -12,6 +12,8 @@ class WeekCalendarView: UIView {
     // MARK: - Properties
     private var dates: [Date] = []
     private var progressMap: [Date: Double] = [:]
+    private var selectedDate: Date = DateHelper.shared.startOfDay()
+    var onDateSelected: ((Date) -> Void)?
     
     // MARK: - UI Components
     private let stackView: UIStackView = {
@@ -50,10 +52,12 @@ class WeekCalendarView: UIView {
     }
     
     // MARK: - Configuration
-    func configure(with dates: [Date], progressMap: [Date: Double]) {
+    func configure(with dates: [Date], progressMap: [Date: Double], selectedDate: Date? = nil) {
         self.dates = dates
         self.progressMap = progressMap
- 
+        if let selectedDate = selectedDate {
+            self.selectedDate = DateHelper.shared.startOfDay(selectedDate)
+        }
         updateDayViews()
     }
     
@@ -74,8 +78,25 @@ class WeekCalendarView: UIView {
         let normalizedDate = DateHelper.shared.startOfDay(date)
         let progress = progressMap[normalizedDate] ?? 0.0
         let isToday = Calendar.current.isDate(normalizedDate, inSameDayAs: today)
+        let isSelected = Calendar.current.isDate(normalizedDate, inSameDayAs: selectedDate)
         
-        dayView.configure(with: date, progress: progress, isToday: isToday)
+        dayView.configure(with: date, progress: progress, isToday: isToday, isSelected: isSelected)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dayTapped(_:)))
+        dayView.addGestureRecognizer(tapGesture)
+        dayView.isUserInteractionEnabled = true
+        dayView.tag = dates.firstIndex(of: date) ?? 0
+        
         return dayView
+    }
+    
+    @objc private func dayTapped(_ gesture: UITapGestureRecognizer) {
+        guard let dayView = gesture.view,
+              dates.indices.contains(dayView.tag) else { return }
+        
+        let tappedDate = dates[dayView.tag]
+        selectedDate = DateHelper.shared.startOfDay(tappedDate)
+        onDateSelected?(tappedDate)
+        updateDayViews()
     }
 }
