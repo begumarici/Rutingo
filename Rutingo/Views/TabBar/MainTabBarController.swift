@@ -124,4 +124,26 @@ extension MainTabBarController: CustomTabBarDelegate {
     func didSelectTab(at index: Int) {
         showViewController(at: index)
     }
+    
+    func didTapAddButton() {
+        let addRoutineVC = AddRoutineViewController()
+        let routinesViewModel = RoutinesViewModel()
+        
+        addRoutineVC.onSave = { name, frequency, hasReminder, reminderTime in
+            routinesViewModel.addRoutine(
+                name: name,
+                frequency: frequency,
+                hasReminder: hasReminder,
+                reminderTime: reminderTime
+            ) {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("RoutineAdded"),
+                    object: nil
+                )
+            }
+        }
+        
+        let navVC = UINavigationController(rootViewController: addRoutineVC)
+        present(navVC, animated: true)
+    }
 }

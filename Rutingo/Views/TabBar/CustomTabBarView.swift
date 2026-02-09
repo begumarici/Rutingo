@@ -9,6 +9,7 @@ import UIKit
 
 protocol CustomTabBarDelegate: AnyObject {
     func didSelectTab(at index: Int)
+    func didTapAddButton()
 }
 
 class CustomTabBarView: UIView {
@@ -115,6 +116,11 @@ class CustomTabBarView: UIView {
     // MARK: - Actions
     @objc private func tabButtonTapped(_ sender: UIButton) {
         let index = sender.tag
+        if index == 0 && selectedIndex == 0 {
+            delegate?.didTapAddButton()
+            return
+        }
+        
         selectTab(at: index)
         delegate?.didSelectTab(at: index)
     }
@@ -140,6 +146,14 @@ class CustomTabBarView: UIView {
             
             if let iconView = button.viewWithTag(100) as? UIImageView {
                 iconView.tintColor = isSelected ? AppColors.cardBackground : AppColors.secondary
+                
+                if index == 0 {
+                    if isSelected {
+                        iconView.image = UIImage(systemName: "plus.circle.fill")
+                    } else {
+                        iconView.image = UIImage(systemName: "house.fill")
+                    }
+                }
             }
         }
     }
