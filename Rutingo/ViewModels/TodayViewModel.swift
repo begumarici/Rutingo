@@ -14,6 +14,9 @@ class TodayViewModel {
 
     private var allRoutines: [Routine] = []
     var todayRoutines: [Routine] = []
+    var notCompletedRoutines: [Routine] = []
+    var completedRoutines: [Routine] = []
+    var isCompletedSectionExpanded: Bool = true
     var selectedDate: Date = DateHelper.shared.startOfDay()
     
     // MARK: - Computed Properties
@@ -39,6 +42,7 @@ class TodayViewModel {
         self.allRoutines = dataManager.fetchAllRoutines()
         self.todayRoutines = filterRoutinesForSelectedDate()
         self.sortRoutinesByCompletion()
+        self.separateRoutinesByCompletion()
         completion()
     }
     
@@ -69,6 +73,19 @@ class TodayViewModel {
                 return false
             }
             return !routine1.isCompletedToday
+        }
+    }
+    
+    private func separateRoutinesByCompletion() {
+        let today = DateHelper.shared.startOfDay()
+        
+        // only show completed section on current day
+        if selectedDate == today {
+            notCompletedRoutines = todayRoutines.filter { !$0.isCompletedToday }
+            completedRoutines = todayRoutines.filter { $0.isCompletedToday }
+        } else {
+            notCompletedRoutines = todayRoutines
+            completedRoutines = []
         }
     }
 
@@ -110,5 +127,9 @@ class TodayViewModel {
             
             return routine.wasScheduled(on: normalizedDate)
         }
+    }
+    
+    func toggleCompletedSection() {
+        isCompletedSectionExpanded.toggle()
     }
 }

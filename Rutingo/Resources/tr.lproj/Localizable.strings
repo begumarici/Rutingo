@@ -18,6 +18,7 @@
 "greeting_night" = "İyi geceler";
 "no_routines_today" = "Bugün için planlanmış bir rutin yok";
 "daily_focus" = "Günlük odağın";
+"completed" = "Tamamlananlar";
 
 /* Routines Screen */
 "routines" = "Rutinler";

@@ -48,6 +48,7 @@ class TodayViewController: UIViewController {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
         table.register(TodayRoutineCell.self, forCellReuseIdentifier: TodayRoutineCell.identifier)
+        table.register(CompletedSectionHeaderCell.self, forCellReuseIdentifier: CompletedSectionHeaderCell.identifier)
         table.backgroundColor = .clear
         table.separatorStyle = .none
         return table
@@ -71,6 +72,7 @@ class TodayViewController: UIViewController {
         setupUI()
         setupTableView()
         setupWeekCalendar()
+        setupNotifications()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -90,7 +92,23 @@ class TodayViewController: UIViewController {
             self?.updateUIWithViewModel()
         }
     }
+    
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(routineAdded),
+            name: NSNotification.Name("RoutineAdded"),
+            object: nil
+        )
+    }
 
+    @objc private func routineAdded() {
+        loadData()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
     
     // MARK: - Setup
     private func setupUI() {
@@ -160,30 +178,91 @@ class TodayViewController: UIViewController {
         weekCalendarView.configure(with: weekDates, progressMap: progressMap, selectedDate: viewModel.selectedDate)
         
         // Empty State
-        let isEmpty = viewModel.todayRoutines.isEmpty
+        let isEmpty = viewModel.notCompletedRoutines.isEmpty && viewModel.completedRoutines.isEmpty
         tableView.isHidden = isEmpty
         emptyStateLabel.isHidden = !isEmpty
         tableView.reloadData()
+    }
+    
+    // MARK: - Helpers
+    private func isCompletedSectionHeader(at indexPath: IndexPath) -> Bool {
+        return indexPath.section == 1 && indexPath.row == 0
+    }
+    
+    private func routine(at indexPath: IndexPath) -> Routine? {
+        if indexPath.section == 0 {
+            return viewModel.notCompletedRoutines[indexPath.row]
+        } else if indexPath.row == 0 {
+            return nil // header cell
+        } else {
+            return viewModel.completedRoutines[indexPath.row - 1]
+        }
+    }
+    
+    private func isPastOrFutureDay() -> Bool {
+        let today = DateHelper.shared.startOfDay()
+        return viewModel.selectedDate != today
+    }
+    
+    private func triggerHaptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
+        let generator = UIImpactFeedbackGenerator(style: style)
+        generator.impactOccurred()
+    }
+    
+    private func triggerWarningHaptic() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.warning)
     }
 }
 
 // MARK: - UITableViewDataSource
 extension TodayViewController: UITableViewDataSource {
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return isPastOrFutureDay() ? 1 : 2
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.todayRoutines.count
+        switch section {
+        case 0:
+            return viewModel.notCompletedRoutines.count
+        case 1:
+            if viewModel.isCompletedSectionExpanded {
+                return 1 + viewModel.completedRoutines.count
+            } else {
+                return 1
+            }
+        default:
+            return 0
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: TodayRoutineCell.identifier, for: indexPath) as? TodayRoutineCell else {
+        // completed section header
+        if isCompletedSectionHeader(at: indexPath) {
+            guard let headerCell = tableView.dequeueReusableCell(
+                withIdentifier: CompletedSectionHeaderCell.identifier,
+                for: indexPath
+            ) as? CompletedSectionHeaderCell else {
+                return UITableViewCell()
+            }
+            
+            headerCell.configure(
+                count: viewModel.completedRoutines.count,
+                isExpanded: viewModel.isCompletedSectionExpanded
+            )
+            return headerCell
+        }
+        
+        // routine cell (not completed or completed)
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: TodayRoutineCell.identifier,
+            for: indexPath
+        ) as? TodayRoutineCell,
+              let routine = routine(at: indexPath) else {
             return UITableViewCell()
         }
         
-        let routine = viewModel.todayRoutines[indexPath.row]
-        let today = DateHelper.shared.startOfDay()
-        let isNotToday = viewModel.selectedDate != today
-        
-        cell.configure(with: routine, isNotToday: isNotToday)
-        
+        cell.configure(with: routine, isNotToday: isPastOrFutureDay())
         return cell
     }
 }
@@ -194,28 +273,40 @@ extension TodayViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        let today = DateHelper.shared.startOfDay()
-        guard viewModel.selectedDate == today else {
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.warning)
+        // completed section header tapped - toggle expand/collapse
+        if isCompletedSectionHeader(at: indexPath) {
+            triggerHaptic(.light)
+            
+            viewModel.toggleCompletedSection()
+            tableView.reloadSections(IndexSet(integer: 1), with: .automatic)
             return
         }
         
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+        // past or future day - show warning and don't allow toggle
+        guard !isPastOrFutureDay() else {
+            triggerWarningHaptic()
+            return
+        }
         
-        let routine = viewModel.todayRoutines[indexPath.row]
+        // toggle routine completion
+        guard let routine = routine(at: indexPath) else { return }
+        
+        triggerHaptic(.medium)
+        
         viewModel.toggleRoutine(routine) { [weak self] in
             self?.updateUIWithViewModel()
         }
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let routine = viewModel.todayRoutines[indexPath.row]
+        // no swipe on completed section header
+        guard !isCompletedSectionHeader(at: indexPath),
+              let routine = routine(at: indexPath) else {
+            return nil
+        }
         
         let viewAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
+            self?.triggerHaptic(.light)
             
             let detailVC = RoutineDetailViewController(routine: routine)
             self?.navigationController?.pushViewController(detailVC, animated: true)
@@ -232,17 +323,18 @@ extension TodayViewController: UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let today = DateHelper.shared.startOfDay()
-        guard viewModel.selectedDate == today else {
+        
+        // only allow swipe on current day, not on header
+        guard !isPastOrFutureDay(),
+              !isCompletedSectionHeader(at: indexPath),
+              let routine = routine(at: indexPath) else {
             return nil
         }
         
-        let routine = viewModel.todayRoutines[indexPath.row]
         let isCompleted = routine.isCompletedToday
         
         let toggleAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.impactOccurred()
+            self?.triggerHaptic(.medium)
             
             self?.viewModel.toggleRoutine(routine) { [weak self] in
                 self?.updateUIWithViewModel()
