@@ -91,13 +91,14 @@ class CalendarDayCell: UICollectionViewCell {
         dayLabel.font = AppFonts.bold(16)
         
         if item.isSelected {
-            dayLabel.textColor = .black
-            routineIndicator.backgroundColor = .black
-            
             if item.isToday {
                 contentView.backgroundColor = AppColors.primary
+                dayLabel.textColor = AppColors.background
+                routineIndicator.backgroundColor = AppColors.background
             } else {
-                contentView.backgroundColor = AppColors.secondary
+                contentView.backgroundColor = AppColors.tertiary
+                dayLabel.textColor = AppColors.primary
+                routineIndicator.backgroundColor = AppColors.primary
             }
             
         } else {

@@ -14,6 +14,7 @@ enum AppColors {
     static let navbarTitle = UIColor.label
     static let primary = UIColor.label
     static let secondary = UIColor.secondaryLabel
+    static let tertiary = UIColor.tertiaryLabel
     
     static let progressEmpty = UIColor(red: 187/255, green: 197/255, blue: 189/255, alpha: 1.0)
     static let progressLow = UIColor(red: 142/255, green: 177/255, blue: 149/255, alpha: 1.0)

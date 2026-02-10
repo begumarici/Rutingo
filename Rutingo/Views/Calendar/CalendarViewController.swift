@@ -89,16 +89,36 @@ class CalendarViewController: UIViewController {
     private let dayDetailLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.bold(16)
+        label.font = AppFonts.bold(17)
         label.textColor = AppColors.secondary
         return label
+    }()
+    
+    private let emptyStateStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 16
+        return stack
+    }()
+    
+    private let emptyStateIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(systemName: "calendar")?.withConfiguration(
+            UIImage.SymbolConfiguration(weight: .thin)
+        )
+        imageView.tintColor = AppColors.secondary.withAlphaComponent(0.5)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
     }()
     
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "no_routines_today".localized
-        label.font = AppFonts.regular(14)
+        label.font = AppFonts.regular(15)
         label.textColor = AppColors.secondary
         label.textAlignment = .center
         return label
@@ -298,10 +318,17 @@ class CalendarViewController: UIViewController {
         
         if routines.isEmpty {
             let footer = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width, height: 200))
-            footer.addSubview(emptyStateLabel)
+            footer.addSubview(emptyStateStackView)
+            
+            emptyStateStackView.addArrangedSubview(emptyStateIcon)
+            emptyStateStackView.addArrangedSubview(emptyStateLabel)
+            
             NSLayoutConstraint.activate([
-                emptyStateLabel.centerXAnchor.constraint(equalTo: footer.centerXAnchor),
-                emptyStateLabel.topAnchor.constraint(equalTo: footer.topAnchor, constant: 40)
+                emptyStateIcon.widthAnchor.constraint(equalToConstant: 80),
+                emptyStateIcon.heightAnchor.constraint(equalToConstant: 80),
+                
+                emptyStateStackView.centerXAnchor.constraint(equalTo: footer.centerXAnchor),
+                emptyStateStackView.topAnchor.constraint(equalTo: footer.topAnchor, constant: 40)
             ])
             routinesTableView.tableFooterView = footer
         } else {
@@ -394,6 +421,6 @@ extension CalendarViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 50
+        return 72
     }
 }
