@@ -78,7 +78,7 @@ class AddRoutineViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "routine_name".localized
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.secondary
+        label.textColor = AppColors.primary
         return label
     }()
     
@@ -112,7 +112,7 @@ class AddRoutineViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "frequency".localized
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.secondary
+        label.textColor = AppColors.primary
         return label
     }()
     
@@ -123,12 +123,12 @@ class AddRoutineViewController: UIViewController {
         control.selectedSegmentIndex = 0
         control.selectedSegmentTintColor = AppColors.primary
         control.setTitleTextAttributes([
-            .foregroundColor: UIColor.black,
+            .foregroundColor: AppColors.background,
             .font: AppFonts.semibold(14)
         ], for: .selected)
         control.setTitleTextAttributes([
             .foregroundColor: AppColors.secondary,
-            .font: AppFonts.regular(14)
+            .font: AppFonts.semibold(14)
         ], for: .normal)
         return control
     }()
@@ -162,7 +162,7 @@ class AddRoutineViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "reminder".localized
         label.font = AppFonts.semibold(16)
-        label.textColor = AppColors.secondary
+        label.textColor = AppColors.primary
         return label
     }()
 
@@ -191,7 +191,7 @@ class AddRoutineViewController: UIViewController {
         button.setTitle("save".localized, for: .normal)
         button.titleLabel?.font = AppFonts.bold(18)
         button.backgroundColor = AppColors.primary
-        button.setTitleColor(.black, for: .normal)
+        button.setTitleColor(AppColors.background, for: .normal)
         button.layer.cornerRadius = 16
         return button
     }()
@@ -372,9 +372,9 @@ class AddRoutineViewController: UIViewController {
             let calendarTag = (i % 7) + 1
             button.tag = calendarTag
             
-            button.titleLabel?.font = AppFonts.bold(14)
-            button.backgroundColor = AppColors.secondary
-            button.setTitleColor(.black, for: .normal)
+            button.titleLabel?.font = AppFonts.semibold(14)
+            button.backgroundColor = AppColors.background
+            button.setTitleColor(AppColors.primary, for: .normal)
             button.layer.cornerRadius = 20
             
             button.translatesAutoresizingMaskIntoConstraints = false
@@ -425,10 +425,12 @@ class AddRoutineViewController: UIViewController {
         
         if selectedDays.contains(day) {
             selectedDays.removeAll { $0 == day }
-            sender.backgroundColor = AppColors.secondary
+            sender.backgroundColor = AppColors.background
+            sender.setTitleColor(AppColors.primary, for: .normal)
         } else {
             selectedDays.append(day)
             sender.backgroundColor = AppColors.primary
+            sender.setTitleColor(AppColors.background, for: .normal)
         }
     }
     
@@ -522,6 +524,7 @@ class AddRoutineViewController: UIViewController {
                 for case let button as UIButton in dayStackView.arrangedSubviews {
                     if button.tag == day {
                         button.backgroundColor = AppColors.primary
+                        button.setTitleColor(AppColors.background, for: .normal)
                     }
                 }
             }
