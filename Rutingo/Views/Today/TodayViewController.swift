@@ -54,15 +54,35 @@ class TodayViewController: UIViewController {
         return table
     }()
     
+    private let emptyStateStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 16
+        stack.isHidden = true
+        return stack
+    }()
+    
+    private let emptyStateIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(systemName: "moon.zzz")?.withConfiguration(
+            UIImage.SymbolConfiguration(weight: .thin)
+        )
+        imageView.tintColor = AppColors.secondary.withAlphaComponent(0.5)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "no_routines_today".localized
-        label.font = AppFonts.regular(16)
+        label.font = AppFonts.regular(15)
         label.textColor = AppColors.secondary
         label.textAlignment = .center
         label.numberOfLines = 0
-        label.isHidden = true
         return label
     }()
     
@@ -124,7 +144,10 @@ class TodayViewController: UIViewController {
         view.addSubview(weekCalendarView)
         view.addSubview(focusLabel)
         view.addSubview(tableView)
-        view.addSubview(emptyStateLabel)
+        view.addSubview(emptyStateStackView)
+        
+        emptyStateStackView.addArrangedSubview(emptyStateIcon)
+        emptyStateStackView.addArrangedSubview(emptyStateLabel)
     }
     
     private func setupConstraints() {
@@ -150,8 +173,11 @@ class TodayViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            emptyStateLabel.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
-            emptyStateLabel.centerYAnchor.constraint(equalTo: tableView.centerYAnchor)
+            emptyStateIcon.widthAnchor.constraint(equalToConstant: 80),
+            emptyStateIcon.heightAnchor.constraint(equalToConstant: 80),
+            
+            emptyStateStackView.centerXAnchor.constraint(equalTo: tableView.centerXAnchor),
+            emptyStateStackView.centerYAnchor.constraint(equalTo: tableView.centerYAnchor)
         ])
     }
     
@@ -180,7 +206,7 @@ class TodayViewController: UIViewController {
         // Empty State
         let isEmpty = viewModel.notCompletedRoutines.isEmpty && viewModel.completedRoutines.isEmpty
         tableView.isHidden = isEmpty
-        emptyStateLabel.isHidden = !isEmpty
+        emptyStateStackView.isHidden = !isEmpty
         tableView.reloadData()
     }
     

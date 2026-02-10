@@ -24,6 +24,11 @@ class SettingsViewController: UIViewController {
         setupUI()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        tableView.reloadData()
+    }
+    
     // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = AppColors.background
@@ -73,6 +78,11 @@ class SettingsViewController: UIViewController {
     }
     
     // MARK: - Actions
+    private func showThemeSelection() {
+        let themeVC = ThemeSelectionViewController()
+        navigationController?.pushViewController(themeVC, animated: true)
+    }
+    
     private func openNotificationSettings() {
         if let appSettings = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(appSettings)
@@ -117,7 +127,7 @@ extension SettingsViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 0: return 1 // Notifications
+        case 0: return 2 // Theme, Notifications
         case 1: return 1 // Clear All Data
         case 2: return 2 // Send Feedback, Version
         default: return 0
@@ -131,7 +141,12 @@ extension SettingsViewController: UITableViewDataSource {
         
         switch indexPath.section {
         case 0: // General
-            cell.configure(icon: "bell", title: "notifications".localized)
+            if indexPath.row == 0 {
+                let currentTheme = ThemeManager.shared.currentTheme
+                cell.configure(icon: "circle.lefthalf.filled", title: "theme".localized, detail: currentTheme.displayName)
+            } else {
+                cell.configure(icon: "bell", title: "notifications".localized)
+            }
             
         case 1: // Data
             cell.configure(icon: "trash", title: "clear_all_data".localized, isDestructive: true)
@@ -141,7 +156,7 @@ extension SettingsViewController: UITableViewDataSource {
                 cell.configure(icon: "envelope", title: "send_feedback".localized)
             } else {
                 let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-                cell.configure(icon: "info.circle", title: "version".localized, detail: version)
+                cell.configure(icon: "info.circle", title: "version".localized, detail: version, showsChevron: false)
             }
             
         default:
@@ -167,8 +182,12 @@ extension SettingsViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         
         switch indexPath.section {
-        case 0: // Notifications
-            openNotificationSettings()
+        case 0: // General
+            if indexPath.row == 0 {
+                showThemeSelection()
+            } else {
+                openNotificationSettings()
+            }
             
         case 1: // Clear All Data
             showClearDataAlert()

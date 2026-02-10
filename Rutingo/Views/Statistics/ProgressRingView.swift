@@ -17,6 +17,11 @@ class ProgressRingView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupLayers()
+        
+        // ios 17+ trait observation
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
+            self.updateColors()
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -26,7 +31,7 @@ class ProgressRingView: UIView {
     // MARK: - Setup
     private func setupLayers() {
         trackLayer.fillColor = UIColor.clear.cgColor
-        trackLayer.strokeColor = UIColor.darkGray.cgColor
+        trackLayer.strokeColor = AppColors.secondaryCardBackground.cgColor
         trackLayer.lineWidth = 8
         trackLayer.lineCap = .round
         layer.addSublayer(trackLayer)
@@ -79,5 +84,11 @@ class ProgressRingView: UIView {
         }
         
         progressLayer.strokeEnd = clampedProgress
+    }
+    
+    // MARK: - Helpers
+    private func updateColors() {
+        trackLayer.strokeColor = AppColors.secondaryCardBackground.cgColor
+        progressLayer.strokeColor = AppColors.primary.cgColor
     }
 }

@@ -41,10 +41,9 @@ class RoutinesViewController: UIViewController {
     private let emptyStateIconView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        
-        let config = UIImage.SymbolConfiguration(pointSize: 80, weight: .thin)
-        imageView.image = UIImage(systemName: "plus.circle", withConfiguration: config)
-        
+        imageView.image = UIImage(systemName: "plus.circle")?.withConfiguration(
+            UIImage.SymbolConfiguration(weight: .thin)
+        )
         imageView.tintColor = AppColors.secondary.withAlphaComponent(0.5)
         imageView.contentMode = .scaleAspectFit
         return imageView
@@ -54,7 +53,7 @@ class RoutinesViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "no_routines_message".localized
-        label.font = AppFonts.regular(16)
+        label.font = AppFonts.regular(15)
         label.textColor = AppColors.secondary
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -111,11 +110,12 @@ class RoutinesViewController: UIViewController {
     
     private func addSubviews() {
         view.addSubview(tableView)
-        view.addSubview(emptyStateView)
         
         emptyStateView.addSubview(emptyStateStackView)
         emptyStateStackView.addArrangedSubview(emptyStateIconView)
         emptyStateStackView.addArrangedSubview(emptyStateLabel)
+        
+        view.addSubview(emptyStateView)
     }
     
     private func setupConstraints() {
@@ -132,8 +132,6 @@ class RoutinesViewController: UIViewController {
             
             emptyStateStackView.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
             emptyStateStackView.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor),
-            emptyStateStackView.leadingAnchor.constraint(greaterThanOrEqualTo: emptyStateView.leadingAnchor, constant: Layout.padding),
-            emptyStateStackView.trailingAnchor.constraint(lessThanOrEqualTo: emptyStateView.trailingAnchor, constant: -Layout.padding),
             
             emptyStateIconView.widthAnchor.constraint(equalToConstant: 80),
             emptyStateIconView.heightAnchor.constraint(equalToConstant: 80)
@@ -153,8 +151,6 @@ class RoutinesViewController: UIViewController {
             
             let isEmpty = self.viewModel.allRoutines.isEmpty
             self.emptyStateView.isHidden = !isEmpty
-            self.tableView.isHidden = isEmpty
-            
             if isEmpty {
                 self.view.bringSubviewToFront(self.emptyStateView)
             }

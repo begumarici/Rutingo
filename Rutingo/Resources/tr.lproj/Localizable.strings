@@ -60,6 +60,9 @@
 "general" = "Genel";
 "data" = "Veri";
 "about" = "Hakkında";
+"system_theme" = "Sistem";
+"light_theme" = "Açık";
+"dark_theme" = "Koyu";
 "notifications" = "Bildirimler";
 "send_feedback" = "Geri bildirim gönder";
 "clear_all_data" = "Tüm verileri sil";

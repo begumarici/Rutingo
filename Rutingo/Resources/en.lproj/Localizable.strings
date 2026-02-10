@@ -59,6 +59,10 @@
 "general" = "General";
 "data" = "Data";
 "about" = "About";
+"theme" = "Theme";
+"system_theme" = "System";
+"light_theme" = "Light";
+"dark_theme" = "Dark";
 "notifications" = "Notifications";
 "send_feedback" = "Send Feedback";
 "clear_all_data" = "Clear All Data";
