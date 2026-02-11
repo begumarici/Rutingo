@@ -29,11 +29,31 @@ class RoutinesViewController: UIViewController {
         return view
     }()
     
+    private let emptyStateStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 16
+        return stack
+    }()
+    
+    private let emptyStateIconView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(systemName: "plus.circle")?.withConfiguration(
+            UIImage.SymbolConfiguration(weight: .thin)
+        )
+        imageView.tintColor = AppColors.secondary.withAlphaComponent(0.5)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     private let emptyStateLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "no_routines_message".localized
-        label.font = AppFonts.regular(16)
+        label.font = AppFonts.regular(15)
         label.textColor = AppColors.secondary
         label.textAlignment = .center
         label.numberOfLines = 0
@@ -90,7 +110,11 @@ class RoutinesViewController: UIViewController {
     
     private func addSubviews() {
         view.addSubview(tableView)
-        emptyStateView.addSubview(emptyStateLabel)
+        
+        emptyStateView.addSubview(emptyStateStackView)
+        emptyStateStackView.addArrangedSubview(emptyStateIconView)
+        emptyStateStackView.addArrangedSubview(emptyStateLabel)
+        
         view.addSubview(emptyStateView)
     }
     
@@ -106,10 +130,11 @@ class RoutinesViewController: UIViewController {
             emptyStateView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             emptyStateView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
-            emptyStateLabel.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
-            emptyStateLabel.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor),
-            emptyStateLabel.leadingAnchor.constraint(equalTo: emptyStateView.leadingAnchor, constant: Layout.padding),
-            emptyStateLabel.trailingAnchor.constraint(equalTo: emptyStateView.trailingAnchor, constant: -Layout.padding)
+            emptyStateStackView.centerXAnchor.constraint(equalTo: emptyStateView.centerXAnchor),
+            emptyStateStackView.centerYAnchor.constraint(equalTo: emptyStateView.centerYAnchor),
+            
+            emptyStateIconView.widthAnchor.constraint(equalToConstant: 80),
+            emptyStateIconView.heightAnchor.constraint(equalToConstant: 80)
         ])
     }
     
@@ -130,12 +155,6 @@ class RoutinesViewController: UIViewController {
                 self.view.bringSubviewToFront(self.emptyStateView)
             }
         }
-    }
-    
-    private func updateEmptyState() {
-        let isEmpty = viewModel.allRoutines.isEmpty
-        tableView.isHidden = isEmpty
-        emptyStateView.isHidden = !isEmpty
     }
     
     // MARK: - Actions
@@ -177,5 +196,43 @@ extension RoutinesViewController: UITableViewDelegate {
         let routine = viewModel.allRoutines[indexPath.row]
         let detailVC = RoutineDetailViewController(routine: routine, viewModel: viewModel)
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let routine = viewModel.allRoutines[indexPath.row]
+        
+        let deleteAction = UIContextualAction(style: .destructive, title: nil) { [weak self] (action, view, completionHandler) in
+            guard let self = self else {
+                completionHandler(false)
+                return
+            }
+            
+            let alert = UIAlertController(
+                title: "delete_routine".localized,
+                message: "delete_routine_message".localized,
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel) { _ in
+                completionHandler(false)
+            })
+            
+            alert.addAction(UIAlertAction(title: "delete".localized, style: .destructive) { _ in
+                self.viewModel.deleteRoutine(routine) {
+                    self.loadData()
+                    completionHandler(true)
+                }
+            })
+            
+            self.present(alert, animated: true)
+        }
+        
+        deleteAction.image = UIImage(systemName: "trash")?.withTintColor(.white, renderingMode: .alwaysOriginal)
+        deleteAction.backgroundColor = .systemRed
+        
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        configuration.performsFirstActionWithFullSwipe = true
+        
+        return configuration
     }
 }

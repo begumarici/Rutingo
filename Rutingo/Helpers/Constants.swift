@@ -8,12 +8,13 @@
 import UIKit
 
 enum AppColors {
-    static let background = UIColor.black
-    static let cardBackground = UIColor(hex: "#141414")
-    static let secondaryCardBackground = UIColor(hex: "1B1B1B")
-    static let navbarTitle = UIColor.white
-    static let primary = UIColor.white
-    static let secondary = UIColor.lightGray
+    static let background = UIColor.systemBackground
+    static let cardBackground = UIColor.secondarySystemBackground
+    static let secondaryCardBackground = UIColor.tertiarySystemBackground
+    static let navbarTitle = UIColor.label
+    static let primary = UIColor.label
+    static let secondary = UIColor.secondaryLabel
+    static let tertiary = UIColor.tertiaryLabel
     
     static let progressEmpty = UIColor(red: 187/255, green: 197/255, blue: 189/255, alpha: 1.0)
     static let progressLow = UIColor(red: 142/255, green: 177/255, blue: 149/255, alpha: 1.0)
@@ -24,19 +25,19 @@ enum AppColors {
 
 enum AppFonts {
     static func regular(_ size: CGFloat) -> UIFont {
-        return UIFont(name: "FiraSans-Regular", size: size) ?? .systemFont(ofSize: size, weight: .regular)
+        return .systemFont(ofSize: size, weight: .regular)
     }
     
     static func medium(_ size: CGFloat) -> UIFont {
-        return UIFont(name: "FiraSans-Medium", size: size) ?? .systemFont(ofSize: size, weight: .medium)
+        return .systemFont(ofSize: size, weight: .medium)
     }
     
     static func semibold(_ size: CGFloat) -> UIFont {
-        return UIFont(name: "FiraSans-SemiBold", size: size) ?? .systemFont(ofSize: size, weight: .semibold)
+        return .systemFont(ofSize: size, weight: .semibold)
     }
     
     static func bold(_ size: CGFloat) -> UIFont {
-        return UIFont(name: "FiraSans-Bold", size: size) ?? .systemFont(ofSize: size, weight: .bold)
+        return .systemFont(ofSize: size, weight: .bold)
     }
 }
 

@@ -32,6 +32,11 @@ class DayCircleView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
+        
+        // ios 17+ trait observation
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
+            self.updateBorderColor()
+        }
     }
     
     required init?(coder: NSCoder) {
@@ -63,9 +68,9 @@ class DayCircleView: UIView {
     }
     
     // MARK: - Configuration
-    func configure(with date: Date, progress: Double, isToday: Bool) {
+    func configure(with date: Date, progress: Double, isToday: Bool, isSelected: Bool = false) {
         setDateLabels(for: date)
-        setProgressColor(progress)
+        setAppearance(progress: progress, isToday: isToday, isSelected: isSelected)
     }
     
     // MARK: - Helpers
@@ -74,12 +79,35 @@ class DayCircleView: UIView {
         dateLabel.text = DateHelper.shared.dayOfMonth(date)
     }
     
-    private func setProgressColor(_ progress: Double) {
-        switch progress {
-        case 0.0:
-            backgroundColor = AppColors.secondary
-        default:
+    private func setAppearance(progress: Double, isToday: Bool, isSelected: Bool) {
+        if isToday {
             backgroundColor = AppColors.primary
+            dayLabel.textColor = AppColors.background
+            dateLabel.textColor = AppColors.background
+            layer.borderWidth = 2
+            layer.borderColor = AppColors.primary.cgColor
+        } else if isSelected {
+            backgroundColor = AppColors.secondary.withAlphaComponent(0.2)
+            dayLabel.textColor = AppColors.primary
+            dateLabel.textColor = AppColors.primary
+            layer.borderWidth = 2
+            layer.borderColor = AppColors.primary.cgColor
+        } else {
+            backgroundColor = .clear
+            dayLabel.textColor = AppColors.secondary
+            dateLabel.textColor = AppColors.secondary
+            layer.borderWidth = 1
+            layer.borderColor = AppColors.secondary.withAlphaComponent(0.3).cgColor
+        }
+    }
+
+    private func updateBorderColor() {
+        if backgroundColor == AppColors.primary {
+            layer.borderColor = AppColors.primary.cgColor
+        } else if backgroundColor != .clear {
+            layer.borderColor = AppColors.primary.cgColor
+        } else {
+            layer.borderColor = AppColors.secondary.withAlphaComponent(0.3).cgColor
         }
     }
 }

@@ -15,8 +15,15 @@ class DayRoutineCell: UITableViewCell {
     private let containerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.cardBackground
-        view.layer.cornerRadius = 8
+        view.backgroundColor = AppColors.secondaryCardBackground
+        view.layer.cornerRadius = 16
+        
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOffset = CGSize(width: 0, height: 2)
+        view.layer.shadowRadius = 8
+        view.layer.masksToBounds = false
+        
         return view
     }()
     
@@ -30,7 +37,7 @@ class DayRoutineCell: UITableViewCell {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.medium(15)
+        label.font = AppFonts.semibold(17)
         label.textColor = AppColors.primary
         return label
     }()
@@ -55,20 +62,19 @@ class DayRoutineCell: UITableViewCell {
         containerView.addSubview(nameLabel)
         
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
-            containerView.heightAnchor.constraint(equalToConstant: 50),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
-            statusIcon.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12),
+            statusIcon.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
             statusIcon.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            statusIcon.widthAnchor.constraint(equalToConstant: 20),
-            statusIcon.heightAnchor.constraint(equalToConstant: 20),
+            statusIcon.widthAnchor.constraint(equalToConstant: 24),
+            statusIcon.heightAnchor.constraint(equalToConstant: 24),
             
             nameLabel.leadingAnchor.constraint(equalTo: statusIcon.trailingAnchor, constant: 12),
             nameLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12)
+            nameLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16)
         ])
     }
     

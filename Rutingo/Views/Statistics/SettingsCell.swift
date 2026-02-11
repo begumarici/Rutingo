@@ -88,7 +88,7 @@ class SettingCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(icon: String, title: String, detail: String? = nil, isDestructive: Bool = false) {
+    func configure(icon: String, title: String, detail: String? = nil, showsChevron: Bool = true, isDestructive: Bool = false) {
         iconImageView.image = UIImage(systemName: icon)
         titleLabel.text = title
         detailLabel.text = detail
@@ -101,7 +101,7 @@ class SettingCell: UITableViewCell {
             iconImageView.tintColor = AppColors.primary
         }
         
-        chevronImageView.isHidden = detail != nil
+        chevronImageView.isHidden = !showsChevron
     }
     
     // MARK: - Touch Animation

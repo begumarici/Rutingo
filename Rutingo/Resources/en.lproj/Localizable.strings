@@ -18,6 +18,7 @@
 "greeting_night" = "Good night";
 "no_routines_today" = "No routines scheduled for today";
 "daily_focus" = "Your daily focus";
+"completed" = "Completed";
 
 /* Routines Screen */
 "routines" = "Routines";
@@ -58,6 +59,10 @@
 "general" = "General";
 "data" = "Data";
 "about" = "About";
+"theme" = "Theme";
+"system_theme" = "System";
+"light_theme" = "Light";
+"dark_theme" = "Dark";
 "notifications" = "Notifications";
 "send_feedback" = "Send Feedback";
 "clear_all_data" = "Clear All Data";

@@ -19,6 +19,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = MainTabBarController()
         self.window = window
         window.makeKeyAndVisible()
+        
+        ThemeManager.shared.applySavedTheme()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

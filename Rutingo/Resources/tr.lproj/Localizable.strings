@@ -18,6 +18,7 @@
 "greeting_night" = "İyi geceler";
 "no_routines_today" = "Bugün için planlanmış bir rutin yok";
 "daily_focus" = "Günlük odağın";
+"completed" = "Tamamlananlar";
 
 /* Routines Screen */
 "routines" = "Rutinler";
@@ -59,6 +60,9 @@
 "general" = "Genel";
 "data" = "Veri";
 "about" = "Hakkında";
+"system_theme" = "Sistem";
+"light_theme" = "Açık";
+"dark_theme" = "Koyu";
 "notifications" = "Bildirimler";
 "send_feedback" = "Geri bildirim gönder";
 "clear_all_data" = "Tüm verileri sil";

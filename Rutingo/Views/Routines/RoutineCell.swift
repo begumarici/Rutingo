@@ -17,12 +17,13 @@ class RoutineCell: UITableViewCell {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = AppColors.secondaryCardBackground
-        view.layer.cornerRadius = Layout.cornerRadius
+        view.layer.cornerRadius = 16
         
         view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowOpacity = 0.1
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 4
+        view.layer.shadowRadius = 8
+        view.layer.masksToBounds = false
         
         return view
     }()
@@ -30,7 +31,7 @@ class RoutineCell: UITableViewCell {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(18)
+        label.font = AppFonts.semibold(17)
         label.textColor = AppColors.primary
         label.numberOfLines = 1
         label.lineBreakMode = .byTruncatingTail
@@ -40,7 +41,7 @@ class RoutineCell: UITableViewCell {
     private let frequencyLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.regular(14)
+        label.font = AppFonts.regular(13)
         label.textColor = AppColors.secondary
         return label
     }()
@@ -48,7 +49,7 @@ class RoutineCell: UITableViewCell {
     private let streakLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(16)
+        label.font = AppFonts.semibold(15)
         label.textColor = AppColors.secondary
         return label
     }()
@@ -88,23 +89,22 @@ class RoutineCell: UITableViewCell {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Layout.smallPadding),
+            cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
             cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
-            cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Layout.smallPadding),
-            cardView.heightAnchor.constraint(greaterThanOrEqualToConstant: 70),
-  
-            streakLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -Layout.padding),
+            cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -6),
+            cardView.heightAnchor.constraint(equalToConstant: 72),
+
+            streakLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16),
             streakLabel.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
             
-            nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: Layout.smallPadding + 4),
-            nameLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: Layout.padding),
-            nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.padding),
+            nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
+            nameLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
+            nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -12),
 
             frequencyLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4),
-            frequencyLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: Layout.padding),
-            frequencyLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -Layout.padding),
-            frequencyLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -Layout.smallPadding - 4)
+            frequencyLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
+            frequencyLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -12)
         ])
     }
     
@@ -128,12 +128,12 @@ class RoutineCell: UITableViewCell {
     // MARK: - Helpers
     private func createStreakText(_ streak: Int) -> NSAttributedString {
         let attachment = NSTextAttachment()
-        let iconSize: CGFloat = 16
+        let iconSize: CGFloat = 18
         
-        attachment.image = UIImage(systemName: "link")?
-            .withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
+        attachment.image = UIImage(systemName: "flame.fill")?
+            .withTintColor(streak > 0 ? .orange : AppColors.secondary, renderingMode: .alwaysOriginal)
         
-        attachment.bounds = CGRect(x: 0, y: -1, width: iconSize, height: iconSize)
+        attachment.bounds = CGRect(x: 0, y: -2, width: iconSize, height: iconSize)
         
         let attributedString = NSMutableAttributedString(attachment: attachment)
         attributedString.append(NSAttributedString(string: " \(streak)"))
