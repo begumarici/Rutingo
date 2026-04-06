@@ -1,0 +1,23 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: |
+          xcodebuild test \
+            -project Rutingo.xcodeproj \
+            -scheme Rutingo \
+            -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
+            -resultBundlePath TestResults
