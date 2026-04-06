@@ -19,5 +19,5 @@ jobs:
           xcodebuild test \
             -project Rutingo.xcodeproj \
             -scheme Rutingo \
-            -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
             -resultBundlePath TestResults
