@@ -48,18 +48,19 @@
 
 /* Statistics Screen */
 "statistics" = "İstatistikler";
-"weekly_trend" = "Haftalık trend";
+"weekly_trend" = "Haftalık Trend";
 "from_last_week" = "geçen haftaya göre";
-"completion_rate" = "Tamamlama\noranı";
-"current_perfect_streak" = "Mevcut mükemmel seri";
-"total_completed" = "Toplam tamamlanan";
-"active_routines" = "Aktif rutinler";
+"completion_rate" = "Tamamlama\nOranı";
+"current_perfect_streak" = "Mevcut Mükemmel Seri";
+"total_completed" = "Toplam Tamamlanan";
+"active_routines" = "Aktif Rutinler";
 
 /* Settings Screen */
 "settings" = "Ayarlar";
 "general" = "Genel";
 "data" = "Veri";
 "about" = "Hakkında";
+"theme" = "Tema";
 "system_theme" = "Sistem";
 "light_theme" = "Açık";
 "dark_theme" = "Koyu";

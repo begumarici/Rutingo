@@ -265,7 +265,6 @@ class AddRoutineViewController: UIViewController {
             deleteButton.isHidden = false
         }
         
-        navigationController?.navigationBar.barStyle = .black
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor: AppColors.navbarTitle]
     }
     
