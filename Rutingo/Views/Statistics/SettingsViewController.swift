@@ -9,6 +9,16 @@ import UIKit
 
 class SettingsViewController: UIViewController {
     
+    private let dataManager: DataManager
+    
+    init(dataManager: DataManager = CoreDataManager.shared) {
+        self.dataManager = dataManager
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError()
+    }
     // MARK: - UI Components
     private let tableView: UITableView = {
         let table = UITableView(frame: .zero, style: .insetGrouped)
@@ -104,7 +114,7 @@ class SettingsViewController: UIViewController {
         
         alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
         alert.addAction(UIAlertAction(title: "delete".localized, style: .destructive) { _ in
-            CoreDataManager.shared.clearAllData()
+            self.dataManager.clearAllData()
             
             let successAlert = UIAlertController(
                 title: "data_cleared".localized,

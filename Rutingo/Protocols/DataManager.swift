@@ -15,4 +15,5 @@ protocol DataManager {
     func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date?) 
     func toggleCompletion(_ routine: Routine)
     func save()
+    func clearAllData()
 }
