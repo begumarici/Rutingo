@@ -53,11 +53,22 @@ class CoreDataManager: DataManager {
     }
     
     // MARK: - CRUD Operations
-    func saveRoutine(name: String, frequency: Frequency, hasReminder: Bool = false, reminderTime: Date? = nil) -> Routine {
+    func saveRoutine(
+        name: String,
+        frequency: Frequency,
+        feeling: String? = nil,
+        motivation: String? = nil,
+        blockType: String? = nil,
+        hasReminder: Bool = false,
+        reminderTime: Date? = nil
+    ) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()
         routine.name = name
         routine.frequency = frequency
+        routine.feeling    = feeling
+        routine.motivation = motivation
+        routine.blockType  = blockType
         routine.createdAt = Date()
         
         routine.lastFrequencyChangeDate = DateHelper.shared.startOfDay(Date())
@@ -68,7 +79,7 @@ class CoreDataManager: DataManager {
         return routine
     }
     
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool = false, reminderTime: Date? = nil) {
+    func updateRoutine(routine: Routine, name: String, frequency: Frequency, feeling: String? = nil, motivation: String? = nil, blockType: String? = nil, hasReminder: Bool = false, reminderTime: Date? = nil) {
         
         if let oldData = routine.frequencyData {
             let oldFrequencyData = try? JSONEncoder().encode(frequency)
@@ -80,6 +91,9 @@ class CoreDataManager: DataManager {
         
         routine.name = name
         routine.frequencyData = try? JSONEncoder().encode(frequency)
+        routine.feeling    = feeling
+        routine.motivation = motivation
+        routine.blockType  = blockType
         routine.hasReminder = hasReminder
         routine.reminderTime = reminderTime
         save()
@@ -124,4 +138,149 @@ class CoreDataManager: DataManager {
             print("Error clearing all data: \(error)")
         }
     }
+    
+    // MARK: - TimeBlock
+    func fetchAllBlocks() -> [TimeBlock] {
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "startHour", ascending: true)]
+        return (try? viewContext.fetch(request)) ?? []
+    }
+
+    func saveBlock(title: String, startHour: Int, endHour: Int, isTemplate: Bool = false) -> TimeBlock {
+        let block        = TimeBlock(context: viewContext)
+        block.id         = UUID()
+        block.title      = title
+        block.startHour  = Int16(startHour)
+        block.endHour    = Int16(endHour)
+        block.isTemplate = isTemplate
+        block.createdAt  = Date()
+        save()
+        return block
+    }
+
+    func deleteBlock(_ block: TimeBlock) {
+        viewContext.delete(block)
+        save()
+    }
+
+    func addRoutineToBlock(_ routine: Routine, block: TimeBlock) {
+        block.addToRoutines(routine)
+        save()
+    }
+
+    func removeRoutineFromBlock(_ routine: Routine, block: TimeBlock) {
+        block.removeFromRoutines(routine)
+        save()
+    }
+
+    // MARK: - Task
+    func fetchAllTasks() -> [Task] {
+        let request: NSFetchRequest<Task> = Task.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        return (try? viewContext.fetch(request)) ?? []
+    }
+
+    func saveTask(title: String, category: String, priority: String, dueDate: Date? = nil) -> Task {
+        let task         = Task(context: viewContext)
+        task.id          = UUID()
+        task.title       = title
+        task.category    = category
+        task.priority    = priority
+        task.dueDate     = dueDate
+        task.isCompleted = false
+        task.createdAt   = Date()
+        save()
+        return task
+    }
+
+    func toggleTask(_ task: Task) {
+        task.isCompleted = !task.isCompleted
+        task.completedAt = task.isCompleted ? Date() : nil
+        save()
+    }
+
+    func deleteTask(_ task: Task) {
+        viewContext.delete(task)
+        save()
+    }
+
+    // MARK: - Event
+    func fetchEvents(for date: Date) -> [Event] {
+        let request: NSFetchRequest<Event> = Event.fetchRequest()
+        let startOfDay = DateHelper.shared.startOfDay(date)
+        let endOfDay   = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+        request.predicate = NSPredicate(
+            format: "date >= %@ AND date < %@",
+            startOfDay as CVarArg,
+            endOfDay   as CVarArg
+        )
+        request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: true)]
+        return (try? viewContext.fetch(request)) ?? []
+    }
+
+    func saveEvent(title: String, date: Date, time: Date? = nil) -> Event {
+        let event       = Event(context: viewContext)
+        event.id        = UUID()
+        event.title     = title
+        event.date      = DateHelper.shared.startOfDay(date)
+        event.time      = time
+        event.createdAt = Date()
+        save()
+        return event
+    }
+
+    func deleteEvent(_ event: Event) {
+        viewContext.delete(event)
+        save()
+    }
+
+    // MARK: - HabitSkipLog
+    func saveSkipLog(routineId: UUID, date: Date, reason: String) {
+        let log       = HabitSkipLog(context: viewContext)
+        log.id        = UUID()
+        log.routineId = routineId
+        log.date      = DateHelper.shared.startOfDay(date)
+        log.reason    = reason
+        log.createdAt = Date()
+        save()
+    }
+
+    func hasSkipLog(routineId: UUID, date: Date) -> Bool {
+        let request: NSFetchRequest<HabitSkipLog> = HabitSkipLog.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "routineId == %@ AND date == %@",
+            routineId as CVarArg,
+            DateHelper.shared.startOfDay(date) as CVarArg
+        )
+        return ((try? viewContext.fetch(request))?.count ?? 0) > 0
+    }
+
+    // MARK: - WeeklyReview
+    func saveWeeklyReview(weekStartDate: Date, rating: Int, note: String?) {
+        let review           = WeeklyReview(context: viewContext)
+        review.id            = UUID()
+        review.weekStartDate = DateHelper.shared.startOfDay(weekStartDate)
+        review.rating        = Int16(rating)
+        review.note          = note
+        review.createdAt     = Date()
+        save()
+    }
+
+    func hasWeeklyReview(for weekStart: Date) -> Bool {
+        let request: NSFetchRequest<WeeklyReview> = WeeklyReview.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "weekStartDate == %@",
+            DateHelper.shared.startOfDay(weekStart) as CVarArg
+        )
+        return ((try? viewContext.fetch(request))?.count ?? 0) > 0
+    }
+
+    func fetchAllReviews() -> [WeeklyReview] {
+        let request: NSFetchRequest<WeeklyReview> = WeeklyReview.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "weekStartDate", ascending: false)]
+        return (try? viewContext.fetch(request)) ?? []
+    }
+    
+    
+    
 }

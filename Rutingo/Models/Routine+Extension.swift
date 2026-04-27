@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 extension Routine {
     
@@ -190,5 +191,41 @@ extension Routine {
             currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate)!
         }
         return false
+    }
+    
+    // MARK: - Feeling
+    enum FeelingType: String {
+        case energy = "energy"
+        case hard   = "hard"
+        case boring = "boring"
+        case deep   = "deep"
+    }
+
+    var feelingType: FeelingType? {
+        guard let f = feeling else { return nil }
+        return FeelingType(rawValue: f)
+    }
+
+    var feelingColor: UIColor {
+        switch feelingType {
+        case .energy:  return AppColors.feelingEnergy
+        case .hard:    return AppColors.feelingHard
+        case .boring:  return AppColors.feelingBoring
+        case .deep:    return AppColors.feelingDeep
+        case nil:      return AppColors.tertiary
+        }
+    }
+
+    // MARK: - Block Type
+    enum BlockType: String {
+        case morning = "morning"
+        case noon    = "noon"
+        case evening = "evening"
+        case custom  = "custom"
+    }
+
+    var blockTypeEnum: BlockType? {
+        guard let b = blockType else { return nil }
+        return BlockType(rawValue: b)
     }
 }

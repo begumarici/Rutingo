@@ -21,6 +21,28 @@ enum AppColors {
     static let progressMedium = UIColor(red: 91/255, green: 131/255, blue: 100/255, alpha: 1.0)
     static let progressHigh = UIColor(red: 56/255, green: 113/255, blue: 69/255, alpha: 1.0)
     static let progressComplete = UIColor(red: 31/255, green: 85/255, blue: 43/255, alpha: 1.0)
+    
+    // Feeling
+    static let feelingEnergy    = UIColor(hex: "4A7C20")
+    static let feelingHard      = UIColor(hex: "C94B1A")
+    static let feelingBoring    = UIColor(hex: "888780")
+    static let feelingDeep      = UIColor(hex: "4A43A0")
+
+    // Priority
+    static let priorityMust     = UIColor(hex: "C94B1A")
+    static let priorityMaybe    = UIColor(hex: "D08A10")
+    static let prioritySomeday  = UIColor(hex: "C0BFBB")
+
+    // Gradient
+    static let gradientPink     = UIColor(hex: "FCE4F0")
+    static let gradientYellow   = UIColor(hex: "FFF7D6")
+    static let gradientPeach    = UIColor(hex: "FFE4D6")
+    static let gradientLavender = UIColor(hex: "EDE4FE")
+    static let gradientMint     = UIColor(hex: "DCF5EA")
+
+    // Accent & UI
+    static let accent            = UIColor(hex: "FF6B9D")
+    static let separator         = UIColor(hex: "F0F0F0")
 }
 
 enum AppFonts {
@@ -45,6 +67,8 @@ enum Layout {
     static let cornerRadius: CGFloat = 12
     static let padding: CGFloat = 16
     static let smallPadding: CGFloat = 8
+    static let blockRadius: CGFloat = 12
+    static let chipRadius:  CGFloat = 20
 }
  
 extension UIColor {

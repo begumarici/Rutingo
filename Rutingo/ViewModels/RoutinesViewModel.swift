@@ -25,7 +25,7 @@ class RoutinesViewModel {
     }
     
     func addRoutine(name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date?, completion: () -> Void) {
-        let newRoutine = dataManager.saveRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
+        let newRoutine = dataManager.saveRoutine(name: name, frequency: frequency, feeling: nil, motivation: nil, blockType: nil, hasReminder: hasReminder, reminderTime: reminderTime)
         NotificationManager.shared.scheduleNotification(for: newRoutine)
         loadData {
             completion()
@@ -39,7 +39,7 @@ class RoutinesViewModel {
     }
     
     func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date? = nil, completion: () -> Void) {
-        dataManager.updateRoutine(routine: routine, name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
+        dataManager.updateRoutine(routine: routine, name: name, frequency: frequency, feeling: nil, motivation: nil, blockType: nil, hasReminder: hasReminder, reminderTime: reminderTime)
         NotificationManager.shared.scheduleNotification(for: routine)
         loadData(completion: completion)
     }
