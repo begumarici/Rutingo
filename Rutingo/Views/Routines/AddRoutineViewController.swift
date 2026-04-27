@@ -10,8 +10,8 @@ import UIKit
 class AddRoutineViewController: UIViewController {
     
     // MARK: - Properties
-    var onSave: ((String, Frequency, Bool, Date?) -> Void)?
-    var onUpdate: ((Routine, String, Frequency, Bool, Date?) -> Void)?
+    var onSave: ((String, Frequency, String?, String?, String?, Bool, Date?) -> Void)?
+    var onUpdate: ((Routine, String, Frequency, String?, String?, String?, Bool, Date?) -> Void)?
     var onDelete: (() -> Void)?
     
     enum Mode {
@@ -24,6 +24,11 @@ class AddRoutineViewController: UIViewController {
     private var selectedDays: [Int] = []
     private var hasReminder: Bool = false
     private var reminderTime: Date = Date()
+    private var selectedFeeling: String?
+    private var motivationText: String?
+    private var selectedBlockType: String?
+    private var currentStep: Int = 0
+    private let totalSteps: Int = 6
     
     // MARK: - UI Containers
     private let nameContainer: UIView = {
@@ -224,6 +229,13 @@ class AddRoutineViewController: UIViewController {
         configureModeUI()
         setupNavigationBar()
         
+        addSubviews()
+        setupConstraints()
+        setupActions()
+        createDayButtons()
+    }
+    
+    private func addSubviews() {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         
@@ -247,10 +259,6 @@ class AddRoutineViewController: UIViewController {
         reminderHeaderView.addSubview(reminderSwitch)
         reminderStackView.addArrangedSubview(reminderHeaderView)
         reminderStackView.addArrangedSubview(timePicker)
-        
-        setupConstraints()
-        setupActions()
-        createDayButtons()
     }
     
     private func configureModeUI() {
@@ -467,9 +475,9 @@ class AddRoutineViewController: UIViewController {
         
         switch mode {
         case .add:
-            onSave?(name, selectedFrequency, reminderEnabled, reminderDate)
+            onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate)
         case .edit(let routine):
-            onUpdate?(routine, name, selectedFrequency, reminderEnabled, reminderDate)
+            onUpdate?(routine, name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate)
         }
         
         dismiss(animated: true)

@@ -129,7 +129,7 @@ extension MainTabBarController: CustomTabBarDelegate {
         let addRoutineVC = AddRoutineViewController()
         let routinesViewModel = RoutinesViewModel()
         
-        addRoutineVC.onSave = { name, frequency, hasReminder, reminderTime in
+        addRoutineVC.onSave = { name, frequency, feeling, motivation, blockType, hasReminder, reminderTime in
             routinesViewModel.addRoutine(
                 name: name,
                 frequency: frequency,
