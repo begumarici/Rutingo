@@ -330,6 +330,9 @@ class RoutineDetailViewController: UIViewController {
             self.viewModel.updateRoutine(routine: routine,
                                          name: name,
                                          frequency: frequency,
+                                         feeling: feeling,
+                                         motivation: motivation,
+                                         blockType: blockType,
                                          hasReminder: hasReminder,
                                          reminderTime: reminderTime) {
                 

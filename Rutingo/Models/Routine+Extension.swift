@@ -199,20 +199,27 @@ extension Routine {
         case hard   = "hard"
         case boring = "boring"
         case deep   = "deep"
-    }
 
-    var feelingType: FeelingType? {
-        guard let f = feeling else { return nil }
-        return FeelingType(rawValue: f)
-    }
+        var displayText: String {
+            switch self {
+            case .energy: return "feeling_energy".localized
+            case .hard:   return "feeling_hard".localized
+            case .boring: return "feeling_boring".localized
+            case .deep:   return "feeling_deep".localized
+            }
+        }
 
-    var feelingColor: UIColor {
-        switch feelingType {
-        case .energy:  return AppColors.feelingEnergy
-        case .hard:    return AppColors.feelingHard
-        case .boring:  return AppColors.feelingBoring
-        case .deep:    return AppColors.feelingDeep
-        case nil:      return AppColors.tertiary
+        var color: UIColor {
+            switch self {
+            case .energy: return AppColors.feelingEnergy
+            case .hard:   return AppColors.feelingHard
+            case .boring: return AppColors.feelingBoring
+            case .deep:   return AppColors.feelingDeep
+            }
+        }
+
+        static var allCases: [FeelingType] {
+            return [.energy, .hard, .boring, .deep]
         }
     }
 

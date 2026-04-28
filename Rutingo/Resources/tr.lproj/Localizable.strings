@@ -116,3 +116,12 @@
 
 /* Format */
 "percent_format" = "%%%d";
+
+/* Feeling and Motivation */
+"feeling_energy" = "Enerji veriyor";
+"feeling_hard" = "Zor ama önemli";
+"feeling_boring" = "Sıkıcı ama gerekli";
+"feeling_deep" = "Derin odak";
+"feeling_question" = "Bu rutin sana ne hissettiriyor?";
+"motivation_question" = "Neden oluşturuyorsun?";
+"motivation_placeholder" = "Örn: Sabah enerjimi artırmak ve güne güçlü başlamak istiyorum.";

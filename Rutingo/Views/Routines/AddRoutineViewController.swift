@@ -55,6 +55,78 @@ class AddRoutineViewController: UIViewController {
         return view
     }()
     
+    private let feelingContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = 16
+        return view
+    }()
+    
+    private let feelingLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "feeling_question".localized
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.primary
+        return label
+    }()
+
+    private let feelingStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 12
+        return stack
+    }()
+
+    private let feelingButtonsStack: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
+        stack.spacing = 8
+        return stack
+    }()
+
+    private let motivationContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = 16
+        return view
+    }()
+    
+    private let motivationLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "motivation_question".localized
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.primary
+        return label
+    }()
+
+    private let motivationStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 8
+        return stack
+    }()
+
+    private let motivationTextView: UITextView = {
+        let tv = UITextView()
+        tv.translatesAutoresizingMaskIntoConstraints = false
+        tv.backgroundColor = AppColors.secondaryCardBackground
+        tv.layer.cornerRadius = 8
+        tv.font = AppFonts.regular(15)
+        tv.textColor = AppColors.secondary.withAlphaComponent(0.4)
+        
+        tv.text = "motivation_placeholder".localized
+        tv.textContainerInset = UIEdgeInsets(top: 10, left: 8, bottom: 10, right: 8)
+        return tv
+    }()
+    
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
         let scroll = UIScrollView()
@@ -217,7 +289,8 @@ class AddRoutineViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupKeyboardDismiss()
-        
+        setupKeyboardObservers()
+        motivationTextView.delegate = self
         if case .edit(let routine) = mode {
             populateFields(with: routine)
         }
@@ -231,6 +304,7 @@ class AddRoutineViewController: UIViewController {
         
         addSubviews()
         setupConstraints()
+        createFeelingButtons()
         setupActions()
         createDayButtons()
     }
@@ -242,7 +316,19 @@ class AddRoutineViewController: UIViewController {
         contentView.addSubview(nameContainer)
         contentView.addSubview(frequencyContainer)
         contentView.addSubview(reminderContainer)
-        contentView.addSubview(deleteButton) 
+        
+        contentView.addSubview(feelingContainer)
+        contentView.addSubview(motivationContainer)
+
+        feelingContainer.addSubview(feelingStackView)
+        feelingStackView.addArrangedSubview(feelingLabel)
+        feelingStackView.addArrangedSubview(feelingButtonsStack)
+
+        motivationContainer.addSubview(motivationStackView)
+        motivationStackView.addArrangedSubview(motivationLabel)
+        motivationStackView.addArrangedSubview(motivationTextView)
+        
+        contentView.addSubview(deleteButton)
         contentView.addSubview(saveButton)
      
         nameContainer.addSubview(nameStack)
@@ -332,6 +418,28 @@ class AddRoutineViewController: UIViewController {
             reminderContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
             reminderContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             
+            // feeling container
+            feelingContainer.topAnchor.constraint(equalTo: reminderContainer.bottomAnchor, constant: padding),
+            feelingContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            feelingContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+
+            feelingStackView.topAnchor.constraint(equalTo: feelingContainer.topAnchor, constant: cardPadding),
+            feelingStackView.leadingAnchor.constraint(equalTo: feelingContainer.leadingAnchor, constant: cardPadding),
+            feelingStackView.trailingAnchor.constraint(equalTo: feelingContainer.trailingAnchor, constant: -cardPadding),
+            feelingStackView.bottomAnchor.constraint(equalTo: feelingContainer.bottomAnchor, constant: -cardPadding),
+            feelingButtonsStack.heightAnchor.constraint(equalToConstant: 56),
+
+            // motivation container
+            motivationContainer.topAnchor.constraint(equalTo: feelingContainer.bottomAnchor, constant: padding),
+            motivationContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            motivationContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+
+            motivationStackView.topAnchor.constraint(equalTo: motivationContainer.topAnchor, constant: cardPadding),
+            motivationStackView.leadingAnchor.constraint(equalTo: motivationContainer.leadingAnchor, constant: cardPadding),
+            motivationStackView.trailingAnchor.constraint(equalTo: motivationContainer.trailingAnchor, constant: -cardPadding),
+            motivationStackView.bottomAnchor.constraint(equalTo: motivationContainer.bottomAnchor, constant: -cardPadding),
+            motivationTextView.heightAnchor.constraint(equalToConstant: 80),
+            
             reminderStackView.topAnchor.constraint(equalTo: reminderContainer.topAnchor, constant: cardPadding),
             reminderStackView.leadingAnchor.constraint(equalTo: reminderContainer.leadingAnchor, constant: cardPadding),
             reminderStackView.trailingAnchor.constraint(equalTo: reminderContainer.trailingAnchor, constant: -cardPadding),
@@ -344,7 +452,7 @@ class AddRoutineViewController: UIViewController {
             reminderSwitch.trailingAnchor.constraint(equalTo: reminderHeaderView.trailingAnchor),
             
             // buttons
-            deleteButton.topAnchor.constraint(equalTo: reminderContainer.bottomAnchor, constant: 10),
+            deleteButton.topAnchor.constraint(equalTo: motivationContainer.bottomAnchor, constant: 10),
             deleteButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
             saveButton.topAnchor.constraint(equalTo: deleteButton.bottomAnchor, constant: 10),
@@ -360,6 +468,74 @@ class AddRoutineViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
+    }
+    
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+        else { return }
+
+        let inset = keyboardFrame.height - view.safeAreaInsets.bottom
+        scrollView.contentInset.bottom = inset
+        scrollView.verticalScrollIndicatorInsets.bottom = inset
+
+        if let activeView = view.findFirstResponder() {
+            let rect = activeView.convert(activeView.bounds, to: scrollView)
+            let paddedRect = rect.insetBy(dx: 0, dy: -16)
+            UIView.animate(withDuration: duration) {
+                self.scrollView.scrollRectToVisible(paddedRect, animated: false)
+            }
+        }
+    }
+
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        scrollView.contentInset.bottom = 0
+        scrollView.verticalScrollIndicatorInsets.bottom = 0
+    }
+    
+    private func createFeelingButtons() {
+        for feeling in Routine.FeelingType.allCases {
+            let button = UIButton(type: .custom)
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.setTitle(feeling.displayText, for: .normal)
+            button.titleLabel?.font = AppFonts.regular(12)
+            button.titleLabel?.numberOfLines = 2
+            button.titleLabel?.textAlignment = .center
+            button.setTitleColor(AppColors.primary, for: .normal)
+            button.backgroundColor = AppColors.secondaryCardBackground
+            button.layer.cornerRadius = 10
+            button.layer.borderWidth = 1.5
+            button.layer.borderColor = UIColor.clear.cgColor
+            button.accessibilityIdentifier = feeling.rawValue
+            button.addTarget(self, action: #selector(feelingButtonTapped(_:)), for: .touchUpInside)
+            feelingButtonsStack.addArrangedSubview(button)
+        }
+    }
+    
+    @objc private func feelingButtonTapped(_ sender: UIButton) {
+        selectedFeeling = sender.accessibilityIdentifier
+
+        for case let button as UIButton in feelingButtonsStack.arrangedSubviews {
+            let isSelected = button.accessibilityIdentifier == selectedFeeling
+            button.backgroundColor = isSelected ? AppColors.primary : AppColors.secondaryCardBackground
+            button.setTitleColor(isSelected ? AppColors.background : AppColors.primary, for: .normal)
+            button.layer.borderColor = isSelected ? AppColors.primary.cgColor : UIColor.clear.cgColor
+        }
     }
     
     private func setupActions() {
@@ -473,6 +649,8 @@ class AddRoutineViewController: UIViewController {
         let reminderEnabled = reminderSwitch.isOn
         let reminderDate = reminderEnabled ? timePicker.date : nil
         
+        motivationText = motivationTextView.text == "motivation_placeholder".localized ? nil : motivationTextView.text
+        
         switch mode {
         case .add:
             onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate)
@@ -537,6 +715,20 @@ class AddRoutineViewController: UIViewController {
             }
         }
         
+        if let feeling = routine.feeling {
+            selectedFeeling = feeling
+            for case let button as UIButton in feelingButtonsStack.arrangedSubviews {
+                let isSelected = button.accessibilityIdentifier == feeling
+                button.backgroundColor = isSelected ? AppColors.primary : AppColors.secondaryCardBackground
+                button.setTitleColor(isSelected ? AppColors.background : AppColors.primary, for: .normal)
+            }
+        }
+
+        if let motivation = routine.motivation {
+            motivationTextView.text = motivation
+            motivationTextView.textColor = AppColors.primary
+        }
+        
         reminderSwitch.isOn = routine.hasReminder
         hasReminder = routine.hasReminder
         
@@ -566,5 +758,38 @@ class AddRoutineViewController: UIViewController {
         let alert = UIAlertController(title: "error".localized, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "ok".localized, style: .default))
         present(alert, animated: true)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+}
+
+// MARK: - UITextViewDelegate
+extension AddRoutineViewController: UITextViewDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        if textView.text == "motivation_placeholder".localized {
+            textView.text = ""
+            textView.textColor = AppColors.primary
+        }
+    }
+
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if textView.text.isEmpty {
+            textView.text = "motivation_placeholder".localized
+            textView.textColor = AppColors.secondary.withAlphaComponent(0.4)
+        }
+    }
+}
+
+extension UIView {
+    func findFirstResponder() -> UIView? {
+        if isFirstResponder { return self }
+        for subview in subviews {
+            if let responder = subview.findFirstResponder() {
+                return responder
+            }
+        }
+        return nil
     }
 }

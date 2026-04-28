@@ -133,6 +133,9 @@ extension MainTabBarController: CustomTabBarDelegate {
             routinesViewModel.addRoutine(
                 name: name,
                 frequency: frequency,
+                feeling: feeling,
+                motivation: motivation,
+                blockType: blockType,
                 hasReminder: hasReminder,
                 reminderTime: reminderTime
             ) {

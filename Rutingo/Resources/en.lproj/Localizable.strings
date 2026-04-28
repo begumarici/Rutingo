@@ -115,3 +115,12 @@
 
 /* Format */
 "percent_format" = "%d%%";
+
+/* Feeling and Motivation */
+"feeling_energy" = "Gives me energy";
+"feeling_hard" = "Hard but important";
+"feeling_boring" = "Boring but necessary";
+"feeling_deep" = "Deep focus";
+"feeling_question" = "How does this routine make you feel?";
+"motivation_question" = "Why are you creating this?";
+"motivation_placeholder" = "e.g. I want to boost my morning energy and start the day strong.";
