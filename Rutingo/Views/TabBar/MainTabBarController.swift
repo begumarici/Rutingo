@@ -21,10 +21,10 @@ class MainTabBarController: UIViewController {
     
     private lazy var customTabBar: CustomTabBarView = {
         let items: [String] = [
-            "calendar.badge.clock",
-            "list.bullet",
-            "calendar",
-            "chart.line.uptrend.xyaxis"
+            "square.grid.2x2",
+            "rectangle.stack",
+            "chart.bar",
+            "list.bullet"
         ]
         let tabBar = CustomTabBarView(items: items)
         tabBar.delegate = self
@@ -42,12 +42,12 @@ class MainTabBarController: UIViewController {
     
     // MARK: - Setup
     private func setupViewControllers() {
-        let todayVC = createTodayTab()
-        let routinesVC = createRoutinesTab()
-        let calendarVC = createCalendarTab()
-        let statisticsVC = createStatisticsTab()
+        let todayVC  = createTodayTab()
+        let blocksVC = createBlocksTab()
+        let weekVC   = createWeekTab()
+        let tasksVC  = createTasksTab()
         
-        viewControllers = [todayVC, routinesVC, calendarVC, statisticsVC]
+        viewControllers = [todayVC, blocksVC, weekVC, tasksVC]
     }
     
     private func createTodayTab() -> UINavigationController {
@@ -55,19 +55,19 @@ class MainTabBarController: UIViewController {
         return UINavigationController(rootViewController: todayVC)
     }
     
-    private func createRoutinesTab() -> UINavigationController {
-        let routinesVC = RoutinesViewController()
-        return UINavigationController(rootViewController: routinesVC)
+    private func createBlocksTab() -> UINavigationController {
+        let vc = BlocksViewController()
+        return UINavigationController(rootViewController: vc)
     }
-    
-    private func createCalendarTab() -> UINavigationController {
-        let calendarVC = CalendarViewController()
-        return UINavigationController(rootViewController: calendarVC)
+
+    private func createWeekTab() -> UINavigationController {
+        let vc = WeekViewController()
+        return UINavigationController(rootViewController: vc)
     }
-    
-    private func createStatisticsTab() -> UINavigationController {
-        let statisticsVC = StatisticsViewController()
-        return UINavigationController(rootViewController: statisticsVC)
+
+    private func createTasksTab() -> UINavigationController {
+        let vc = TasksViewController()
+        return UINavigationController(rootViewController: vc)
     }
     
     private func setupUI() {

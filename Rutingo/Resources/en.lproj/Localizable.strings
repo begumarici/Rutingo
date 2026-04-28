@@ -8,8 +8,9 @@
 
 /* Tab Bar */
 "tab_today" = "Today";
-"tab_routines" = "Routines";
-"tab_statistics" = "Statistics";
+"tab_blocks" = "Blocks";
+"tab_week" = "Week";
+"tab_tasks" = "Tasks";
 
 /* Today Screen */
 "greeting_morning" = "Good morning";

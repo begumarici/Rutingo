@@ -8,8 +8,9 @@
 
 /* Tab Bar */
 "tab_today" = "Bugün";
-"tab_routines" = "Rutinler";
-"tab_statistics" = "İstatistikler";
+"tab_blocks" = "Bloklar";
+"tab_week" = "Hafta";
+"tab_tasks" = "Görevler";
 
 /* Today Screen */
 "greeting_morning" = "Günaydın";
