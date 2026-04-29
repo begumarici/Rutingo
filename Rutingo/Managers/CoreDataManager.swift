@@ -146,13 +146,12 @@ class CoreDataManager: DataManager {
         return (try? viewContext.fetch(request)) ?? []
     }
 
-    func saveBlock(title: String, startHour: Int, endHour: Int, isTemplate: Bool = false) -> TimeBlock {
+    func saveBlock(title: String, startHour: Int, endHour: Int) -> TimeBlock {
         let block        = TimeBlock(context: viewContext)
         block.id         = UUID()
         block.title      = title
         block.startHour  = Int16(startHour)
         block.endHour    = Int16(endHour)
-        block.isTemplate = isTemplate
         block.createdAt  = Date()
         save()
         return block

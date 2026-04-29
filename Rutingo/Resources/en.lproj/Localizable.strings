@@ -21,6 +21,16 @@
 "daily_focus" = "Your daily focus";
 "completed" = "Completed";
 
+/* Blocks Screen */
+"blocks_count" = "blocks";
+"morning_block" = "Morning routine";
+"deep_work_block" = "Deep work";
+"afternoon_block" = "Afternoon";
+"evening_block" = "Evening routine";
+"no_blocks" = "No blocks yet";
+"add_block" = "Add Block";
+"block_title_placeholder" = "Block title...";
+
 /* Routines Screen */
 "routines" = "Routines";
 "no_routines_message" = "No routines yet\nTap + to add your first routine";

@@ -230,6 +230,15 @@ extension Routine {
         case evening = "evening"
         case custom  = "custom"
     }
+    
+    var feelingType: FeelingType? {
+        guard let f = feeling else { return nil }
+        return FeelingType(rawValue: f)
+    }
+
+    var feelingColor: UIColor {
+        return feelingType?.color ?? AppColors.tertiary
+    }
 
     var blockTypeEnum: BlockType? {
         guard let b = blockType else { return nil }

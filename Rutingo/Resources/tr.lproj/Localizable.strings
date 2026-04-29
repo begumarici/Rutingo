@@ -21,6 +21,16 @@
 "daily_focus" = "Günlük odağın";
 "completed" = "Tamamlananlar";
 
+/* Blocks Screen */
+"blocks_count" = "blok";
+"morning_block" = "Sabah rutini";
+"deep_work_block" = "Derin çalışma";
+"afternoon_block" = "Öğleden sonra";
+"evening_block" = "Akşam rutini";
+"no_blocks" = "Henüz blok eklenmedi";
+"add_block" = "Blok Ekle";
+"block_title_placeholder" = "Blok adı...";
+
 /* Routines Screen */
 "routines" = "Rutinler";
 "no_routines_message" = "Henüz rutin yok\nİlk rutinini eklemek için + butonuna dokun";
