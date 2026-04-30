@@ -39,6 +39,13 @@
 "delete_block" = "Bloğu Sil";
 "delete_block_message" = "Bu bloğu silmek istediğine emin misin?";
 "edit_block" = "Bloğu Düzenle";
+"weekday_mon" = "Pt";
+"weekday_tue" = "Sa";
+"weekday_wed" = "Ça";
+"weekday_thu" = "Pe";
+"weekday_fri" = "Cu";
+"weekday_sat" = "Ct";
+"weekday_sun" = "Pa";
 
 /* Routines Screen */
 "routines" = "Rutinler";

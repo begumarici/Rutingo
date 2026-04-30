@@ -11,6 +11,7 @@ class BlocksViewController: UIViewController {
 
     // MARK: - Properties
     private let viewModel  = BlocksViewModel()
+    private let weekStrip = WeekStripView()
     private let timelineView = TimelineView()
 
     private var lastHourHeight: CGFloat = 60
@@ -18,6 +19,14 @@ class BlocksViewController: UIViewController {
     private let maxHourHeight: CGFloat  = 120
 
     // MARK: - UI
+    private let dateLabel: UILabel = {
+        let l = UILabel()
+        l.translatesAutoresizingMaskIntoConstraints = false
+        l.font = AppFonts.semibold(15)
+        l.textColor = AppColors.primary
+        return l
+    }()
+    
     private let scrollView: UIScrollView = {
         let sv = UIScrollView()
         sv.translatesAutoresizingMaskIntoConstraints = false
@@ -61,15 +70,28 @@ class BlocksViewController: UIViewController {
     }
 
     private func setupUI() {
+        view.addSubview(weekStrip)
+        view.addSubview(dateLabel)
         view.addSubview(scrollView)
         scrollView.addSubview(timelineView)
+        weekStrip.delegate = self
         timelineView.delegate = self
 
         let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
         scrollView.addGestureRecognizer(pinch)
 
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            weekStrip.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            weekStrip.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            weekStrip.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            weekStrip.heightAnchor.constraint(equalToConstant: 64),
+            
+            dateLabel.topAnchor.constraint(equalTo: weekStrip.bottomAnchor, constant: 8),
+            dateLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            dateLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            dateLabel.heightAnchor.constraint(equalToConstant: 20),
+
+            scrollView.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 8),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -84,6 +106,7 @@ class BlocksViewController: UIViewController {
 
     // MARK: - Data
     private func loadData() {
+        dateLabel.text = DateHelper.shared.formattedDateShort(viewModel.selectedDate)
         viewModel.loadData { [weak self] in
             guard let self else { return }
             timelineView.blocks = viewModel.blocks
@@ -155,5 +178,15 @@ extension BlocksViewController: TimelineViewDelegate {
 extension Comparable {
     func clamped(to range: ClosedRange<Self>) -> Self {
         return min(max(self, range.lowerBound), range.upperBound)
+    }
+}
+
+extension BlocksViewController: WeekStripViewDelegate {
+    func weekStripView(_ view: WeekStripView, didSelectDate date: Date) {
+        viewModel.selectedDate = date
+        loadData()
+        if Calendar.current.isDateInToday(date) {
+            timelineView.drawCurrentTimeLine()
+        }
     }
 }
