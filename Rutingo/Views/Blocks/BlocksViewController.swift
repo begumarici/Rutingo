@@ -70,16 +70,23 @@ class BlocksViewController: UIViewController {
     }
 
     private func setupUI() {
+        addSubviews()
+        
+        weekStrip.delegate = self
+        timelineView.delegate = self
+
+        setupConstraints()
+        setupGestures()
+    }
+    
+    private func addSubviews() {
         view.addSubview(weekStrip)
         view.addSubview(dateLabel)
         view.addSubview(scrollView)
         scrollView.addSubview(timelineView)
-        weekStrip.delegate = self
-        timelineView.delegate = self
-
-        let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
-        scrollView.addGestureRecognizer(pinch)
-
+    }
+    
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             weekStrip.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             weekStrip.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -103,14 +110,38 @@ class BlocksViewController: UIViewController {
             timelineView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
         ])
     }
+    
+    private func setupGestures() {
+        let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
+        scrollView.addGestureRecognizer(pinch)
+        
+        let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(timelineSwipedLeft))
+        swipeLeft.direction = .left
+        scrollView.addGestureRecognizer(swipeLeft)
+
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(timelineSwipedRight))
+        swipeRight.direction = .right
+        scrollView.addGestureRecognizer(swipeRight)
+    }
 
     // MARK: - Data
-    private func loadData() {
+    private func loadData(animateFrom direction: UIRectEdge = []) {
         dateLabel.text = DateHelper.shared.formattedDateShort(viewModel.selectedDate)
+
+        if direction != [] {
+            let transition = CATransition()
+            transition.duration = 0.2
+            transition.type = .push
+            transition.subtype = direction == .right ? .fromRight : .fromLeft
+            timelineView.layer.add(transition, forKey: nil)
+        }
+
         viewModel.loadData { [weak self] in
             guard let self else { return }
             timelineView.blocks = viewModel.blocks
-            timelineView.drawCurrentTimeLine()
+            if Calendar.current.isDateInToday(viewModel.selectedDate) {
+                timelineView.drawCurrentTimeLine()
+            }
         }
     }
 
@@ -158,6 +189,20 @@ class BlocksViewController: UIViewController {
         let navVC = UINavigationController(rootViewController: addVC)
         present(navVC, animated: true)
     }
+    
+    @objc private func timelineSwipedLeft() {
+        guard let nextDay = Calendar.current.date(byAdding: .day, value: 1, to: viewModel.selectedDate) else { return }
+        viewModel.selectedDate = DateHelper.shared.startOfDay(nextDay)
+        weekStrip.selectedDate = viewModel.selectedDate
+        loadData(animateFrom: .right)
+    }
+
+    @objc private func timelineSwipedRight() {
+        guard let prevDay = Calendar.current.date(byAdding: .day, value: -1, to: viewModel.selectedDate) else { return }
+        viewModel.selectedDate = DateHelper.shared.startOfDay(prevDay)
+        weekStrip.selectedDate = viewModel.selectedDate
+        loadData(animateFrom: .left)
+    }
 }
 
 // MARK: - TimelineViewDelegate
@@ -183,10 +228,8 @@ extension Comparable {
 
 extension BlocksViewController: WeekStripViewDelegate {
     func weekStripView(_ view: WeekStripView, didSelectDate date: Date) {
+        let isForward = date > viewModel.selectedDate
         viewModel.selectedDate = date
-        loadData()
-        if Calendar.current.isDateInToday(date) {
-            timelineView.drawCurrentTimeLine()
-        }
+        loadData(animateFrom: isForward ? .right : .left)
     }
 }

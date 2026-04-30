@@ -20,6 +20,8 @@ class WeekStripView: UIView {
         didSet { buildStrip() }
     }
     
+    private var weekOffset: Int = 0
+    
     // MARK: - UI
     private let stackView: UIStackView = {
         let s = UIStackView()
@@ -52,13 +54,24 @@ class WeekStripView: UIView {
         ])
         
         buildStrip()
+        setupGestures()
+    }
+    
+    private func setupGestures() {
+        let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(swipedLeft))
+        swipeLeft.direction = .left
+        addGestureRecognizer(swipeLeft)
+
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(swipedRight))
+        swipeRight.direction = .right
+        addGestureRecognizer(swipeRight)
     }
     
     // MARK: - Build
-    private func buildStrip() {
+    private func buildStrip(animated: Bool = false, fromRight: Bool = true) {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        let dates = DateHelper.shared.currentWeekDays()
+        let dates = DateHelper.shared.weekDays(for: weekOffset)
         let dayLetters = [
             "weekday_mon".localized,
             "weekday_tue".localized,
@@ -130,17 +143,36 @@ class WeekStripView: UIView {
             numLabel.isUserInteractionEnabled = false
             letterLabel.isUserInteractionEnabled = false
 
+            if animated {
+                let transition = CATransition()
+                transition.duration = 0.25
+                transition.type = .push
+                transition.subtype = fromRight ? .fromRight : .fromLeft
+                stackView.layer.add(transition, forKey: nil)
+            }
+            
             stackView.addArrangedSubview(button)
         }
     }
     
     // MARK: - Actions
     @objc private func dayTapped(_ sender: UIButton) {
-        let dates = DateHelper.shared.currentWeekDays()
+        let dates = DateHelper.shared.weekDays(for: weekOffset)
         guard sender.tag < dates.count else { return }
         let date = DateHelper.shared.startOfDay(dates[sender.tag])
+        guard !Calendar.current.isDate(date, inSameDayAs: selectedDate) else { return }
         selectedDate = date
         delegate?.weekStripView(self, didSelectDate: date)
+    }
+    
+    @objc private func swipedLeft() {
+        weekOffset += 1
+        buildStrip(animated: true, fromRight: true)
+    }
+
+    @objc private func swipedRight() {
+        weekOffset -= 1
+        buildStrip(animated: true, fromRight: false)
     }
 }
 

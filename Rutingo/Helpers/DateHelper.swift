@@ -91,6 +91,16 @@ class DateHelper {
         }
     }
     
+    func weekDays(for weekOffset: Int) -> [Date] {
+        let today = startOfDay()
+        guard let currentWeekInterval = calendar.dateInterval(of: .weekOfYear, for: today) else { return [] }
+        let thisMonday = currentWeekInterval.start
+        guard let targetMonday = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: thisMonday) else { return [] }
+        return (0..<7).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: targetMonday)
+        }
+    }
+    
     func daysBetween(_ start: Date, _ end: Date) -> Int {
         let startDay = startOfDay(start)
         let endDay = startOfDay(end)
