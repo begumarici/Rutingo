@@ -30,6 +30,10 @@
 "no_blocks" = "No blocks yet";
 "add_block" = "Add Block";
 "block_title_placeholder" = "Block title...";
+"block_title" = "Block Title";
+"block_start_time" = "Start Time";
+"block_end_time" = "End Time";
+"block_end_after_start" = "End time must be after start time.";
 
 /* Routines Screen */
 "routines" = "Routines";

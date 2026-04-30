@@ -126,20 +126,14 @@ class BlocksViewController: UIViewController {
 
     // MARK: - Actions
     @objc private func addBlockTapped() {
-        showAddBlockAlert()
-    }
-
-    private func showAddBlockAlert() {
-        let alert = UIAlertController(title: "add_block".localized, message: nil, preferredStyle: .alert)
-        alert.addTextField { $0.placeholder = "block_title_placeholder".localized }
-        alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
-        alert.addAction(UIAlertAction(title: "save".localized, style: .default) { [weak self] _ in
-            guard let title = alert.textFields?.first?.text, !title.isEmpty else { return }
-            self?.viewModel.addBlock(title: title, startHour: 9, endHour: 10) {
+        let addVC = AddBlockViewController()
+        addVC.onSave = { [weak self] title, startHour, endHour in
+            self?.viewModel.addBlock(title: title, startHour: startHour, endHour: endHour) {
                 self?.timelineView.blocks = self?.viewModel.blocks ?? []
             }
-        })
-        present(alert, animated: true)
+        }
+        let navVC = UINavigationController(rootViewController: addVC)
+        present(navVC, animated: true)
     }
 }
 
