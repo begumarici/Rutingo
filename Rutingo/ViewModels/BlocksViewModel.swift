@@ -12,6 +12,7 @@ class BlocksViewModel {
     // MARK: - Properties
     private let dataManager: DataManager
     var blocks: [TimeBlock] = []
+    var selectedDate: Date = DateHelper.shared.startOfDay()
     
     // MARK: - Init
     init(dataManager: DataManager = CoreDataManager.shared) {
@@ -20,15 +21,20 @@ class BlocksViewModel {
     
     // MARK: - Data
     func loadData(completion: () -> Void) {
-        blocks = dataManager.fetchAllBlocks()
-        if blocks.isEmpty {
-            createDefaultBlocks()
-        }
+        blocks = dataManager.fetchBlocks(for: selectedDate)
         completion()
     }
     
     func addBlock(title: String, startHour: Int, endHour: Int, completion: () -> Void) {
-        _ = dataManager.saveBlock(title: title, startHour: startHour, endHour: endHour)
+        _ = dataManager.saveBlock(title: title, startHour: startHour, endHour: endHour, date: selectedDate)
+        loadData(completion: completion)
+    }
+    
+    func updateBlock(_ block: TimeBlock, title: String, startHour: Int, endHour: Int, completion: () -> Void) {
+        block.title = title
+        block.startHour = Int16(startHour)
+        block.endHour = Int16(endHour)
+        CoreDataManager.shared.save()
         loadData(completion: completion)
     }
 
@@ -51,14 +57,5 @@ class BlocksViewModel {
     var headerSubtitle: String {
         let count = blocks.count
         return "\(count) \("blocks_count".localized)"
-    }
-    
-    // MARK: - Helpers
-    private func createDefaultBlocks() {
-        _ = dataManager.saveBlock(title: "morning_block".localized, startHour: 6,  endHour: 9)
-        _ = dataManager.saveBlock(title: "deep_work_block".localized, startHour: 9,  endHour: 12)
-        _ = dataManager.saveBlock(title: "afternoon_block".localized, startHour: 13, endHour: 17)
-        _ = dataManager.saveBlock(title: "evening_block".localized, startHour: 20, endHour: 22)
-        blocks = dataManager.fetchAllBlocks()
     }
 }

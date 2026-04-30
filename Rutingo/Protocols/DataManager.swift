@@ -17,8 +17,8 @@ protocol DataManager {
     func save()
     func clearAllData()
     
-    func fetchAllBlocks() -> [TimeBlock]
-    func saveBlock(title: String, startHour: Int, endHour: Int) -> TimeBlock
+    func fetchBlocks(for date: Date) -> [TimeBlock]
+    func saveBlock(title: String, startHour: Int, endHour: Int, date: Date) -> TimeBlock
     func deleteBlock(_ block: TimeBlock)
     func addRoutineToBlock(_ routine: Routine, block: TimeBlock)
     func removeRoutineFromBlock(_ routine: Routine, block: TimeBlock)

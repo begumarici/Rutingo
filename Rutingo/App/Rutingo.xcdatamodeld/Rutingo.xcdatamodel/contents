@@ -17,6 +17,7 @@
     <entity name="Routine" representedClassName="Routine" syncable="YES" codeGenerationType="class">
         <attribute name="blockType" optional="YES" attributeType="String"/>
         <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="endHour" optional="YES" attributeType="Integer 16" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="feeling" optional="YES" attributeType="String"/>
         <attribute name="frequencyData" optional="YES" attributeType="Binary"/>
         <attribute name="hasReminder" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
@@ -25,6 +26,7 @@
         <attribute name="motivation" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="reminderTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="startHour" optional="YES" attributeType="Integer 16" defaultValueString="-1" usesScalarValueType="YES"/>
         <relationship name="completions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RoutineCompletion" inverseName="routine" inverseEntity="RoutineCompletion"/>
         <relationship name="timeBlocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TimeBlock" inverseName="routines" inverseEntity="TimeBlock"/>
     </entity>
@@ -46,6 +48,7 @@
     </entity>
     <entity name="TimeBlock" representedClassName="TimeBlock" syncable="YES" codeGenerationType="class">
         <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="endHour" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="startHour" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>

@@ -140,19 +140,27 @@ class CoreDataManager: DataManager {
     }
     
     // MARK: - TimeBlock
-    func fetchAllBlocks() -> [TimeBlock] {
+    func fetchBlocks(for date: Date) -> [TimeBlock] {
         let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        let startOfDay = DateHelper.shared.startOfDay(date)
+        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+        request.predicate = NSPredicate(
+            format: "date >= %@ AND date < %@",
+            startOfDay as CVarArg,
+            endOfDay   as CVarArg
+        )
         request.sortDescriptors = [NSSortDescriptor(key: "startHour", ascending: true)]
         return (try? viewContext.fetch(request)) ?? []
     }
 
-    func saveBlock(title: String, startHour: Int, endHour: Int) -> TimeBlock {
-        let block        = TimeBlock(context: viewContext)
-        block.id         = UUID()
-        block.title      = title
-        block.startHour  = Int16(startHour)
-        block.endHour    = Int16(endHour)
-        block.createdAt  = Date()
+    func saveBlock(title: String, startHour: Int, endHour: Int, date: Date = Date()) -> TimeBlock {
+        let block = TimeBlock(context: viewContext)
+        block.id = UUID()
+        block.title = title
+        block.startHour = Int16(startHour)
+        block.endHour = Int16(endHour)
+        block.date = DateHelper.shared.startOfDay(date)
+        block.createdAt = Date()
         save()
         return block
     }

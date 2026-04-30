@@ -34,6 +34,11 @@
 "block_start_time" = "Start Time";
 "block_end_time" = "End Time";
 "block_end_after_start" = "End time must be after start time.";
+"block_routines" = "Routines";
+"block_no_routines" = "No routines added to this block yet";
+"delete_block" = "Delete Block";
+"delete_block_message" = "Are you sure you want to delete this block?";
+"edit_block" = "Edit Block";
 
 /* Routines Screen */
 "routines" = "Routines";

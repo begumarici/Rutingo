@@ -251,6 +251,15 @@ class AddBlockViewController: UIViewController {
         view.addGestureRecognizer(tap)
     }
     
+    // MARK: - Cofigure
+    func configure(title: String, startHour: Int, endHour: Int) {
+        titleTextField.text = title
+        selectedStartHour = startHour
+        selectedEndHour = endHour
+        startPicker.selectRow(startHour, inComponent: 0, animated: false)
+        endPicker.selectRow(endHour, inComponent: 0, animated: false)
+    }
+    
     // MARK: - Actions
     @objc private func cancelTapped() { dismiss(animated: true) }
     @objc private func dismissKeyboard() { view.endEditing(true) }

@@ -140,7 +140,14 @@ class BlocksViewController: UIViewController {
 // MARK: - TimelineViewDelegate
 extension BlocksViewController: TimelineViewDelegate {
     func timelineView(_ view: TimelineView, didTapBlock block: TimeBlock) {
-        // AddBlockViewController
+        let detailVC = BlocksDetailViewController(block: block, viewModel: viewModel)
+        detailVC.onDelete = { [weak self] in
+            self?.timelineView.blocks = self?.viewModel.blocks ?? []
+        }
+        detailVC.onUpdate = { [weak self] _, _, _ in
+            self?.timelineView.blocks = self?.viewModel.blocks ?? []
+        }
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 }
 

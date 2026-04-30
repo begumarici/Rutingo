@@ -34,6 +34,11 @@
 "block_start_time" = "Başlangıç Saati";
 "block_end_time" = "Bitiş Saati";
 "block_end_after_start" = "Bitiş saati başlangıçtan sonra olmalı.";
+"block_routines" = "Rutinler";
+"block_no_routines" = "Bu bloğa henüz rutin eklenmedi";
+"delete_block" = "Bloğu Sil";
+"delete_block_message" = "Bu bloğu silmek istediğine emin misin?";
+"edit_block" = "Bloğu Düzenle";
 
 /* Routines Screen */
 "routines" = "Rutinler";
