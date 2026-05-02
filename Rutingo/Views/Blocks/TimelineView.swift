@@ -24,7 +24,11 @@ class TimelineView: UIView {
     // MARK: - Properties
     weak var delegate: TimelineViewDelegate?
     var blocks: [TimeBlock] = [] {
-        didSet { drawBlocks() }
+        didSet { redraw() }
+    }
+    
+    var selectedDate: Date = Date() {
+        didSet { redraw() }
     }
 
     private var blockViews: [UIView] = []
@@ -55,7 +59,9 @@ class TimelineView: UIView {
         addConstraint(h)
 
         drawTimeLines()
-        drawCurrentTimeLine()
+        if Calendar.current.isDateInToday(selectedDate) {
+            drawCurrentTimeLine()
+        }
     }
 
     private var totalHeight: CGFloat {
@@ -150,11 +156,12 @@ class TimelineView: UIView {
     }
 
     private func makeBlockView(for block: TimeBlock) -> UIView {
+        let isToday = Calendar.current.isDateInToday(selectedDate)
         let currentHour = Calendar.current.component(.hour, from: Date())
         let currentMin = Calendar.current.component(.minute, from: Date())
         let nowDecimal = Double(currentHour) + Double(currentMin) / 60.0
-        let isPast = Double(block.endHour) <= nowDecimal
-        let isActive = Double(block.startHour) <= nowDecimal && nowDecimal < Double(block.endHour)
+        let isPast = !isToday || Double(block.endHour) <= nowDecimal
+        let isActive = isToday && Double(block.startHour) <= nowDecimal && nowDecimal < Double(block.endHour)
 
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
@@ -216,7 +223,9 @@ class TimelineView: UIView {
         heightConstraint?.constant = totalHeight
         drawTimeLines()
         drawBlocks()
-        drawCurrentTimeLine()
+        if Calendar.current.isDateInToday(selectedDate) {
+            drawCurrentTimeLine()
+        }
     }
 
     // MARK: - Actions

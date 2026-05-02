@@ -138,10 +138,8 @@ class BlocksViewController: UIViewController {
 
         viewModel.loadData { [weak self] in
             guard let self else { return }
+            timelineView.selectedDate = viewModel.selectedDate
             timelineView.blocks = viewModel.blocks
-            if Calendar.current.isDateInToday(viewModel.selectedDate) {
-                timelineView.drawCurrentTimeLine()
-            }
         }
     }
 
