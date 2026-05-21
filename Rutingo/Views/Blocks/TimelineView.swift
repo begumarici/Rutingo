@@ -110,9 +110,11 @@ class TimelineView: UIView {
             addSubview(blockView)
             blockViews.append(blockView)
 
-            let topY = CGFloat(Int(block.startHour) - startHour) * hourHeight + 16
-            let height = CGFloat(Int(block.endHour) - Int(block.startHour)) * hourHeight
-
+            let startDecimal = CGFloat(block.startHour) + CGFloat(block.startMinute) / 60.0
+            let endDecimal = CGFloat(block.endHour) + CGFloat(block.endMinute) / 60.0
+            let topY = (startDecimal - CGFloat(startHour)) * hourHeight + 16
+            let height = (endDecimal - startDecimal) * hourHeight
+            
             NSLayoutConstraint.activate([
                 blockView.topAnchor.constraint(equalTo: topAnchor, constant: topY),
                 blockView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: timeColumnWidth + 8),
@@ -160,8 +162,10 @@ class TimelineView: UIView {
         let currentHour = Calendar.current.component(.hour, from: Date())
         let currentMin = Calendar.current.component(.minute, from: Date())
         let nowDecimal = Double(currentHour) + Double(currentMin) / 60.0
-        let isPast = !isToday || Double(block.endHour) <= nowDecimal
-        let isActive = isToday && Double(block.startHour) <= nowDecimal && nowDecimal < Double(block.endHour)
+        let startDecimal = Double(block.startHour) + Double(block.startMinute) / 60.0
+        let endDecimal = Double(block.endHour) + Double(block.endMinute) / 60.0
+        let isPast = !isToday || endDecimal <= nowDecimal
+        let isActive = isToday && startDecimal <= nowDecimal && nowDecimal < endDecimal
 
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false

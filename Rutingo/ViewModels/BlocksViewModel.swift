@@ -25,15 +25,17 @@ class BlocksViewModel {
         completion()
     }
     
-    func addBlock(title: String, startHour: Int, endHour: Int, completion: () -> Void) {
-        _ = dataManager.saveBlock(title: title, startHour: startHour, endHour: endHour, date: selectedDate)
+    func addBlock(title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int, completion: () -> Void) {
+        _ = dataManager.saveBlock(title: title, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute, date: selectedDate)
         loadData(completion: completion)
     }
     
-    func updateBlock(_ block: TimeBlock, title: String, startHour: Int, endHour: Int, completion: () -> Void) {
+    func updateBlock(_ block: TimeBlock, title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int, completion: () -> Void) {
         block.title = title
         block.startHour = Int16(startHour)
+        block.startMinute = Int16(startMinute)
         block.endHour = Int16(endHour)
+        block.endMinute = Int16(endMinute)
         CoreDataManager.shared.save()
         loadData(completion: completion)
     }

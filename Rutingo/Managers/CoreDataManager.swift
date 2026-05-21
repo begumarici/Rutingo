@@ -149,16 +149,21 @@ class CoreDataManager: DataManager {
             startOfDay as CVarArg,
             endOfDay   as CVarArg
         )
-        request.sortDescriptors = [NSSortDescriptor(key: "startHour", ascending: true)]
+        request.sortDescriptors = [NSSortDescriptor(key: "startHour", ascending: true),
+                                   NSSortDescriptor(key: "startMinute", ascending: true)
+        ]
+       
         return (try? viewContext.fetch(request)) ?? []
     }
 
-    func saveBlock(title: String, startHour: Int, endHour: Int, date: Date = Date()) -> TimeBlock {
+    func saveBlock(title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int, date: Date = Date()) -> TimeBlock {
         let block = TimeBlock(context: viewContext)
         block.id = UUID()
         block.title = title
         block.startHour = Int16(startHour)
+        block.startMinute = Int16(startMinute)
         block.endHour = Int16(endHour)
+        block.endMinute = Int16(endMinute)
         block.date = DateHelper.shared.startOfDay(date)
         block.createdAt = Date()
         save()

@@ -9,8 +9,8 @@ import Foundation
 
 extension TimeBlock {
     var timeRangeText: String {
-        let start = String(format: "%02d:00", startHour)
-        let end   = String(format: "%02d:00", endHour)
+        let start = String(format: "%02d:%02d", startHour, startMinute)
+        let end   = String(format: "%02d:%02d", endHour, endMinute)
         return "\(start) – \(end)"
     }
 
