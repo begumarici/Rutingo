@@ -179,8 +179,8 @@ class BlocksViewController: UIViewController {
     // MARK: - Actions
     @objc private func addBlockTapped() {
         let addVC = AddBlockViewController()
-        addVC.onSave = { [weak self] title, startHour, endHour in
-            self?.viewModel.addBlock(title: title, startHour: startHour, endHour: endHour) {
+        addVC.onSave = { [weak self] title, startHour, startMinute, endHour, endMinute in
+            self?.viewModel.addBlock(title: title, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) {
                 self?.timelineView.blocks = self?.viewModel.blocks ?? []
             }
         }
@@ -210,7 +210,7 @@ extension BlocksViewController: TimelineViewDelegate {
         detailVC.onDelete = { [weak self] in
             self?.timelineView.blocks = self?.viewModel.blocks ?? []
         }
-        detailVC.onUpdate = { [weak self] _, _, _ in
+        detailVC.onUpdate = { [weak self] _, _, _, _, _ in
             self?.timelineView.blocks = self?.viewModel.blocks ?? []
         }
         navigationController?.pushViewController(detailVC, animated: true)

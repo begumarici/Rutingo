@@ -10,10 +10,10 @@ import UIKit
 class AddBlockViewController: UIViewController {
     
     // MARK: - Properties
-    var onSave: ((String, Int, Int) -> Void)?
+    var onSave: ((String, Int, Int, Int, Int) -> Void)?
     
-    private var selectedStartHour: Int = 9
-    private var selectedEndHour: Int = 10
+    private var selectedStartDate: Date = Date()
+    private var selectedEndDate: Date = Date()
     
     // MARK: - UI
     private let scrollView: UIScrollView = {
@@ -78,9 +78,11 @@ class AddBlockViewController: UIViewController {
         return l
     }()
     
-    private let startPicker: UIPickerView = {
-        let p = UIPickerView()
+    private let startPicker: UIDatePicker = {
+        let p = UIDatePicker()
         p.translatesAutoresizingMaskIntoConstraints = false
+        p.datePickerMode = .time
+        p.preferredDatePickerStyle = .wheels
         return p
     }()
     
@@ -101,9 +103,11 @@ class AddBlockViewController: UIViewController {
         return l
     }()
     
-    private let endPicker: UIPickerView = {
-        let p = UIPickerView()
+    private let endPicker: UIDatePicker = {
+        let p = UIDatePicker()
         p.translatesAutoresizingMaskIntoConstraints = false
+        p.datePickerMode = .time
+        p.preferredDatePickerStyle = .wheels
         return p
     }()
     
@@ -122,6 +126,7 @@ class AddBlockViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = AppColors.background
+        setDefaultTimes()
         setupNavigationBar()
         setupUI()
         setupPickers()
@@ -233,15 +238,18 @@ class AddBlockViewController: UIViewController {
     }
     
     private func setupPickers() {
-        startPicker.dataSource = self
-        startPicker.delegate = self
-        startPicker.tag = 0
-        startPicker.selectRow(selectedStartHour, inComponent: 0, animated: false)
-        
-        endPicker.dataSource = self
-        endPicker.delegate = self
-        endPicker.tag = 1
-        endPicker.selectRow(selectedEndHour, inComponent: 0, animated: false)
+        startPicker.date = selectedStartDate
+        endPicker.date = selectedEndDate
+        startPicker.addTarget(self, action: #selector(startPickerChanged), for: .valueChanged)
+        endPicker.addTarget(self, action: #selector(endPickerChanged), for: .valueChanged)
+    }
+
+    @objc private func startPickerChanged() {
+        selectedStartDate = startPicker.date
+    }
+
+    @objc private func endPickerChanged() {
+        selectedEndDate = endPicker.date
     }
     
     private func setupActions() {
@@ -251,13 +259,24 @@ class AddBlockViewController: UIViewController {
         view.addGestureRecognizer(tap)
     }
     
+    private func setDefaultTimes() {
+        let cal = Calendar.current
+        let now = Date()
+        let minute = cal.component(.minute, from: now)
+        let rounded = (minute / 5) * 5
+        selectedStartDate = cal.date(bySettingHour: cal.component(.hour, from: now),
+                                      minute: rounded, second: 0, of: now)!
+        selectedEndDate = cal.date(byAdding: .hour, value: 1, to: selectedStartDate)!
+    }
+    
     // MARK: - Cofigure
-    func configure(title: String, startHour: Int, endHour: Int) {
+    func configure(title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) {
         titleTextField.text = title
-        selectedStartHour = startHour
-        selectedEndHour = endHour
-        startPicker.selectRow(startHour, inComponent: 0, animated: false)
-        endPicker.selectRow(endHour, inComponent: 0, animated: false)
+        let cal = Calendar.current
+        selectedStartDate = cal.date(bySettingHour: startHour, minute: startMinute, second: 0, of: Date())!
+        selectedEndDate   = cal.date(bySettingHour: endHour,   minute: endMinute,   second: 0, of: Date())!
+        startPicker.date = selectedStartDate
+        endPicker.date   = selectedEndDate
     }
     
     // MARK: - Actions
@@ -269,11 +288,16 @@ class AddBlockViewController: UIViewController {
             showAlert(message: "validation_name_empty".localized)
             return
         }
-        guard selectedEndHour > selectedStartHour else {
+        guard selectedEndDate > selectedStartDate else {
             showAlert(message: "block_end_after_start".localized)
             return
         }
-        onSave?(title, selectedStartHour, selectedEndHour)
+        let cal = Calendar.current
+        let startHour   = cal.component(.hour,   from: selectedStartDate)
+        let startMinute = cal.component(.minute, from: selectedStartDate)
+        let endHour     = cal.component(.hour,   from: selectedEndDate)
+        let endMinute   = cal.component(.minute, from: selectedEndDate)
+        onSave?(title, startHour, startMinute, endHour, endMinute)
         dismiss(animated: true)
     }
     
@@ -281,24 +305,5 @@ class AddBlockViewController: UIViewController {
         let alert = UIAlertController(title: "error".localized, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "ok".localized, style: .default))
         present(alert, animated: true)
-    }
-}
-
-// MARK: - UIPickerViewDataSource & Delegate
-extension AddBlockViewController: UIPickerViewDataSource, UIPickerViewDelegate {
-    func numberOfComponents(in pickerView: UIPickerView) -> Int { 1 }
-
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int { 24 }
-
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        return String(format: "%02d:00", row)
-    }
-
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        if pickerView.tag == 0 {
-            selectedStartHour = row
-        } else {
-            selectedEndHour = row
-        }
     }
 }

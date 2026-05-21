@@ -12,7 +12,7 @@ class BlocksDetailViewController: UIViewController {
     // MARK: - Properties
     var block: TimeBlock
     var onDelete: (() -> Void)?
-    var onUpdate: ((String, Int, Int) -> Void)?
+    var onUpdate: ((String, Int, Int, Int, Int) -> Void)?
     private let viewModel: BlocksViewModel
     
     // MARK: - UI
@@ -159,14 +159,17 @@ class BlocksDetailViewController: UIViewController {
         
         addVC.configure(title: block.title ?? "",
                         startHour: Int(block.startHour),
-                        endHour: Int(block.endHour))
+                        startMinute: Int(block.startMinute),
+                        endHour: Int(block.endHour),
+                        endMinute: Int(block.endMinute)
+        )
         
-        addVC.onSave = { [weak self] title, startHour, endHour in
+        addVC.onSave = { [weak self] title, startHour, startMinute, endHour, endMinute in
             guard let self else { return }
-            self.viewModel.updateBlock(self.block, title: title, startHour: startHour, endHour: endHour) {
+            self.viewModel.updateBlock(self.block, title: title, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) {
                 self.configure()
             }
-            self.onUpdate?(title, startHour, endHour)
+            self.onUpdate?(title, startHour, startMinute, endHour, endMinute)
         }
         let navVC = UINavigationController(rootViewController: addVC)
         present(navVC, animated: true)
