@@ -47,6 +47,13 @@
 "weekday_sat" = "Sa";
 "weekday_sun" = "Su";
 
+/* Tasks Screen */
+"tasks_title" = "Tasks";
+"tasks_add_placeholder" = "+ Add a task";
+"tasks_empty_title" = "No tasks yet";
+"tasks_empty_message" = "Add something you want to get done today.";
+"tasks_completed" = "Completed";
+
 /* Routines Screen */
 "routines" = "Routines";
 "no_routines_message" = "No routines yet\nTap + to add your first routine";

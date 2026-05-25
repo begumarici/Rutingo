@@ -47,6 +47,13 @@
 "weekday_sat" = "Ct";
 "weekday_sun" = "Pa";
 
+/* Tasks Screen */
+"tasks_title" = "Görevler";
+"tasks_add_placeholder" = "+ Görev ekle";
+"tasks_empty_title" = "Henüz görev yok";
+"tasks_empty_message" = "Bugün yapmak istediğin bir şeyi ekle.";
+"tasks_completed" = "Tamamlananlar";
+
 /* Routines Screen */
 "routines" = "Rutinler";
 "no_routines_message" = "Henüz rutin yok\nİlk rutinini eklemek için + butonuna dokun";

@@ -23,7 +23,6 @@ class MainTabBarController: UIViewController {
         let items: [String] = [
             "square.grid.2x2",
             "rectangle.stack",
-            "chart.bar",
             "list.bullet"
         ]
         let tabBar = CustomTabBarView(items: items)
@@ -44,10 +43,9 @@ class MainTabBarController: UIViewController {
     private func setupViewControllers() {
         let todayVC  = createTodayTab()
         let blocksVC = createBlocksTab()
-        let weekVC   = createWeekTab()
         let tasksVC  = createTasksTab()
         
-        viewControllers = [todayVC, blocksVC, weekVC, tasksVC]
+        viewControllers = [todayVC, blocksVC, tasksVC]
     }
     
     private func createTodayTab() -> UINavigationController {
@@ -57,11 +55,6 @@ class MainTabBarController: UIViewController {
     
     private func createBlocksTab() -> UINavigationController {
         let vc = BlocksViewController()
-        return UINavigationController(rootViewController: vc)
-    }
-
-    private func createWeekTab() -> UINavigationController {
-        let vc = WeekViewController()
         return UINavigationController(rootViewController: vc)
     }
 
