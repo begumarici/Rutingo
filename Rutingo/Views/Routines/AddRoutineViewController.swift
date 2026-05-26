@@ -10,8 +10,8 @@ import UIKit
 class AddRoutineViewController: UIViewController {
     
     // MARK: - Properties
-    var onSave: ((String, Frequency, String?, String?, String?, Bool, Date?) -> Void)?
-    var onUpdate: ((Routine, String, Frequency, String?, String?, String?, Bool, Date?) -> Void)?
+    var onSave: ((String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16) -> Void)?
+    var onUpdate: ((Routine, String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16) -> Void)?
     var onDelete: (() -> Void)?
     
     enum Mode {
@@ -29,6 +29,9 @@ class AddRoutineViewController: UIViewController {
     private var selectedBlockType: String?
     private var currentStep: Int = 0
     private let totalSteps: Int = 6
+    private var hasTimeRange: Bool = false
+    private var startTime: Date = Date()
+    private var endTime: Date = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
     
     // MARK: - UI Containers
     private let nameContainer: UIView = {
@@ -261,6 +264,104 @@ class AddRoutineViewController: UIViewController {
         return picker
     }()
     
+    // Time Range
+    private let timeRangeContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = 16
+        return view
+    }()
+
+    private let timeRangeStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 0
+        return stack
+    }()
+
+    private let timeRangeHeaderView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private let timeRangeLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "time_range".localized
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.primary
+        return label
+    }()
+
+    private let timeRangeSwitch: UISwitch = {
+        let toggle = UISwitch()
+        toggle.translatesAutoresizingMaskIntoConstraints = false
+        toggle.onTintColor = AppColors.secondary
+        toggle.isOn = false
+        return toggle
+    }()
+
+    private let timeRangePickersStack: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 0
+        stack.isHidden = true
+        stack.alpha = 0
+        return stack
+    }()
+
+    private let startPickerRow: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private let startPickerLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "start_time".localized
+        label.font = AppFonts.regular(15)
+        label.textColor = AppColors.secondary
+        return label
+    }()
+
+    private let startTimePicker: UIDatePicker = {
+        let picker = UIDatePicker()
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.datePickerMode = .time
+        picker.preferredDatePickerStyle = .wheels
+        picker.tintColor = AppColors.primary
+        return picker
+    }()
+
+    private let endPickerRow: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private let endPickerLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "end_time".localized
+        label.font = AppFonts.regular(15)
+        label.textColor = AppColors.secondary
+        return label
+    }()
+
+    private let endTimePicker: UIDatePicker = {
+        let picker = UIDatePicker()
+        picker.translatesAutoresizingMaskIntoConstraints = false
+        picker.datePickerMode = .time
+        picker.preferredDatePickerStyle = .wheels
+        picker.tintColor = AppColors.primary
+        return picker
+    }()
+    
     // Buttons
     private let saveButton: UIButton = {
         let button = UIButton(type: .system)
@@ -302,6 +403,7 @@ class AddRoutineViewController: UIViewController {
         configureModeUI()
         setupNavigationBar()
         
+        
         addSubviews()
         setupConstraints()
         createFeelingButtons()
@@ -320,6 +422,26 @@ class AddRoutineViewController: UIViewController {
         contentView.addSubview(feelingContainer)
         contentView.addSubview(motivationContainer)
 
+        // timeRangeContainer'ı contentView'a ekle
+        contentView.addSubview(timeRangeContainer)
+
+        // iç yapı
+        timeRangeContainer.addSubview(timeRangeStackView)
+        timeRangeHeaderView.addSubview(timeRangeLabel)
+        timeRangeHeaderView.addSubview(timeRangeSwitch)
+        timeRangeStackView.addArrangedSubview(timeRangeHeaderView)
+        timeRangeStackView.addArrangedSubview(timeRangePickersStack)
+
+        // start row
+        startPickerRow.addSubview(startPickerLabel)
+        startPickerRow.addSubview(startTimePicker)
+        timeRangePickersStack.addArrangedSubview(startPickerRow)
+
+        // end row
+        endPickerRow.addSubview(endPickerLabel)
+        endPickerRow.addSubview(endTimePicker)
+        timeRangePickersStack.addArrangedSubview(endPickerRow)
+        
         feelingContainer.addSubview(feelingStackView)
         feelingStackView.addArrangedSubview(feelingLabel)
         feelingStackView.addArrangedSubview(feelingButtonsStack)
@@ -418,8 +540,40 @@ class AddRoutineViewController: UIViewController {
             reminderContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
             reminderContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
             
+            // time range container
+            timeRangeContainer.topAnchor.constraint(equalTo: reminderContainer.bottomAnchor, constant: padding),
+            timeRangeContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            timeRangeContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+
+            timeRangeStackView.topAnchor.constraint(equalTo: timeRangeContainer.topAnchor, constant: cardPadding),
+            timeRangeStackView.leadingAnchor.constraint(equalTo: timeRangeContainer.leadingAnchor, constant: cardPadding),
+            timeRangeStackView.trailingAnchor.constraint(equalTo: timeRangeContainer.trailingAnchor, constant: -cardPadding),
+            timeRangeStackView.bottomAnchor.constraint(equalTo: timeRangeContainer.bottomAnchor, constant: -cardPadding),
+            timeRangeHeaderView.heightAnchor.constraint(equalToConstant: 31),
+
+            timeRangeLabel.centerYAnchor.constraint(equalTo: timeRangeHeaderView.centerYAnchor),
+            timeRangeLabel.leadingAnchor.constraint(equalTo: timeRangeHeaderView.leadingAnchor),
+            timeRangeSwitch.centerYAnchor.constraint(equalTo: timeRangeHeaderView.centerYAnchor),
+            timeRangeSwitch.trailingAnchor.constraint(equalTo: timeRangeHeaderView.trailingAnchor),
+
+            // start row
+            startPickerLabel.topAnchor.constraint(equalTo: startPickerRow.topAnchor, constant: 8),
+            startPickerLabel.leadingAnchor.constraint(equalTo: startPickerRow.leadingAnchor),
+            startTimePicker.topAnchor.constraint(equalTo: startPickerLabel.bottomAnchor),
+            startTimePicker.leadingAnchor.constraint(equalTo: startPickerRow.leadingAnchor),
+            startTimePicker.trailingAnchor.constraint(equalTo: startPickerRow.trailingAnchor),
+            startTimePicker.bottomAnchor.constraint(equalTo: startPickerRow.bottomAnchor),
+
+            // end row
+            endPickerLabel.topAnchor.constraint(equalTo: endPickerRow.topAnchor, constant: 8),
+            endPickerLabel.leadingAnchor.constraint(equalTo: endPickerRow.leadingAnchor),
+            endTimePicker.topAnchor.constraint(equalTo: endPickerLabel.bottomAnchor),
+            endTimePicker.leadingAnchor.constraint(equalTo: endPickerRow.leadingAnchor),
+            endTimePicker.trailingAnchor.constraint(equalTo: endPickerRow.trailingAnchor),
+            endTimePicker.bottomAnchor.constraint(equalTo: endPickerRow.bottomAnchor),
+            
             // feeling container
-            feelingContainer.topAnchor.constraint(equalTo: reminderContainer.bottomAnchor, constant: padding),
+            feelingContainer.topAnchor.constraint(equalTo: timeRangeContainer.bottomAnchor, constant: padding),
             feelingContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
             feelingContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
 
@@ -541,6 +695,7 @@ class AddRoutineViewController: UIViewController {
     private func setupActions() {
         frequencyControl.addTarget(self, action: #selector(frequencyChanged), for: .valueChanged)
         reminderSwitch.addTarget(self, action: #selector(reminderSwitchChanged), for: .valueChanged)
+        timeRangeSwitch.addTarget(self, action: #selector(timeRangeSwitchChanged), for: .valueChanged)
         saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
     }
@@ -617,6 +772,16 @@ class AddRoutineViewController: UIViewController {
         }
     }
     
+    @objc private func timeRangeSwitchChanged() {
+        hasTimeRange = timeRangeSwitch.isOn
+
+        UIView.animate(withDuration: 0.3) {
+            self.timeRangePickersStack.isHidden = !self.timeRangeSwitch.isOn
+            self.timeRangePickersStack.alpha = self.timeRangeSwitch.isOn ? 1.0 : 0.0
+            self.view.layoutIfNeeded()
+        }
+    }
+    
     @objc private func saveButtonTapped() {
         guard validate() else { return }
         
@@ -651,11 +816,14 @@ class AddRoutineViewController: UIViewController {
         
         motivationText = motivationTextView.text == "motivation_placeholder".localized ? nil : motivationTextView.text
         
+        let startHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: startTimePicker.date)) : -1
+        let endHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: endTimePicker.date)) : -1
+        
         switch mode {
         case .add:
-            onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate)
+            onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, endHour)
         case .edit(let routine):
-            onUpdate?(routine, name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate)
+            onUpdate?(routine, name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, endHour)
         }
         
         dismiss(animated: true)
@@ -712,6 +880,25 @@ class AddRoutineViewController: UIViewController {
                         button.setTitleColor(AppColors.background, for: .normal)
                     }
                 }
+            }
+        }
+        
+        if routine.startHour >= 0 {
+            hasTimeRange = true
+            timeRangeSwitch.isOn = true
+            timeRangePickersStack.isHidden = false
+            timeRangePickersStack.alpha = 1.0
+
+            var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+            components.hour = Int(routine.startHour)
+            components.minute = 0
+            if let date = Calendar.current.date(from: components) {
+                startTimePicker.date = date
+            }
+
+            components.hour = Int(routine.endHour)
+            if let date = Calendar.current.date(from: components) {
+                endTimePicker.date = date
             }
         }
         

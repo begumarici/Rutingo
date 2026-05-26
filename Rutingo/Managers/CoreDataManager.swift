@@ -60,7 +60,9 @@ class CoreDataManager: DataManager {
         motivation: String? = nil,
         blockType: String? = nil,
         hasReminder: Bool = false,
-        reminderTime: Date? = nil
+        reminderTime: Date? = nil,
+        startHour: Int16,
+        endHour: Int16
     ) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()
@@ -75,11 +77,24 @@ class CoreDataManager: DataManager {
         
         routine.hasReminder = hasReminder
         routine.reminderTime = reminderTime
+        routine.startHour = startHour
+        routine.endHour = endHour
         save()
         return routine
     }
     
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency, feeling: String? = nil, motivation: String? = nil, blockType: String? = nil, hasReminder: Bool = false, reminderTime: Date? = nil) {
+    func updateRoutine(
+        routine: Routine,
+        name: String,
+        frequency: Frequency,
+        feeling: String? = nil,
+        motivation: String? = nil,
+        blockType: String? = nil,
+        hasReminder: Bool = false,
+        reminderTime: Date? = nil,
+        startHour: Int16,
+        endHour: Int16
+    ) {
         
         if let oldData = routine.frequencyData {
             let oldFrequencyData = try? JSONEncoder().encode(frequency)
@@ -96,6 +111,8 @@ class CoreDataManager: DataManager {
         routine.blockType  = blockType
         routine.hasReminder = hasReminder
         routine.reminderTime = reminderTime
+        routine.startHour = startHour
+        routine.endHour = endHour
         save()
     }
     

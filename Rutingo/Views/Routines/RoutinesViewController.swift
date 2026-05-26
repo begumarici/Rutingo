@@ -160,8 +160,8 @@ class RoutinesViewController: UIViewController {
     // MARK: - Actions
     @objc private func addRoutineTapped() {
         let addVC = AddRoutineViewController()
-        addVC.onSave = { [weak self] name, frequency, feeling, motivation, blockType, hasReminder, reminderTime in
-            self?.viewModel.addRoutine(name: name, frequency: frequency, feeling: feeling, motivation: motivation, blockType: blockType, hasReminder: hasReminder, reminderTime: reminderTime) {
+        addVC.onSave = { [weak self] name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, endHour in
+            self?.viewModel.addRoutine(name: name, frequency: frequency, feeling: feeling, motivation: motivation, blockType: blockType, hasReminder: hasReminder, reminderTime: reminderTime, startHour: startHour, endHour: endHour) {
                 self?.loadData()
             }
         }

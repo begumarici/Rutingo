@@ -75,6 +75,14 @@
 "validation_name_empty" = "Please enter a routine name.";
 "validation_select_day" = "Please select at least one day.";
 "error" = "Error";
+"time_range" = "Time range";
+"start_time" = "Start";
+"end_time" = "End";
+"validation_end_after_start" = "End time must be after start time.";
+"time_range" = "Time range";
+"start_time" = "Start";
+"end_time" = "End";
+"validation_end_after_start" = "End time must be after start time.";
 
 /* Calendar Screen */
 "calendar" = "Calendar";

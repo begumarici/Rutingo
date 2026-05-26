@@ -10,9 +10,9 @@ import Foundation
 protocol DataManager {
     func fetchAllRoutines() -> [Routine]
     func fetchTodayRoutines() -> [Routine]
-    func saveRoutine(name: String, frequency: Frequency, feeling: String?, motivation: String?, blockType: String?, hasReminder: Bool, reminderTime: Date?) -> Routine
+    func saveRoutine(name: String, frequency: Frequency, feeling: String?, motivation: String?, blockType: String?, hasReminder: Bool, reminderTime: Date?, startHour: Int16, endHour: Int16) -> Routine
     func deleteRoutine(_ routine: Routine)
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency, feeling: String?, motivation: String?, blockType: String?, hasReminder: Bool, reminderTime: Date?)
+    func updateRoutine(routine: Routine, name: String, frequency: Frequency, feeling: String?, motivation: String?, blockType: String?, hasReminder: Bool, reminderTime: Date?, startHour: Int16, endHour: Int16)
     func toggleCompletion(_ routine: Routine)
     func save()
     func clearAllData()
