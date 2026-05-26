@@ -10,8 +10,8 @@ import UIKit
 class AddRoutineViewController: UIViewController {
     
     // MARK: - Properties
-    var onSave: ((String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16) -> Void)?
-    var onUpdate: ((Routine, String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16) -> Void)?
+    var onSave: ((String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16, Int16, Int16) -> Void)?
+    var onUpdate: ((Routine, String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16, Int16, Int16) -> Void)?
     var onDelete: (() -> Void)?
     
     enum Mode {
@@ -817,13 +817,15 @@ class AddRoutineViewController: UIViewController {
         motivationText = motivationTextView.text == "motivation_placeholder".localized ? nil : motivationTextView.text
         
         let startHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: startTimePicker.date)) : -1
+        let startMinute: Int16 = hasTimeRange ? Int16(Calendar.current.component(.minute, from: startTimePicker.date)) : 0
         let endHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: endTimePicker.date)) : -1
+        let endMinute: Int16 = hasTimeRange ? Int16(Calendar.current.component(.minute, from: endTimePicker.date)) : 0
         
         switch mode {
         case .add:
-            onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, endHour)
+            onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, startMinute, endHour, endMinute)
         case .edit(let routine):
-            onUpdate?(routine, name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, endHour)
+            onUpdate?(routine, name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, startMinute, endHour, endMinute)
         }
         
         dismiss(animated: true)

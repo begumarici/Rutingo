@@ -62,7 +62,9 @@ class CoreDataManager: DataManager {
         hasReminder: Bool = false,
         reminderTime: Date? = nil,
         startHour: Int16,
-        endHour: Int16
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16
     ) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()
@@ -78,7 +80,9 @@ class CoreDataManager: DataManager {
         routine.hasReminder = hasReminder
         routine.reminderTime = reminderTime
         routine.startHour = startHour
+        routine.startMinute = startMinute
         routine.endHour = endHour
+        routine.endMinute = endMinute
         save()
         return routine
     }
@@ -93,7 +97,9 @@ class CoreDataManager: DataManager {
         hasReminder: Bool = false,
         reminderTime: Date? = nil,
         startHour: Int16,
-        endHour: Int16
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16
     ) {
         
         if let oldData = routine.frequencyData {
@@ -112,7 +118,9 @@ class CoreDataManager: DataManager {
         routine.hasReminder = hasReminder
         routine.reminderTime = reminderTime
         routine.startHour = startHour
+        routine.startMinute = startMinute
         routine.endHour = endHour
+        routine.endMinute = endMinute
         save()
     }
     
@@ -201,6 +209,89 @@ class CoreDataManager: DataManager {
         block.removeFromRoutines(routine)
         save()
     }
+    
+    func deleteGeneratedBlocks(for routine: Routine) {
+        guard let routineID = routine.id else { return }
+        
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "isGeneratedFromRoutine == YES AND sourceRoutineID == %@",
+            routineID as CVarArg
+        )
+        do {
+            let blocks = try viewContext.fetch(request)
+            blocks.forEach { viewContext.delete($0) }
+            save()
+        } catch {
+            print("failed to delete generated blocks: ", error)
+        }
+    }
+    
+    func syncGeneratedBlocks(for routine: Routine) {
+        guard
+            let routineID = routine.id,
+            let routineName = routine.name,
+            routine.startHour >= 0,
+            routine.endHour >= 0
+        else {
+            deleteGeneratedBlocks(for: routine)
+            return
+        }
+        
+        deleteGeneratedBlocks(for: routine)
+        let dates = scheduledDates(for: routine, daysAhead: 30)
+        
+        for date in dates {
+            let block = TimeBlock(context: viewContext)
+            block.id = UUID()
+            block.title = routineName
+            block.date = Calendar.current.startOfDay(for: date)
+            block.createdAt = Date()
+            block.startHour = routine.startHour
+            block.startMinute = routine.startMinute
+            block.endHour = routine.endHour
+            block.endMinute = routine.endMinute
+            block.isGeneratedFromRoutine = true
+            block.sourceRoutineID = routineID
+            
+            block.addToRoutines(routine)
+        }
+        
+        save()
+    }
+    
+    // helper
+    private func scheduledDates(for routine: Routine, daysAhead: Int) -> [Date] {
+        let today = Calendar.current.startOfDay(for: Date())
+        var dates: [Date] = []
+        for offset in 0..<daysAhead {
+            guard let date = Calendar.current.date(
+                byAdding: .day,
+                value: offset,
+                to: today
+            ) else {
+                continue
+            }
+            if isRoutine(routine, scheduledOn: date) {
+                dates.append(date)
+            }
+        }
+        return dates
+    }
+    
+    private func isRoutine(_ routine: Routine, scheduledOn date: Date) -> Bool {
+        let frequency = routine.frequency
+        let weekday = Calendar.current.component(.weekday, from: date)
+
+        switch frequency {
+        case .daily:
+            return true
+
+        case .specificDays(let days):
+            return days.contains(weekday)
+        }
+    }
+    
 
     // MARK: - Task
     func fetchAllTasks() -> [Task] {
@@ -313,3 +404,4 @@ class CoreDataManager: DataManager {
     
     
 }
+

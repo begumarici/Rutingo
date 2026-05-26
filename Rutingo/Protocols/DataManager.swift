@@ -10,21 +10,60 @@ import Foundation
 protocol DataManager {
     func fetchAllRoutines() -> [Routine]
     func fetchTodayRoutines() -> [Routine]
-    func saveRoutine(name: String, frequency: Frequency, feeling: String?, motivation: String?, blockType: String?, hasReminder: Bool, reminderTime: Date?, startHour: Int16, endHour: Int16) -> Routine
+    func saveRoutine(
+        name: String,
+        frequency: Frequency,
+        feeling: String?,
+        motivation: String?,
+        blockType: String?,
+        hasReminder: Bool,
+        reminderTime: Date?,
+        startHour: Int16,
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16
+    ) -> Routine
     func deleteRoutine(_ routine: Routine)
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency, feeling: String?, motivation: String?, blockType: String?, hasReminder: Bool, reminderTime: Date?, startHour: Int16, endHour: Int16)
+    func updateRoutine(
+        routine: Routine,
+        name: String,
+        frequency: Frequency,
+        feeling: String?,
+        motivation: String?,
+        blockType: String?,
+        hasReminder: Bool,
+        reminderTime: Date?,
+        startHour: Int16,
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16
+    )
     func toggleCompletion(_ routine: Routine)
     func save()
     func clearAllData()
     
     func fetchBlocks(for date: Date) -> [TimeBlock]
-    func saveBlock(title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int, date: Date) -> TimeBlock
+    func saveBlock(
+        title: String,
+        startHour: Int,
+        startMinute: Int,
+        endHour: Int,
+        endMinute: Int,
+        date: Date
+    ) -> TimeBlock
     func deleteBlock(_ block: TimeBlock)
     func addRoutineToBlock(_ routine: Routine, block: TimeBlock)
     func removeRoutineFromBlock(_ routine: Routine, block: TimeBlock)
 
+    func syncGeneratedBlocks(for routine: Routine)
+    func deleteGeneratedBlocks(for routine: Routine)
     func fetchAllTasks() -> [Task]
-    func saveTask(title: String, category: String, priority: String, dueDate: Date?) -> Task
+    func saveTask(
+        title: String,
+        category: String,
+        priority: String,
+        dueDate: Date?
+    ) -> Task
     func toggleTask(_ task: Task)
     func deleteTask(_ task: Task)
 

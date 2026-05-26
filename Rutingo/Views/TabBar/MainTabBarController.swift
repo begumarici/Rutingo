@@ -122,7 +122,7 @@ extension MainTabBarController: CustomTabBarDelegate {
         let addRoutineVC = AddRoutineViewController()
         let routinesViewModel = RoutinesViewModel()
         
-        addRoutineVC.onSave = { name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, endHour in
+        addRoutineVC.onSave = { name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute in
             routinesViewModel.addRoutine(
                 name: name,
                 frequency: frequency,
@@ -132,7 +132,9 @@ extension MainTabBarController: CustomTabBarDelegate {
                 hasReminder: hasReminder,
                 reminderTime: reminderTime,
                 startHour: startHour,
-                endHour: endHour
+                startMinute: startMinute,
+                endHour: endHour,
+                endMinute: endMinute
             ) {
                 NotificationCenter.default.post(
                     name: NSNotification.Name("RoutineAdded"),

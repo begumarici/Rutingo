@@ -24,9 +24,35 @@ class RoutinesViewModel {
         completion()
     }
     
-    func addRoutine(name: String, frequency: Frequency, feeling: String?, motivation: String?, blockType: String?, hasReminder: Bool, reminderTime: Date?, startHour: Int16, endHour: Int16, completion: () -> Void) {
-        let newRoutine = dataManager.saveRoutine(name: name, frequency: frequency, feeling: feeling, motivation: motivation, blockType: blockType, hasReminder: hasReminder, reminderTime: reminderTime, startHour: startHour, endHour: endHour)
+    func addRoutine(
+        name: String,
+        frequency: Frequency,
+        feeling: String?,
+        motivation: String?,
+        blockType: String?,
+        hasReminder: Bool,
+        reminderTime: Date?,
+        startHour: Int16,
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16,
+        completion: () -> Void
+    ) {
+        let newRoutine = dataManager.saveRoutine(
+            name: name,
+            frequency: frequency,
+            feeling: feeling,
+            motivation: motivation,
+            blockType: blockType,
+            hasReminder: hasReminder,
+            reminderTime: reminderTime,
+            startHour: startHour,
+            startMinute: startMinute,
+            endHour: endHour,
+            endMinute: endMinute
+        )
         NotificationManager.shared.scheduleNotification(for: newRoutine)
+        dataManager.syncGeneratedBlocks(for: newRoutine)
         loadData {
             completion()
         }
@@ -38,9 +64,37 @@ class RoutinesViewModel {
         loadData(completion: completion)
     }
     
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency, feeling: String?, motivation: String?, blockType: String?, hasReminder: Bool, reminderTime: Date? = nil, startHour: Int16, endHour: Int16, completion: () -> Void) {
-        dataManager.updateRoutine(routine: routine, name: name, frequency: frequency, feeling: feeling, motivation: motivation, blockType: blockType, hasReminder: hasReminder, reminderTime: reminderTime, startHour: startHour, endHour: endHour)
+    func updateRoutine(
+        routine: Routine,
+        name: String,
+        frequency: Frequency,
+        feeling: String?,
+        motivation: String?,
+        blockType: String?,
+        hasReminder: Bool,
+        reminderTime: Date? = nil,
+        startHour: Int16,
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16,
+        completion: () -> Void
+    ) {
+        dataManager.updateRoutine(
+            routine: routine,
+            name: name,
+            frequency: frequency,
+            feeling: feeling,
+            motivation: motivation,
+            blockType: blockType,
+            hasReminder: hasReminder,
+            reminderTime: reminderTime,
+            startHour: startHour,
+            startMinute: startMinute,
+            endHour: endHour,
+            endMinute: endMinute
+        )
         NotificationManager.shared.scheduleNotification(for: routine)
+        dataManager.syncGeneratedBlocks(for: routine)
         loadData(completion: completion)
     }
 
