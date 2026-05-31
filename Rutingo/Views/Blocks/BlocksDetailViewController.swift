@@ -149,6 +149,9 @@ class BlocksDetailViewController: UIViewController {
         titleLabel.text = block.title
         timeLabel.text = block.timeRangeText
         
+        let buttonTitle = block.isGeneratedFromRoutine ? "skip".localized : "delete_block".localized
+        deleteButton.setTitle(buttonTitle, for: .normal)
+        
         deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
     }
     
@@ -176,19 +179,40 @@ class BlocksDetailViewController: UIViewController {
     }
     
     @objc private func deleteTapped() {
-        let alert = UIAlertController(
-            title: "delete_block".localized,
-            message: "delete_block_message".localized,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
-        alert.addAction(UIAlertAction(title: "delete".localized, style: .destructive) { [weak self] _ in
-            guard let self else { return }
-            self.viewModel.deleteBlock(self.block) {
-                self.onDelete?()
-                self.navigationController?.popViewController(animated: true)
-            }
-        })
-        present(alert, animated: true)
+        if block.isGeneratedFromRoutine {
+            let alert = UIAlertController(
+                title: block.title,
+                message: "skip_routine_confirm_message".localized,
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+            alert.addAction(UIAlertAction(title: "skip".localized, style: .destructive) { [weak self] _ in
+                guard let self else { return }
+                if let routineID = self.block.sourceRoutineID,
+                   let date = self.block.date {
+                    CoreDataManager.shared.saveSkipLog(routineId: routineID, date: date, reason: "skipped_from_block")
+                }
+                self.viewModel.deleteBlock(self.block) {
+                    self.onDelete?()
+                    self.navigationController?.popViewController(animated: true)
+                }
+            })
+            present(alert, animated: true)
+        } else {
+            let alert = UIAlertController(
+                title: "delete_block".localized,
+                message: "delete_block_message".localized,
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+            alert.addAction(UIAlertAction(title: "delete".localized, style: .destructive) { [weak self] _ in
+                guard let self else { return }
+                self.viewModel.deleteBlock(self.block) {
+                    self.onDelete?()
+                    self.navigationController?.popViewController(animated: true)
+                }
+            })
+            present(alert, animated: true)
+        }
     }
 }

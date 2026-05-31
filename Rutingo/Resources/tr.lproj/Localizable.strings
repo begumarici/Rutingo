@@ -46,6 +46,9 @@
 "weekday_fri" = "Cu";
 "weekday_sat" = "Ct";
 "weekday_sun" = "Pa";
+"skip_routine_confirm_message" = "Bu rutini bu sefer atlamak istiyor musunuz?";
+"skip" = "Atla";
+"this_block_created_from_routine" = "Bu blok bir rutinden oluşturuldu.";
 
 /* Tasks Screen */
 "tasks_title" = "Görevler";

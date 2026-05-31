@@ -46,6 +46,9 @@
 "weekday_fri" = "Fr";
 "weekday_sat" = "Sa";
 "weekday_sun" = "Su";
+"skip_routine_confirm_message" = "Do you want to skip this routine for now?";
+"skip" = "Skip";
+"this_block_created_from_routine" = "This block was created from a routine.";
 
 /* Tasks Screen */
 "tasks_title" = "Tasks";
