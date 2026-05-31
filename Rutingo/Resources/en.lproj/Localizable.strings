@@ -20,6 +20,7 @@
 "no_routines_today" = "No routines scheduled for today";
 "daily_focus" = "Your daily focus";
 "completed" = "Completed";
+"skipped" = "Skipped";
 
 /* Blocks Screen */
 "blocks_count" = "blocks";

@@ -215,13 +215,18 @@ class TodayViewController: UIViewController {
         return indexPath.section == 1 && indexPath.row == 0
     }
     
+    private func isSkippedSectionHeader(at indexPath: IndexPath) -> Bool {
+        return indexPath.section == 2 && indexPath.row == 0
+    }
+    
     private func routine(at indexPath: IndexPath) -> Routine? {
         if indexPath.section == 0 {
             return viewModel.notCompletedRoutines[indexPath.row]
-        } else if indexPath.row == 0 {
-            return nil // header cell
-        } else {
+        } else if indexPath.section == 1 {
             return viewModel.completedRoutines[indexPath.row - 1]
+        } else {
+            if indexPath.row == 0 { return nil }
+            return viewModel.skippedRoutines[indexPath.row - 1]
         }
     }
     
@@ -244,7 +249,7 @@ class TodayViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension TodayViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return isPastOrFutureDay() ? 1 : 2
+        return isPastOrFutureDay() ? 1 : 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -252,11 +257,9 @@ extension TodayViewController: UITableViewDataSource {
         case 0:
             return viewModel.notCompletedRoutines.count
         case 1:
-            if viewModel.isCompletedSectionExpanded {
-                return 1 + viewModel.completedRoutines.count
-            } else {
-                return 1
-            }
+            return viewModel.isCompletedSectionExpanded ? 1 + viewModel.completedRoutines.count : 1
+        case 2:
+            return viewModel.isSkippedSectionExpanded ? 1 + viewModel.skippedRoutines.count : 1
         default:
             return 0
         }
@@ -275,6 +278,20 @@ extension TodayViewController: UITableViewDataSource {
             headerCell.configure(
                 count: viewModel.completedRoutines.count,
                 isExpanded: viewModel.isCompletedSectionExpanded
+            )
+            return headerCell
+        }
+        
+        if isSkippedSectionHeader(at: indexPath) {
+            guard let headerCell = tableView.dequeueReusableCell(
+                withIdentifier: CompletedSectionHeaderCell.identifier,
+                for: indexPath
+            ) as? CompletedSectionHeaderCell else { return UITableViewCell() }
+            
+            headerCell.configure(
+                count: viewModel.skippedRoutines.count,
+                isExpanded: viewModel.isSkippedSectionExpanded,
+                title: "skipped".localized
             )
             return headerCell
         }
@@ -308,6 +325,13 @@ extension TodayViewController: UITableViewDelegate {
             return
         }
         
+        if isSkippedSectionHeader(at: indexPath) {
+            triggerHaptic(.light)
+            viewModel.isSkippedSectionExpanded.toggle()
+            tableView.reloadSections(IndexSet(integer: 2), with: .automatic)
+            return
+        }
+
         // past or future day - show warning and don't allow toggle
         guard !isPastOrFutureDay() else {
             triggerWarningHaptic()
@@ -325,27 +349,38 @@ extension TodayViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // no swipe on completed section header
         guard !isCompletedSectionHeader(at: indexPath),
-              let routine = routine(at: indexPath) else {
-            return nil
+              !isSkippedSectionHeader(at: indexPath),
+              !isPastOrFutureDay(),
+              let routine = routine(at: indexPath) else { return nil }
+        
+        if indexPath.section == 2 {
+            let unskipAction = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, completionHandler in
+                self?.triggerHaptic(.light)
+                self?.viewModel.unskipRoutine(routine) { [weak self] in
+                    self?.updateUIWithViewModel()
+                    completionHandler(true)
+                }
+            }
+            unskipAction.image = UIImage(systemName: "arrow.uturn.backward")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+            unskipAction.backgroundColor = AppColors.secondary
+            return UISwipeActionsConfiguration(actions: [unskipAction])
         }
         
-        let viewAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
-            self?.triggerHaptic(.light)
-            
-            let detailVC = RoutineDetailViewController(routine: routine)
-            self?.navigationController?.pushViewController(detailVC, animated: true)
-            completionHandler(true)
+        let skipAction = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, completionHandler in
+            self?.triggerHaptic(.medium)
+            self?.viewModel.skipRoutine(routine) { [weak self] in
+                self?.updateUIWithViewModel()
+                completionHandler(true)
+            }
         }
         
-        viewAction.image = UIImage(systemName: "info.circle")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
-        viewAction.backgroundColor = AppColors.secondary
-        
-        let configuration = UISwipeActionsConfiguration(actions: [viewAction])
-        configuration.performsFirstActionWithFullSwipe = true
-        
-        return configuration
+        skipAction.image = UIImage(systemName: "forward.fill")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+        skipAction.backgroundColor = .systemOrange
+
+        let config = UISwipeActionsConfiguration(actions: [skipAction])
+        config.performsFirstActionWithFullSwipe = true
+        return config
     }
 
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -353,6 +388,7 @@ extension TodayViewController: UITableViewDelegate {
         // only allow swipe on current day, not on header
         guard !isPastOrFutureDay(),
               !isCompletedSectionHeader(at: indexPath),
+              !isSkippedSectionHeader(at: indexPath),
               let routine = routine(at: indexPath) else {
             return nil
         }

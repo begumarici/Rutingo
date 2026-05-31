@@ -20,6 +20,7 @@
 "no_routines_today" = "Bugün için planlanmış bir rutin yok";
 "daily_focus" = "Günlük odağın";
 "completed" = "Tamamlananlar";
+"skipped" = "Atlananlar";
 
 /* Blocks Screen */
 "blocks_count" = "blok";

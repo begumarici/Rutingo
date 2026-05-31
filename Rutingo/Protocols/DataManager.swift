@@ -57,6 +57,7 @@ protocol DataManager {
 
     func syncGeneratedBlocks(for routine: Routine)
     func deleteGeneratedBlocks(for routine: Routine)
+    func deleteGeneratedBlockForDate(routineId: UUID?, date: Date)
     func fetchAllTasks() -> [Task]
     func saveTask(
         title: String,
@@ -73,6 +74,7 @@ protocol DataManager {
 
     func saveSkipLog(routineId: UUID, date: Date, reason: String)
     func hasSkipLog(routineId: UUID, date: Date) -> Bool
+    func deleteSkipLog(routineId: UUID, date: Date)
 
     func saveWeeklyReview(weekStartDate: Date, rating: Int, note: String?)
     func hasWeeklyReview(for weekStart: Date) -> Bool

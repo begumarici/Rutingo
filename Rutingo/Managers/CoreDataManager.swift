@@ -375,6 +375,42 @@ class CoreDataManager: DataManager {
         return ((try? viewContext.fetch(request))?.count ?? 0) > 0
     }
 
+    func deleteSkipLog(routineId: UUID, date: Date) {
+        let request: NSFetchRequest<HabitSkipLog> = HabitSkipLog.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "routineId == %@ AND date == %@",
+            routineId as CVarArg,
+            DateHelper.shared.startOfDay(date) as CVarArg
+        )
+        do {
+            let logs = try viewContext.fetch(request)
+            logs.forEach { viewContext.delete($0) }
+            save()
+        } catch {
+            print("failed to delete skip log: \(error)")
+        }
+    }
+
+    func deleteGeneratedBlockForDate(routineId: UUID?, date: Date) {
+        guard let routineId else { return }
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        let startOfDay = DateHelper.shared.startOfDay(date)
+        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+        request.predicate = NSPredicate(
+            format: "isGeneratedFromRoutine == YES AND sourceRoutineID == %@ AND date >= %@ AND date < %@",
+            routineId as CVarArg,
+            startOfDay as CVarArg,
+            endOfDay as CVarArg
+        )
+        do {
+            let blocks = try viewContext.fetch(request)
+            blocks.forEach { viewContext.delete($0) }
+            save()
+        } catch {
+            print("failed to delete generated block for date: \(error)")
+        }
+    }
+
     // MARK: - WeeklyReview
     func saveWeeklyReview(weekStartDate: Date, rating: Int, note: String?) {
         let review           = WeeklyReview(context: viewContext)
