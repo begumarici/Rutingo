@@ -164,6 +164,8 @@
 "percent_format" = "%%%d";
 
 /* Feeling and Motivation */
+"motivation" = "Motivasyon";
+"feeling" = "Hissettirdiği";
 "feeling_energy" = "Enerji veriyor";
 "feeling_hard" = "Zor ama önemli";
 "feeling_boring" = "Sıkıcı ama gerekli";

@@ -26,7 +26,7 @@ class CustomTabBarView: UIView {
         stack.axis = .horizontal
         stack.distribution = .equalSpacing
         stack.alignment = .center
-        stack.spacing = 50
+        stack.spacing = 32
         return stack
     }()
     
