@@ -223,6 +223,7 @@ class TodayViewController: UIViewController {
         if indexPath.section == 0 {
             return viewModel.notCompletedRoutines[indexPath.row]
         } else if indexPath.section == 1 {
+            if indexPath.row == 0 { return nil }
             return viewModel.completedRoutines[indexPath.row - 1]
         } else {
             if indexPath.row == 0 { return nil }
@@ -305,7 +306,12 @@ extension TodayViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        cell.configure(with: routine, isNotToday: isPastOrFutureDay())
+        if indexPath.section == 2 {
+            cell.configure(with: routine, isSkipped: true)
+        } else {
+            cell.configure(with: routine, isNotToday: isPastOrFutureDay())
+        }
+        
         return cell
     }
 }
@@ -340,6 +346,7 @@ extension TodayViewController: UITableViewDelegate {
         
         // toggle routine completion
         guard let routine = routine(at: indexPath) else { return }
+        if indexPath.section == 2 { return }
         
         triggerHaptic(.medium)
         
@@ -389,6 +396,7 @@ extension TodayViewController: UITableViewDelegate {
         guard !isPastOrFutureDay(),
               !isCompletedSectionHeader(at: indexPath),
               !isSkippedSectionHeader(at: indexPath),
+              indexPath.section != 2,
               let routine = routine(at: indexPath) else {
             return nil
         }

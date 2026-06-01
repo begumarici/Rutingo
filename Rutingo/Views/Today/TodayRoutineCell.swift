@@ -123,23 +123,39 @@ class TodayRoutineCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(with routine: Routine, isNotToday: Bool = false) {
+    func configure(with routine: Routine, isNotToday: Bool = false, isSkipped: Bool = false) {
+        // reset
+        nameLabel.attributedText = nil
+        nameLabel.textColor = AppColors.primary
+        frequencyLabel.textColor = AppColors.secondary
+        streakLabel.isHidden = false
+        checkmarkView.isHidden = false
+        cardView.alpha = 1.0
+
         nameLabel.text = routine.name
         frequencyLabel.text = routine.frequency.displayText
-        
-        if isNotToday {
+
+        if isSkipped {
+            cardView.alpha = 0.6
+            checkmarkView.isHidden = true
+            streakLabel.isHidden = true
+            let attributes: [NSAttributedString.Key: Any] = [
+                .strikethroughStyle: NSUnderlineStyle.single.rawValue,
+                .foregroundColor: AppColors.secondary
+            ]
+            nameLabel.attributedText = NSAttributedString(string: routine.name ?? "", attributes: attributes)
+            frequencyLabel.textColor = AppColors.secondary.withAlphaComponent(0.6)
+
+        } else if isNotToday {
             cardView.alpha = 0.7
             checkmarkView.isHidden = true
             streakLabel.isHidden = true
             nameLabel.textColor = AppColors.secondary
+            frequencyLabel.textColor = AppColors.secondary
+
         } else {
-            cardView.alpha = 1.0
-            checkmarkView.isHidden = false
-            streakLabel.isHidden = false
             updateCompletionState(isCompleted: routine.isCompletedToday)
-            
-            let streak = routine.currentStreak
-            streakLabel.attributedText = createStreakText(streak)
+            streakLabel.attributedText = createStreakText(routine.currentStreak)
         }
     }
     
