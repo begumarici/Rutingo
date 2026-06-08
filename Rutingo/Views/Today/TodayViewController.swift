@@ -105,6 +105,20 @@ class TodayViewController: UIViewController {
         weekCalendarView.onDateSelected = { [weak self] date in
             self?.handleDateSelection(date)
         }
+        
+        weekCalendarView.onSwipeLeft = { [weak self] in
+            self?.animateTransition(direction: .left, includeWeek: true)
+            self?.viewModel.goToNextWeek { [weak self] in
+                self?.updateUIWithViewModel()
+            }
+        }
+
+        weekCalendarView.onSwipeRight = { [weak self] in
+            self?.animateTransition(direction: .right, includeWeek: true)
+            self?.viewModel.goToPreviousWeek { [weak self] in
+                self?.updateUIWithViewModel()
+            }
+        }
     }
     
     private func handleDateSelection(_ date: Date) {
@@ -136,6 +150,33 @@ class TodayViewController: UIViewController {
         
         addSubviews()
         setupConstraints()
+        setupSwipeGestures()
+    }
+    
+    @objc private func tableSwipedLeft() {
+        let currentWeekBefore = Calendar.current.component(.weekOfYear, from: viewModel.selectedDate)
+        animateTransition(direction: .left, includeWeek: false)
+        viewModel.goToNextDay { [weak self] in
+            guard let self else { return }
+            let currentWeekAfter = Calendar.current.component(.weekOfYear, from: self.viewModel.selectedDate)
+            if currentWeekAfter != currentWeekBefore {
+                self.animateTransition(direction: .left, includeWeek: true)
+            }
+            self.updateUIWithViewModel()
+        }
+    }
+
+    @objc private func tableSwipedRight() {
+        let currentWeekBefore = Calendar.current.component(.weekOfYear, from: viewModel.selectedDate)
+        animateTransition(direction: .right, includeWeek: false)
+        viewModel.goToPreviousDay { [weak self] in
+            guard let self else { return }
+            let currentWeekAfter = Calendar.current.component(.weekOfYear, from: self.viewModel.selectedDate)
+            if currentWeekAfter != currentWeekBefore {
+                self.animateTransition(direction: .right, includeWeek: true)
+            }
+            self.updateUIWithViewModel()
+        }
     }
     
     private func addSubviews() {
@@ -184,6 +225,16 @@ class TodayViewController: UIViewController {
     private func setupTableView() {
         tableView.dataSource = self
         tableView.delegate = self
+    }
+    
+    private func setupSwipeGestures() {
+        let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(tableSwipedLeft))
+        swipeLeft.direction = .left
+        view.addGestureRecognizer(swipeLeft)
+
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(tableSwipedRight))
+        swipeRight.direction = .right
+        view.addGestureRecognizer(swipeRight)
     }
     
     // MARK: - Data Loading
@@ -244,6 +295,18 @@ class TodayViewController: UIViewController {
     private func triggerWarningHaptic() {
         let generator = UINotificationFeedbackGenerator()
         generator.notificationOccurred(.warning)
+    }
+    
+    private func animateTransition(direction: UIRectEdge, includeWeek: Bool = false) {
+        let transition = CATransition()
+        transition.duration = 0.25
+        transition.type = .push
+        transition.subtype = direction == .right ? .fromLeft : .fromRight
+        transition.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        tableView.layer.add(transition, forKey: nil)
+        if includeWeek {
+            weekCalendarView.layer.add(transition, forKey: nil)
+        }
     }
 }
 

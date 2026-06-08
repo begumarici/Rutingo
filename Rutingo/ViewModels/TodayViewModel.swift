@@ -129,7 +129,7 @@ class TodayViewModel {
 
 // MARK: - Week Calendar Methods
     func getCurrentWeekDates() -> [Date] {
-        return DateHelper.shared.currentWeekDays()
+        return DateHelper.shared.weekDays(for: selectedDate)
     }
     
     func getWeekProgressMap(for dates: [Date]) -> [Date: Double] {
@@ -165,6 +165,26 @@ class TodayViewModel {
             
             return routine.wasScheduled(on: normalizedDate)
         }
+    }
+    
+    func goToNextDay(completion: () -> Void) {
+        guard let next = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) else { return }
+        setSelectedDate(next, completion: completion)
+    }
+
+    func goToPreviousDay(completion: () -> Void) {
+        guard let prev = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) else { return }
+        setSelectedDate(prev, completion: completion)
+    }
+
+    func goToNextWeek(completion: () -> Void) {
+        guard let next = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: selectedDate) else { return }
+        setSelectedDate(next, completion: completion)
+    }
+
+    func goToPreviousWeek(completion: () -> Void) {
+        guard let prev = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: selectedDate) else { return }
+        setSelectedDate(prev, completion: completion)
     }
     
     func toggleCompletedSection() {
