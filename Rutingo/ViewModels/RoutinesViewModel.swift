@@ -60,6 +60,7 @@ class RoutinesViewModel {
     
     func deleteRoutine(_ routine: Routine, completion: () -> Void) {
         NotificationManager.shared.cancelNotification(for: routine)
+        dataManager.deleteGeneratedBlocksFromNow(for: routine)
         dataManager.deleteRoutine(routine)
         loadData(completion: completion)
     }

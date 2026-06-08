@@ -106,20 +106,22 @@ class TimelineView: UIView {
         blockViews.removeAll()
 
         for block in blocks {
-            let blockView = makeBlockView(for: block)
-            addSubview(blockView)
-            blockViews.append(blockView)
-
             let startDecimal = CGFloat(block.startHour) + CGFloat(block.startMinute) / 60.0
             let endDecimal = CGFloat(block.endHour) + CGFloat(block.endMinute) / 60.0
             let topY = (startDecimal - CGFloat(startHour)) * hourHeight + 16
-            let height = (endDecimal - startDecimal) * hourHeight
+            
+            let rawHeight = (endDecimal - startDecimal) * hourHeight - 2
+            let height = max(rawHeight, 30)
+            let blockView = makeBlockView(for: block, blockHeight: rawHeight, displayHeight: height)
+            
+            addSubview(blockView)
+            blockViews.append(blockView)
             
             NSLayoutConstraint.activate([
                 blockView.topAnchor.constraint(equalTo: topAnchor, constant: topY),
                 blockView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: timeColumnWidth + 8),
                 blockView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-                blockView.heightAnchor.constraint(equalToConstant: max(height - 2, 30)),
+                blockView.heightAnchor.constraint(equalToConstant: height),
             ])
         }
     }
@@ -157,7 +159,7 @@ class TimelineView: UIView {
         ])
     }
 
-    private func makeBlockView(for block: TimeBlock) -> UIView {
+    private func makeBlockView(for block: TimeBlock, blockHeight: CGFloat, displayHeight: CGFloat) -> UIView {
         let isToday = Calendar.current.isDateInToday(selectedDate)
         let currentHour = Calendar.current.component(.hour, from: Date())
         let currentMin = Calendar.current.component(.minute, from: Date())
@@ -181,7 +183,6 @@ class TimelineView: UIView {
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.text = block.title
         titleLabel.font = AppFonts.semibold(13)
         titleLabel.textColor = isActive ? AppColors.accent : AppColors.primary
         titleLabel.numberOfLines = 1
@@ -189,25 +190,62 @@ class TimelineView: UIView {
 
         let timeLabel = UILabel()
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
-        timeLabel.text = block.timeRangeText
         timeLabel.font = AppFonts.regular(11)
         timeLabel.textColor = AppColors.tertiary
         container.addSubview(timeLabel)
 
-        NSLayoutConstraint.activate([
-            bar.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
-            bar.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
-            bar.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -8),
-            bar.widthAnchor.constraint(equalToConstant: 3),
+        if displayHeight < 44 {
+            let title = NSMutableAttributedString(
+                string: (block.title ?? "") + " · ",
+                attributes: [
+                    .font: AppFonts.semibold(13),
+                    .foregroundColor: isActive ? AppColors.accent : AppColors.primary
+                ]
+            )
+            let time = NSAttributedString(
+                string: block.timeRangeText,
+                attributes: [
+                    .font: AppFonts.regular(11),
+                    .foregroundColor: AppColors.tertiary
+                ]
+            )
+            title.append(time)
+            titleLabel.attributedText = title
+            timeLabel.isHidden = true
+        } else {
+            titleLabel.text = block.title
+            timeLabel.text = block.timeRangeText
+            timeLabel.isHidden = false
+        }
+        
+        if displayHeight < 44 {
+            NSLayoutConstraint.activate([
+                bar.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
+                bar.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
+                bar.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -8),
+                bar.widthAnchor.constraint(equalToConstant: 3),
 
-            titleLabel.leadingAnchor.constraint(equalTo: bar.trailingAnchor, constant: 8),
-            titleLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
-
-            timeLabel.leadingAnchor.constraint(equalTo: bar.trailingAnchor, constant: 8),
-            timeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2),
-            timeLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
-        ])
+                titleLabel.leadingAnchor.constraint(equalTo: bar.trailingAnchor, constant: 8),
+                titleLabel.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+                titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
+            ])
+        } else {
+            NSLayoutConstraint.activate([
+                bar.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 8),
+                bar.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
+                bar.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -8),
+                bar.widthAnchor.constraint(equalToConstant: 3),
+                
+                titleLabel.leadingAnchor.constraint(equalTo: bar.trailingAnchor, constant: 8),
+                titleLabel.topAnchor.constraint(equalTo: container.topAnchor, constant: 8),
+                titleLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
+                
+                timeLabel.leadingAnchor.constraint(equalTo: bar.trailingAnchor, constant: 8),
+                timeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2),
+                timeLabel.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -8),
+                timeLabel.bottomAnchor.constraint(lessThanOrEqualTo: container.bottomAnchor, constant: -8),
+            ])
+        }
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(blockViewTapped(_:)))
         container.addGestureRecognizer(tap)

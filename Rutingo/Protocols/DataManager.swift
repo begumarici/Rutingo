@@ -57,6 +57,7 @@ protocol DataManager {
 
     func syncGeneratedBlocks(for routine: Routine)
     func deleteGeneratedBlocks(for routine: Routine)
+    func deleteGeneratedBlocksFromNow(for routine: Routine)
     func deleteGeneratedBlockForDate(routineId: UUID?, date: Date)
     func fetchAllTasks() -> [Task]
     func saveTask(

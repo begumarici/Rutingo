@@ -227,6 +227,44 @@ class CoreDataManager: DataManager {
         }
     }
     
+    func deleteGeneratedBlocksFromNow(for routine: Routine) {
+        guard let routineID = routine.id else { return }
+        
+        let now = Date()
+        let todayStart = Calendar.current.startOfDay(for: now)
+        let currentHour = Calendar.current.component(.hour, from: now)
+        let currentMinute = Calendar.current.component(.minute, from: now)
+        
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "isGeneratedFromRoutine == YES AND sourceRoutineID == %@ AND date >= %@",
+            routineID as CVarArg,
+            todayStart as CVarArg
+        )
+        
+        do {
+            let blocks = try viewContext.fetch(request)
+            for block in blocks {
+                guard let blockDate = block.date else { continue }
+                let isToday = Calendar.current.isDate(blockDate, inSameDayAs: now)
+                
+                if isToday {
+                    // Aynı gün — block'un bitiş saati şu andan önceyse silme
+                    let blockEndHour = Int(block.endHour)
+                    let blockEndMinute = Int(block.endMinute)
+                    let blockAlreadyPassed = (blockEndHour < currentHour) ||
+                                             (blockEndHour == currentHour && blockEndMinute <= currentMinute)
+                    if blockAlreadyPassed { continue }
+                }
+                
+                viewContext.delete(block)
+            }
+            save()
+        } catch {
+            print("failed to delete future generated blocks: \(error)")
+        }
+    }
+    
     func syncGeneratedBlocks(for routine: Routine) {
         guard
             let routineID = routine.id,
