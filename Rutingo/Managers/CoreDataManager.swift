@@ -131,12 +131,17 @@ class CoreDataManager: DataManager {
     
     func toggleCompletion(_ routine: Routine) {
         let today = DateHelper.shared.startOfDay()
+        guard let routineId = routine.id else { return }
+
         if let existing = routine.completionArray.first(where: {
             guard let date = $0.date else { return false }
             return Calendar.current.isDate(date, inSameDayAs: today)
         }) {
             viewContext.delete(existing)
         } else {
+            // delete related skip log if there is a skip log for that day
+            deleteSkipLog(routineId: routineId, date: today)
+            
             let completion = RoutineCompletion(context: viewContext)
             completion.id = UUID()
             completion.date = today
@@ -394,10 +399,24 @@ class CoreDataManager: DataManager {
 
     // MARK: - HabitSkipLog
     func saveSkipLog(routineId: UUID, date: Date, reason: String) {
+        let todayStart = DateHelper.shared.startOfDay(date)
+
+        // delete related copmletion if there is a completion in that day
+        let fetchRequest: NSFetchRequest<RoutineCompletion> = RoutineCompletion.fetchRequest()
+        fetchRequest.predicate = NSPredicate(
+            format: "routine.id == %@ AND date == %@",
+            routineId as CVarArg,
+            todayStart as CVarArg
+        )
+
+        if let completions = try? viewContext.fetch(fetchRequest) {
+            completions.forEach { viewContext.delete($0) }
+        }
+
         let log       = HabitSkipLog(context: viewContext)
         log.id        = UUID()
         log.routineId = routineId
-        log.date      = DateHelper.shared.startOfDay(date)
+        log.date      = todayStart
         log.reason    = reason
         log.createdAt = Date()
         save()

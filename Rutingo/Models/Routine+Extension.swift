@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import CoreData
 
 extension Routine {
     
@@ -57,12 +58,15 @@ extension Routine {
         while true {
             let scheduled = wasScheduled(on: currentDate)
             let completed = isCompleted(on: currentDate)
+            let skipped = isSkipped(on: currentDate)
             
             if completed {
                 streak += 1
                 guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else { break }
                 currentDate = previousDay
-                
+            } else if skipped {
+                guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else { break }
+                currentDate = previousDay
             } else if scheduled {
                 break
             } else {
@@ -184,13 +188,18 @@ extension Routine {
         
         while currentDate < endDate {
             if wasScheduled(on: currentDate) {
-                if !isCompleted(on: currentDate) {
+                if !isCompleted(on: currentDate) && !isSkipped(on: currentDate) {
                     return true
                 }
             }
             currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate)!
         }
         return false
+    }
+    
+    func isSkipped(on date: Date) -> Bool {
+        guard let id = self.id else { return false }
+        return CoreDataManager.shared.hasSkipLog(routineId: id, date: date)
     }
     
     // MARK: - Feeling
