@@ -105,13 +105,61 @@ class TimelineView: UIView {
         blockViews.forEach { $0.removeFromSuperview() }
         blockViews.removeAll()
 
-        for block in blocks {
-            let startDecimal = CGFloat(block.startHour) + CGFloat(block.startMinute) / 60.0
-            let endDecimal = CGFloat(block.endHour) + CGFloat(block.endMinute) / 60.0
-            let topY = (startDecimal - CGFloat(startHour)) * hourHeight + 16
-            
-            let rawHeight = (endDecimal - startDecimal) * hourHeight - 2
-            let height = max(rawHeight, 30)
+        guard bounds.width > 0 else { return }
+
+        let count = blocks.count
+        var columns = Array(repeating: 0, count: count)
+        var columnEndTimes = [CGFloat]()
+
+        for i in 0..<count {
+            let start = CGFloat(blocks[i].startHour) + CGFloat(blocks[i].startMinute) / 60.0
+            let end   = CGFloat(blocks[i].endHour)   + CGFloat(blocks[i].endMinute)   / 60.0
+
+            var placed = false
+            for col in 0..<columnEndTimes.count {
+                if columnEndTimes[col] <= start {
+                    columns[i] = col
+                    columnEndTimes[col] = end
+                    placed = true
+                    break
+                }
+            }
+            if !placed {
+                columns[i] = columnEndTimes.count
+                columnEndTimes.append(end)
+            }
+        }
+
+        var totalCols = Array(repeating: 1, count: count)
+        for i in 0..<count {
+            let startI = CGFloat(blocks[i].startHour) + CGFloat(blocks[i].startMinute) / 60.0
+            let endI   = CGFloat(blocks[i].endHour)   + CGFloat(blocks[i].endMinute)   / 60.0
+            var maxCol = columns[i]
+            for j in 0..<count {
+                guard i != j else { continue }
+                let startJ = CGFloat(blocks[j].startHour) + CGFloat(blocks[j].startMinute) / 60.0
+                let endJ   = CGFloat(blocks[j].endHour)   + CGFloat(blocks[j].endMinute)   / 60.0
+                let overlaps = startI < endJ && startJ < endI
+                if overlaps { maxCol = max(maxCol, columns[j]) }
+            }
+            totalCols[i] = maxCol + 1
+        }
+
+        let contentWidth = bounds.width - timeColumnWidth - 16
+
+        for (i, block) in blocks.enumerated() {
+            let start = CGFloat(block.startHour) + CGFloat(block.startMinute) / 60.0
+            let end   = CGFloat(block.endHour)   + CGFloat(block.endMinute)   / 60.0
+
+            let topY      = (start - CGFloat(startHour)) * hourHeight + 16
+            let rawHeight = (end - start) * hourHeight - 2
+            let height    = max(rawHeight, 30)
+
+            let colCount    = CGFloat(totalCols[i])
+            let columnWidth = contentWidth / colCount
+            let leadingOffset = timeColumnWidth + 8 + CGFloat(columns[i]) * columnWidth
+            let blockWidth  = columnWidth - 4
+
             let blockView = makeBlockView(for: block, blockHeight: rawHeight, displayHeight: height)
             
             addSubview(blockView)
@@ -119,9 +167,9 @@ class TimelineView: UIView {
             
             NSLayoutConstraint.activate([
                 blockView.topAnchor.constraint(equalTo: topAnchor, constant: topY),
-                blockView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: timeColumnWidth + 8),
-                blockView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
-                blockView.heightAnchor.constraint(equalToConstant: height),
+                blockView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: leadingOffset),
+                blockView.widthAnchor.constraint(equalToConstant: blockWidth),
+                blockView.heightAnchor.constraint(greaterThanOrEqualToConstant: height),
             ])
         }
     }
@@ -187,13 +235,16 @@ class TimelineView: UIView {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = AppFonts.semibold(13)
         titleLabel.textColor = isActive ? AppColors.accent : AppColors.primary
-        titleLabel.numberOfLines = 1
+        titleLabel.numberOfLines = 0
+        titleLabel.lineBreakMode = .byWordWrapping
         container.addSubview(titleLabel)
 
         let timeLabel = UILabel()
         timeLabel.translatesAutoresizingMaskIntoConstraints = false
         timeLabel.font = AppFonts.regular(11)
         timeLabel.textColor = AppColors.tertiary
+        timeLabel.numberOfLines = 0
+        timeLabel.lineBreakMode = .byWordWrapping
         container.addSubview(timeLabel)
 
         if displayHeight < 44 {
@@ -287,9 +338,18 @@ class TimelineView: UIView {
         currentTimeLineView = nil
         heightConstraint?.constant = totalHeight
         drawTimeLines()
-        drawBlocks()
         if Calendar.current.isDateInToday(selectedDate) {
             drawCurrentTimeLine()
+        }
+        setNeedsLayout()
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard bounds.width > 0, !blocks.isEmpty else { return }
+        // Block view'ları zaten varsa yeniden çizme
+        if blockViews.isEmpty {
+            drawBlocks()
         }
     }
 
