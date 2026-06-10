@@ -138,7 +138,7 @@ class TodayRoutineCell: UITableViewCell {
         if isSkipped {
             cardView.alpha = 0.6
             checkmarkView.isHidden = true
-            streakLabel.isHidden = true
+            streakLabel.isHidden = false
             let attributes: [NSAttributedString.Key: Any] = [
                 .strikethroughStyle: NSUnderlineStyle.single.rawValue,
                 .foregroundColor: AppColors.secondary

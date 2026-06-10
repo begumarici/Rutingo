@@ -255,7 +255,7 @@ class TodayViewController: UIViewController {
         weekCalendarView.configure(with: weekDates, progressMap: progressMap, selectedDate: viewModel.selectedDate)
         
         // Empty State
-        let isEmpty = viewModel.notCompletedRoutines.isEmpty && viewModel.completedRoutines.isEmpty
+        let isEmpty = viewModel.notCompletedRoutines.isEmpty && viewModel.completedRoutines.isEmpty && viewModel.skippedRoutines.isEmpty
         tableView.isHidden = isEmpty
         emptyStateStackView.isHidden = !isEmpty
         tableView.reloadData()

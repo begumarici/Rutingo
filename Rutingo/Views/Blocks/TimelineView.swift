@@ -174,6 +174,8 @@ class TimelineView: UIView {
         container.backgroundColor = isActive ? AppColors.accent.withAlphaComponent(0.12) : AppColors.cardBackground
         container.layer.cornerRadius = 10
         container.layer.masksToBounds = true
+        
+        let hasRoutine = !block.linkedRoutines.isEmpty
 
         let bar = UIView()
         bar.translatesAutoresizingMaskIntoConstraints = false
@@ -195,25 +197,46 @@ class TimelineView: UIView {
         container.addSubview(timeLabel)
 
         if displayHeight < 44 {
-            let title = NSMutableAttributedString(
+            let titleStr = NSMutableAttributedString()
+            if hasRoutine, let icon = UIImage(systemName: "repeat")?
+                .withConfiguration(UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold))
+                .withTintColor(isActive ? AppColors.accent : AppColors.primary, renderingMode: .alwaysOriginal) {
+                let attachment = NSTextAttachment()
+                attachment.image = icon
+                attachment.bounds = CGRect(x: 0, y: -1.5, width: 11, height: 11)
+                titleStr.append(NSAttributedString(attachment: attachment))
+                titleStr.append(NSAttributedString(string: " "))
+            }
+            titleStr.append(NSAttributedString(
                 string: (block.title ?? "") + " · ",
-                attributes: [
-                    .font: AppFonts.semibold(13),
-                    .foregroundColor: isActive ? AppColors.accent : AppColors.primary
-                ]
-            )
-            let time = NSAttributedString(
+                attributes: [.font: AppFonts.semibold(13),
+                             .foregroundColor: isActive ? AppColors.accent : AppColors.primary]
+            ))
+            titleStr.append(NSAttributedString(
                 string: block.timeRangeText,
-                attributes: [
-                    .font: AppFonts.regular(11),
-                    .foregroundColor: AppColors.tertiary
-                ]
-            )
-            title.append(time)
-            titleLabel.attributedText = title
+                attributes: [.font: AppFonts.regular(11),
+                             .foregroundColor: AppColors.tertiary]
+            ))
+            titleLabel.attributedText = titleStr
             timeLabel.isHidden = true
         } else {
-            titleLabel.text = block.title
+            if hasRoutine, let icon = UIImage(systemName: "repeat")?
+                .withConfiguration(UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold))
+                .withTintColor(isActive ? AppColors.accent : AppColors.primary, renderingMode: .alwaysOriginal) {
+                let str = NSMutableAttributedString()
+                let attachment = NSTextAttachment()
+                attachment.image = icon
+                attachment.bounds = CGRect(x: 0, y: -1.5, width: 11, height: 11)
+                str.append(NSAttributedString(attachment: attachment))
+                str.append(NSAttributedString(
+                    string: " " + (block.title ?? ""),
+                    attributes: [.font: AppFonts.semibold(13),
+                                 .foregroundColor: isActive ? AppColors.accent : AppColors.primary]
+                ))
+                titleLabel.attributedText = str
+            } else {
+                titleLabel.text = block.title
+            }
             timeLabel.text = block.timeRangeText
             timeLabel.isHidden = false
         }
