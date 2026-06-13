@@ -23,16 +23,16 @@ final class TasksViewController: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "tasks_title".localized
-        label.font = .systemFont(ofSize: 32, weight: .bold)
-        label.textColor = .label
+        label.font = AppFonts.bold(32)
+        label.textColor = AppColors.primary
         return label
     }()
     
     private let inputContainerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .secondarySystemGroupedBackground
-        view.layer.cornerRadius = 16
+        view.backgroundColor = AppColors.secondaryCardBackground
+        view.layer.cornerRadius = Layout.cardCornerRadius
         return view
     }()
     
@@ -61,8 +61,8 @@ final class TasksViewController: UIViewController {
         \("tasks_empty_message".localized)
         """
         label.textAlignment = .center
-        label.textColor = .secondaryLabel
-        label.font = .systemFont(ofSize: 15)
+        label.textColor = AppColors.secondary
+        label.font = AppFonts.regular(15)
         label.numberOfLines = 2
         label.isHidden = true
         return label
@@ -83,7 +83,7 @@ final class TasksViewController: UIViewController {
 
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = .systemGroupedBackground
+        view.backgroundColor = AppColors.background
         textField.delegate = self
         
         addSubviews()

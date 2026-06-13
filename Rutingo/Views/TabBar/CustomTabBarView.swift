@@ -5,6 +5,7 @@
 //  Created by Begüm Arıcı on 12.01.2026.
 //
 
+// MARK: - NOT BEING USED ANYMORE!
 import UIKit
 
 protocol CustomTabBarDelegate: AnyObject {

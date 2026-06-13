@@ -11,6 +11,7 @@
 "tab_blocks" = "Bloklar";
 "tab_week" = "Hafta";
 "tab_tasks" = "Görevler";
+"tab_routines" = "Rutinler";
 
 /* Today Screen */
 "greeting_morning" = "Günaydın";

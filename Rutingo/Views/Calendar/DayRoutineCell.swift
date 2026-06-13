@@ -15,8 +15,8 @@ class DayRoutineCell: UITableViewCell {
     private let containerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.secondaryCardBackground
-        view.layer.cornerRadius = 16
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = Layout.cardCornerRadius
         
         view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowOpacity = 0.1

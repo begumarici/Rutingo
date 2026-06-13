@@ -32,7 +32,7 @@ class BlocksDetailViewController: UIViewController {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
         v.backgroundColor = AppColors.cardBackground
-        v.layer.cornerRadius = 16
+        v.layer.cornerRadius = Layout.cardCornerRadius
         return v
     }()
     

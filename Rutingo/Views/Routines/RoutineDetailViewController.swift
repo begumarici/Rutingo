@@ -181,7 +181,7 @@ class RoutineDetailViewController: UIViewController {
         streakValueLabel.attributedText = makeIconText(
             icon: "flame.fill",
             text: " \(streak)",
-            iconColor: streak > 0 ? .orange : AppColors.secondary
+            iconColor: streak > 0 ? AppColors.accentOrange : AppColors.secondary
         )
         addTooltip(to: streakMiniCard, text: "current_streak".localized)
 
@@ -330,7 +330,7 @@ private extension RoutineDetailViewController {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = AppColors.cardBackground
-        view.layer.cornerRadius = 16
+        view.layer.cornerRadius = Layout.cardCornerRadius
         view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowOpacity = 0.07
         view.layer.shadowOffset = CGSize(width: 0, height: 2)
@@ -343,7 +343,7 @@ private extension RoutineDetailViewController {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = AppColors.secondaryCardBackground
-        view.layer.cornerRadius = 12
+        view.layer.cornerRadius = Layout.cornerRadius
         return view
     }
 

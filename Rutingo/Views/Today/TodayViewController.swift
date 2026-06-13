@@ -446,7 +446,7 @@ extension TodayViewController: UITableViewDelegate {
         }
         
         skipAction.image = UIImage(systemName: "forward.fill")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
-        skipAction.backgroundColor = .systemOrange
+        skipAction.backgroundColor = AppColors.accentOrange
 
         let config = UISwipeActionsConfiguration(actions: [skipAction])
         config.performsFirstActionWithFullSwipe = true

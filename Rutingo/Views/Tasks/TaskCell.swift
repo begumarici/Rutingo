@@ -17,15 +17,15 @@ final class TaskCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = .label
+        imageView.tintColor = AppColors.primary
         return imageView
     }()
     
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 16, weight: .regular)
-        label.textColor = .label
+        label.font = AppFonts.regular(16)
+        label.textColor = AppColors.primary
         label.numberOfLines = 1
         return label
     }()
@@ -78,7 +78,7 @@ final class TaskCell: UITableViewCell {
                 string: task.title ?? "",
                 attributes: [
                     .strikethroughStyle: NSUnderlineStyle.single.rawValue,
-                    .foregroundColor: UIColor.secondaryLabel
+                    .foregroundColor: AppColors.secondary
                 ]
             )
         } else {
@@ -86,7 +86,7 @@ final class TaskCell: UITableViewCell {
 
             titleLabel.attributedText = nil
             titleLabel.text = task.title
-            titleLabel.textColor = .label
+            titleLabel.textColor = AppColors.primary
         }
     }
 }

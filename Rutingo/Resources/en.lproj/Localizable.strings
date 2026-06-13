@@ -11,6 +11,7 @@
 "tab_blocks" = "Blocks";
 "tab_week" = "Week";
 "tab_tasks" = "Tasks";
+"tab_routines" = "Routines";
 
 /* Today Screen */
 "greeting_morning" = "Good morning";

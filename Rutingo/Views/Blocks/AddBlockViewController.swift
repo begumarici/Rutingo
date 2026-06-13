@@ -32,7 +32,7 @@ class AddBlockViewController: UIViewController {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
         v.backgroundColor = AppColors.cardBackground
-        v.layer.cornerRadius = 16
+        v.layer.cornerRadius = Layout.cardCornerRadius
         return v
     }()
     
@@ -49,7 +49,7 @@ class AddBlockViewController: UIViewController {
         let tf = UITextField()
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.backgroundColor = AppColors.secondaryCardBackground
-        tf.layer.cornerRadius = 8
+        tf.layer.cornerRadius = Layout.cornerRadius
         tf.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 44))
         tf.leftViewMode = .always
         tf.font = AppFonts.regular(16)
@@ -65,7 +65,7 @@ class AddBlockViewController: UIViewController {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
         v.backgroundColor = AppColors.cardBackground
-        v.layer.cornerRadius = 16
+        v.layer.cornerRadius = Layout.cardCornerRadius
         return v
     }()
     
@@ -90,7 +90,7 @@ class AddBlockViewController: UIViewController {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
         v.backgroundColor = AppColors.cardBackground
-        v.layer.cornerRadius = 16
+        v.layer.cornerRadius = Layout.cardCornerRadius
         return v
     }()
     
@@ -118,7 +118,7 @@ class AddBlockViewController: UIViewController {
         b.titleLabel?.font = AppFonts.bold(18)
         b.backgroundColor = AppColors.primary
         b.setTitleColor(AppColors.background, for: .normal)
-        b.layer.cornerRadius = 16
+        b.layer.cornerRadius = Layout.cardCornerRadius
         return b
     }()
     
