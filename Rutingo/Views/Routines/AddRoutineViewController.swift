@@ -277,7 +277,7 @@ class AddRoutineViewController: UIViewController {
         let stack = UIStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.axis = .vertical
-        stack.spacing = 0
+        stack.spacing = 12
         return stack
     }()
 
@@ -308,13 +308,22 @@ class AddRoutineViewController: UIViewController {
         let stack = UIStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.axis = .vertical
-        stack.spacing = 0
+        stack.spacing = 12
         stack.isHidden = true
         stack.alpha = 0
         return stack
     }()
 
-    private let startPickerRow: UIView = {
+    // Start row
+    private let startPickerRow: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 4
+        return stack
+    }()
+    
+    private let startHeaderRow: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -329,16 +338,44 @@ class AddRoutineViewController: UIViewController {
         return label
     }()
 
+    private let startTimeValueContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.secondaryCardBackground
+        view.layer.cornerRadius = 12
+        view.isUserInteractionEnabled = true
+        return view
+    }()
+
+    private let startTimeValueLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.semibold(15)
+        label.textColor = AppColors.primary
+        return label
+    }()
+
     private let startTimePicker: UIDatePicker = {
         let picker = UIDatePicker()
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.datePickerMode = .time
         picker.preferredDatePickerStyle = .wheels
         picker.tintColor = AppColors.primary
+        picker.isHidden = true
+        picker.alpha = 0
         return picker
     }()
 
-    private let endPickerRow: UIView = {
+    // End row
+    private let endPickerRow: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 4
+        return stack
+    }()
+
+    private let endHeaderRow: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
@@ -353,12 +390,31 @@ class AddRoutineViewController: UIViewController {
         return label
     }()
 
+    private let endTimeValueContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.secondaryCardBackground
+        view.layer.cornerRadius = 12
+        view.isUserInteractionEnabled = true
+        return view
+    }()
+
+    private let endTimeValueLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.semibold(15)
+        label.textColor = AppColors.primary
+        return label
+    }()
+
     private let endTimePicker: UIDatePicker = {
         let picker = UIDatePicker()
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.datePickerMode = .time
         picker.preferredDatePickerStyle = .wheels
         picker.tintColor = AppColors.primary
+        picker.isHidden = true
+        picker.alpha = 0
         return picker
     }()
     
@@ -421,8 +477,6 @@ class AddRoutineViewController: UIViewController {
         
         contentView.addSubview(feelingContainer)
         contentView.addSubview(motivationContainer)
-
-        // timeRangeContainer'ı contentView'a ekle
         contentView.addSubview(timeRangeContainer)
 
         // iç yapı
@@ -433,13 +487,19 @@ class AddRoutineViewController: UIViewController {
         timeRangeStackView.addArrangedSubview(timeRangePickersStack)
 
         // start row
-        startPickerRow.addSubview(startPickerLabel)
-        startPickerRow.addSubview(startTimePicker)
+        startHeaderRow.addSubview(startPickerLabel)
+        startTimeValueContainer.addSubview(startTimeValueLabel)
+        startHeaderRow.addSubview(startTimeValueContainer)
+        startPickerRow.addArrangedSubview(startHeaderRow)
+        startPickerRow.addArrangedSubview(startTimePicker)
         timeRangePickersStack.addArrangedSubview(startPickerRow)
 
         // end row
-        endPickerRow.addSubview(endPickerLabel)
-        endPickerRow.addSubview(endTimePicker)
+        endHeaderRow.addSubview(endPickerLabel)
+        endTimeValueContainer.addSubview(endTimeValueLabel)
+        endHeaderRow.addSubview(endTimeValueContainer)
+        endPickerRow.addArrangedSubview(endHeaderRow)
+        endPickerRow.addArrangedSubview(endTimePicker)
         timeRangePickersStack.addArrangedSubview(endPickerRow)
         
         feelingContainer.addSubview(feelingStackView)
@@ -557,20 +617,28 @@ class AddRoutineViewController: UIViewController {
             timeRangeSwitch.trailingAnchor.constraint(equalTo: timeRangeHeaderView.trailingAnchor),
 
             // start row
-            startPickerLabel.topAnchor.constraint(equalTo: startPickerRow.topAnchor, constant: 8),
-            startPickerLabel.leadingAnchor.constraint(equalTo: startPickerRow.leadingAnchor),
-            startTimePicker.topAnchor.constraint(equalTo: startPickerLabel.bottomAnchor),
-            startTimePicker.leadingAnchor.constraint(equalTo: startPickerRow.leadingAnchor),
-            startTimePicker.trailingAnchor.constraint(equalTo: startPickerRow.trailingAnchor),
-            startTimePicker.bottomAnchor.constraint(equalTo: startPickerRow.bottomAnchor),
+            startHeaderRow.heightAnchor.constraint(equalToConstant: 32),
+            startPickerLabel.centerYAnchor.constraint(equalTo: startHeaderRow.centerYAnchor),
+            startPickerLabel.leadingAnchor.constraint(equalTo: startHeaderRow.leadingAnchor),
+            startTimeValueContainer.centerYAnchor.constraint(equalTo: startHeaderRow.centerYAnchor),
+            startTimeValueContainer.trailingAnchor.constraint(equalTo: startHeaderRow.trailingAnchor),
+            startTimeValueContainer.heightAnchor.constraint(equalToConstant: 32),
+            startTimeValueLabel.topAnchor.constraint(equalTo: startTimeValueContainer.topAnchor, constant: 6),
+            startTimeValueLabel.bottomAnchor.constraint(equalTo: startTimeValueContainer.bottomAnchor, constant: -6),
+            startTimeValueLabel.leadingAnchor.constraint(equalTo: startTimeValueContainer.leadingAnchor, constant: 12),
+            startTimeValueLabel.trailingAnchor.constraint(equalTo: startTimeValueContainer.trailingAnchor, constant: -12),
 
             // end row
-            endPickerLabel.topAnchor.constraint(equalTo: endPickerRow.topAnchor, constant: 8),
-            endPickerLabel.leadingAnchor.constraint(equalTo: endPickerRow.leadingAnchor),
-            endTimePicker.topAnchor.constraint(equalTo: endPickerLabel.bottomAnchor),
-            endTimePicker.leadingAnchor.constraint(equalTo: endPickerRow.leadingAnchor),
-            endTimePicker.trailingAnchor.constraint(equalTo: endPickerRow.trailingAnchor),
-            endTimePicker.bottomAnchor.constraint(equalTo: endPickerRow.bottomAnchor),
+            endHeaderRow.heightAnchor.constraint(equalToConstant: 32),
+            endPickerLabel.centerYAnchor.constraint(equalTo: endHeaderRow.centerYAnchor),
+            endPickerLabel.leadingAnchor.constraint(equalTo: endHeaderRow.leadingAnchor),
+            endTimeValueContainer.centerYAnchor.constraint(equalTo: endHeaderRow.centerYAnchor),
+            endTimeValueContainer.trailingAnchor.constraint(equalTo: endHeaderRow.trailingAnchor),
+            endTimeValueContainer.heightAnchor.constraint(equalToConstant: 32),
+            endTimeValueLabel.topAnchor.constraint(equalTo: endTimeValueContainer.topAnchor, constant: 6),
+            endTimeValueLabel.bottomAnchor.constraint(equalTo: endTimeValueContainer.bottomAnchor, constant: -6),
+            endTimeValueLabel.leadingAnchor.constraint(equalTo: endTimeValueContainer.leadingAnchor, constant: 12),
+            endTimeValueLabel.trailingAnchor.constraint(equalTo: endTimeValueContainer.trailingAnchor, constant: -12),
             
             // feeling container
             feelingContainer.topAnchor.constraint(equalTo: timeRangeContainer.bottomAnchor, constant: padding),
@@ -698,6 +766,18 @@ class AddRoutineViewController: UIViewController {
         timeRangeSwitch.addTarget(self, action: #selector(timeRangeSwitchChanged), for: .valueChanged)
         saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
+
+        startTimePicker.addTarget(self, action: #selector(startTimeChanged), for: .valueChanged)
+        endTimePicker.addTarget(self, action: #selector(endTimeChanged), for: .valueChanged)
+
+        let startTap = UITapGestureRecognizer(target: self, action: #selector(startTimeValueTapped))
+        startTimeValueContainer.addGestureRecognizer(startTap)
+
+        let endTap = UITapGestureRecognizer(target: self, action: #selector(endTimeValueTapped))
+        endTimeValueContainer.addGestureRecognizer(endTap)
+
+        startTimeValueLabel.text = formattedTime(from: startTimePicker.date)
+        endTimeValueLabel.text = formattedTime(from: endTimePicker.date)
     }
     
     private func createDayButtons() {
@@ -775,11 +855,70 @@ class AddRoutineViewController: UIViewController {
     @objc private func timeRangeSwitchChanged() {
         hasTimeRange = timeRangeSwitch.isOn
 
+        if !hasTimeRange {
+            closeStartTimePicker()
+            closeEndTimePicker()
+        }
+
         UIView.animate(withDuration: 0.3) {
             self.timeRangePickersStack.isHidden = !self.timeRangeSwitch.isOn
             self.timeRangePickersStack.alpha = self.timeRangeSwitch.isOn ? 1.0 : 0.0
             self.view.layoutIfNeeded()
         }
+    }
+    
+    @objc private func startTimeValueTapped() {
+        let willShow = startTimePicker.isHidden
+        if willShow {
+            closeEndTimePicker()
+        }
+        UIView.animate(withDuration: 0.25) {
+            self.startTimePicker.isHidden = !willShow
+            self.startTimePicker.alpha = willShow ? 1.0 : 0.0
+            self.startTimeValueLabel.textColor = willShow ? .systemRed : AppColors.primary
+            self.endTimeValueLabel.textColor = AppColors.primary
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc private func endTimeValueTapped() {
+        let willShow = endTimePicker.isHidden
+        if willShow {
+            closeStartTimePicker()
+        }
+        UIView.animate(withDuration: 0.25) {
+            self.endTimePicker.isHidden = !willShow
+            self.endTimePicker.alpha = willShow ? 1.0 : 0.0
+            self.endTimeValueLabel.textColor = willShow ? .systemRed : AppColors.primary
+            self.startTimeValueLabel.textColor = AppColors.primary
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    private func closeStartTimePicker() {
+        startTimePicker.isHidden = true
+        startTimePicker.alpha = 0
+        startTimeValueLabel.textColor = AppColors.primary
+    }
+
+    private func closeEndTimePicker() {
+        endTimePicker.isHidden = true
+        endTimePicker.alpha = 0
+        endTimeValueLabel.textColor = AppColors.primary
+    }
+
+    @objc private func startTimeChanged() {
+        startTimeValueLabel.text = formattedTime(from: startTimePicker.date)
+    }
+
+    @objc private func endTimeChanged() {
+        endTimeValueLabel.text = formattedTime(from: endTimePicker.date)
+    }
+
+    private func formattedTime(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
     }
     
     @objc private func saveButtonTapped() {
@@ -896,11 +1035,13 @@ class AddRoutineViewController: UIViewController {
             components.minute = 0
             if let date = Calendar.current.date(from: components) {
                 startTimePicker.date = date
+                startTimeValueLabel.text = formattedTime(from: date)
             }
 
             components.hour = Int(routine.endHour)
             if let date = Calendar.current.date(from: components) {
                 endTimePicker.date = date
+                endTimeValueLabel.text = formattedTime(from: date)
             }
         }
         
