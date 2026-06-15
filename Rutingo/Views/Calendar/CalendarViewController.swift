@@ -139,11 +139,11 @@ class CalendarViewController: UIViewController {
         
         refreshData()
     }
-    
+
+    // statsVC manages navbar as parent
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         refreshData()
-        configureNavigationBarAppearance()
     }
     
     override func viewDidLayoutSubviews() {
@@ -185,11 +185,13 @@ class CalendarViewController: UIViewController {
             
             previousButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
             previousButton.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 20),
-            previousButton.widthAnchor.constraint(equalToConstant: 44), previousButton.heightAnchor.constraint(equalToConstant: 44),
+            previousButton.widthAnchor.constraint(equalToConstant: 44),
+            previousButton.heightAnchor.constraint(equalToConstant: 44),
             
             nextButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
             nextButton.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -20),
-            nextButton.widthAnchor.constraint(equalToConstant: 44), nextButton.heightAnchor.constraint(equalToConstant: 44),
+            nextButton.widthAnchor.constraint(equalToConstant: 44),
+            nextButton.heightAnchor.constraint(equalToConstant: 44),
             
             weekdayStackView.topAnchor.constraint(equalTo: monthLabel.bottomAnchor, constant: 20),
             weekdayStackView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
@@ -217,7 +219,9 @@ class CalendarViewController: UIViewController {
     
     private func layoutTableHeaderView() {
         let width = routinesTableView.bounds.width
-        let size = headerContainerView.systemLayoutSizeFitting(CGSize(width: width, height: UIView.layoutFittingCompressedSize.height))
+        let size = headerContainerView.systemLayoutSizeFitting(
+            CGSize(width: width, height: UIView.layoutFittingCompressedSize.height)
+        )
         
         if headerContainerView.frame.size.height != size.height {
             headerContainerView.frame.size.height = size.height
@@ -250,44 +254,6 @@ class CalendarViewController: UIViewController {
         
         calendarCollectionView.addGestureRecognizer(swipeLeft)
         calendarCollectionView.addGestureRecognizer(swipeRight)
-    }
-    
-    // MARK: - Navigation Bar Configuration
-    private func configureNavigationBarAppearance() {
-        title = "calendar".localized
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.largeTitleDisplayMode = .always
-        
-        guard let navigationBar = navigationController?.navigationBar else { return }
-        
-        let standardAppearance = UINavigationBarAppearance()
-        standardAppearance.configureWithOpaqueBackground()
-        standardAppearance.backgroundColor = AppColors.background
-        standardAppearance.shadowColor = .clear
-        standardAppearance.titleTextAttributes = [
-            .font: AppFonts.semibold(17),
-            .foregroundColor: AppColors.navbarTitle
-        ]
-        standardAppearance.largeTitleTextAttributes = [
-            .font: AppFonts.bold(34),
-            .foregroundColor: AppColors.navbarTitle
-        ]
-        
-        let scrollEdgeAppearance = UINavigationBarAppearance()
-        scrollEdgeAppearance.configureWithTransparentBackground()
-        scrollEdgeAppearance.backgroundColor = .clear
-        scrollEdgeAppearance.largeTitleTextAttributes = [
-            .font: AppFonts.bold(34),
-            .foregroundColor: AppColors.navbarTitle
-        ]
-        scrollEdgeAppearance.titleTextAttributes = [
-            .font: AppFonts.semibold(17),
-            .foregroundColor: AppColors.navbarTitle
-        ]
-        
-        navigationBar.standardAppearance = standardAppearance
-        navigationBar.compactAppearance = standardAppearance
-        navigationBar.scrollEdgeAppearance = scrollEdgeAppearance
     }
     
     // MARK: - Data Loading
@@ -373,12 +339,12 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CalendarDayCell.identifier, for: indexPath) as? CalendarDayCell else {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: CalendarDayCell.identifier, for: indexPath
+        ) as? CalendarDayCell else {
             return UICollectionViewCell()
         }
-        
-        let item = viewModel.uiModels[indexPath.item]
-        cell.configure(with: item)
+        cell.configure(with: viewModel.uiModels[indexPath.item])
         return cell
     }
     
@@ -388,7 +354,11 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         }
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
         let width = floor(collectionView.bounds.width / 7)
         return CGSize(width: width, height: 40)
     }
@@ -401,22 +371,20 @@ extension CalendarViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: DayRoutineCell.identifier, for: indexPath) as? DayRoutineCell else {
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: DayRoutineCell.identifier, for: indexPath
+        ) as? DayRoutineCell else {
             return UITableViewCell()
         }
         
         let routines = viewModel.getRoutinesForSelectedDate()
-        let routine = routines[indexPath.row]
-        cell.configure(routine: routine, date: viewModel.selectedDate)
-        
+        cell.configure(routine: routines[indexPath.row], date: viewModel.selectedDate)
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        let routines = viewModel.getRoutinesForSelectedDate()
-        let routine = routines[indexPath.row]
+        let routine = viewModel.getRoutinesForSelectedDate()[indexPath.row]
         navigationController?.pushViewController(RoutineDetailViewController(routine: routine), animated: true)
     }
     

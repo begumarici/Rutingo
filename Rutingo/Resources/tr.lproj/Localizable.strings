@@ -7,12 +7,12 @@
 */
 
 /* Tab Bar */
-"tab_today" = "Bugün";
+"tab_today" = "Odaklar";
 "tab_blocks" = "Bloklar";
 "tab_week" = "Hafta";
 "tab_tasks" = "Görevler";
 "tab_routines" = "Rutinler";
-"tab_profile" = "Profil";
+"tab_statistics" = "İstatistikler";
 
 /* Today Screen */
 "greeting_morning" = "Günaydın";

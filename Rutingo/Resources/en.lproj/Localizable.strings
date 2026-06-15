@@ -7,12 +7,12 @@
 */
 
 /* Tab Bar */
-"tab_today" = "Today";
+"tab_today" = "Focus";
 "tab_blocks" = "Blocks";
 "tab_week" = "Week";
 "tab_tasks" = "Tasks";
 "tab_routines" = "Routines";
-"tab_profile" = "Profile";
+"tab_statistics" = "Statistics";
 
 /* Today Screen */
 "greeting_morning" = "Good morning";

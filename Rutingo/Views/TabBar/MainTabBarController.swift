@@ -59,15 +59,15 @@ class MainTabBarController: UITabBarController {
 
         let routinesVC = makeNav(root: RoutinesViewController(),
                                  title: "tab_routines".localized,
-                                 icon:  "list.bullet",
-                                 selectedIcon: "list.bullet.circle.fill")
+                                 icon:  "checklist.unchecked",
+                                 selectedIcon: "checklist.checked")
         
-        let profileVC = makeNav(root: StatisticsViewController(),
-                                 title: "tab_profile".localized,
-                                 icon: "person",
-                                 selectedIcon: "person.fill")
+        let statsVC = makeNav(root: StatisticsViewController(),
+                                 title: "calendar".localized,
+                                 icon: "calendar",
+                                 selectedIcon: "calendar.badge")
 
-        viewControllers = [todayVC, blocksVC, tasksVC, routinesVC, profileVC]
+        viewControllers = [todayVC, routinesVC, blocksVC, tasksVC, statsVC]
     }
     
     // MARK: - Helpers
