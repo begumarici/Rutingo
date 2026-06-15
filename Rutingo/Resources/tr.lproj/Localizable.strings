@@ -12,6 +12,7 @@
 "tab_week" = "Hafta";
 "tab_tasks" = "Görevler";
 "tab_routines" = "Rutinler";
+"tab_profile" = "Profil";
 
 /* Today Screen */
 "greeting_morning" = "Günaydın";
@@ -22,6 +23,9 @@
 "daily_focus" = "Günlük odağın";
 "completed" = "Tamamlananlar";
 "skipped" = "Atlananlar";
+"complete" = "Tamamla";
+"uncomplete" = "Tamamlamayı Geri Al";
+"view_detail" = "Detayı Görüntüle";
 
 /* Blocks Screen */
 "blocks_count" = "blok";

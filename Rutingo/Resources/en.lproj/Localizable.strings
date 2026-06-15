@@ -12,6 +12,7 @@
 "tab_week" = "Week";
 "tab_tasks" = "Tasks";
 "tab_routines" = "Routines";
+"tab_profile" = "Profile";
 
 /* Today Screen */
 "greeting_morning" = "Good morning";
@@ -22,6 +23,9 @@
 "daily_focus" = "Your daily focus";
 "completed" = "Completed";
 "skipped" = "Skipped";
+"complete" = "Complete";
+"uncomplete" = "Uncomplete";
+"view_detail" = "View Detail";
 
 /* Blocks Screen */
 "blocks_count" = "blocks";

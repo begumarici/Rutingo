@@ -95,7 +95,7 @@ enum AppFonts {
 
 enum Layout {
     static let cornerRadius: CGFloat = 12
-    static let cardCornerRadius: CGFloat = 16
+    static let cardCornerRadius: CGFloat = 25
     static let padding: CGFloat = 16
     static let smallPadding: CGFloat = 8
     static let blockRadius: CGFloat = 12

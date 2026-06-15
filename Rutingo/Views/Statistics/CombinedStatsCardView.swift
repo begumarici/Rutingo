@@ -48,7 +48,7 @@ class CombinedStatsCardView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(28)
-        label.textColor = AppColors.primary
+        label.textColor = AppColors.accentOrange
         label.textAlignment = .center
         return label
     }()
@@ -56,7 +56,7 @@ class CombinedStatsCardView: UIView {
     private let divider: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.secondary
+        view.backgroundColor = AppColors.border
         return view
     }()
     
@@ -68,6 +68,7 @@ class CombinedStatsCardView: UIView {
         return stack
     }()
     
+    // MARK: - Streak
     private let streakStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -86,10 +87,11 @@ class CombinedStatsCardView: UIView {
     private let streakValueLabel: UILabel = {
         let label = UILabel()
         label.font = AppFonts.bold(20)
-        label.textColor = AppColors.primary
+        label.textColor = AppColors.accentOrange
         return label
     }()
     
+    // MARK: - Total
     private let totalStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -108,10 +110,11 @@ class CombinedStatsCardView: UIView {
     private let totalValueLabel: UILabel = {
         let label = UILabel()
         label.font = AppFonts.bold(20)
-        label.textColor = AppColors.primary
+        label.textColor = AppColors.accentOrange
         return label
     }()
     
+    // MARK: - Active
     private let activeStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -130,7 +133,7 @@ class CombinedStatsCardView: UIView {
     private let activeValueLabel: UILabel = {
         let label = UILabel()
         label.font = AppFonts.bold(20)
-        label.textColor = AppColors.primary
+        label.textColor = AppColors.accentOrange
         return label
     }()
     

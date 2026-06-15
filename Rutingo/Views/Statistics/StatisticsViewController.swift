@@ -103,7 +103,7 @@ class StatisticsViewController: UIViewController {
     private func setupNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .always
-        title = "statistics".localized
+        title = "tab_profile".localized
         
         configureNavigationBarAppearance()
         

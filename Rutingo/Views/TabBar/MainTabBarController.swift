@@ -61,8 +61,13 @@ class MainTabBarController: UITabBarController {
                                  title: "tab_routines".localized,
                                  icon:  "list.bullet",
                                  selectedIcon: "list.bullet.circle.fill")
+        
+        let profileVC = makeNav(root: StatisticsViewController(),
+                                 title: "tab_profile".localized,
+                                 icon: "person",
+                                 selectedIcon: "person.fill")
 
-        viewControllers = [todayVC, blocksVC, tasksVC, routinesVC]
+        viewControllers = [todayVC, blocksVC, tasksVC, routinesVC, profileVC]
     }
     
     // MARK: - Helpers
