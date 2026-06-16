@@ -79,17 +79,24 @@ class DayRoutineCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(routine: Routine, date: Date) {
-        nameLabel.text = routine.name
-        
-        let isCompleted = routine.isCompleted(on: date)
-        
-        if isCompleted {
+    func configure(with item: RoutineWithStatus) {
+        if item.isSkipped {
+            containerView.alpha = 0.7
+            nameLabel.textColor = AppColors.secondary
+            statusIcon.image = UIImage(systemName: "forward.circle.fill")
+            statusIcon.tintColor = AppColors.accentOrange
+        } else if item.isCompleted {
+            containerView.alpha = 1.0
+            nameLabel.textColor = AppColors.primary
             statusIcon.image = UIImage(systemName: "checkmark.circle.fill")
-            statusIcon.tintColor = AppColors.primary
+            statusIcon.tintColor = AppColors.accentGreen
         } else {
+            containerView.alpha = 1.0
+            nameLabel.textColor = AppColors.primary
             statusIcon.image = UIImage(systemName: "circle")
             statusIcon.tintColor = AppColors.secondary
         }
+        
+        nameLabel.text = item.routine.name
     }
 }

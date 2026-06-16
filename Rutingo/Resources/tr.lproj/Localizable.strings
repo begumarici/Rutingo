@@ -26,6 +26,7 @@
 "complete" = "Tamamla";
 "uncomplete" = "Tamamlamayı Geri Al";
 "view_detail" = "Detayı Görüntüle";
+"unskip" = "Atlamayı Geri Al";
 
 /* Blocks Screen */
 "blocks_count" = "blok";

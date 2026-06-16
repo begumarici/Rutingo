@@ -750,7 +750,13 @@ class AddRoutineViewController: UIViewController {
     }
     
     @objc private func feelingButtonTapped(_ sender: UIButton) {
-        selectedFeeling = sender.accessibilityIdentifier
+        let tapped = sender.accessibilityIdentifier
+
+        if selectedFeeling == tapped {
+            selectedFeeling = nil
+        } else {
+            selectedFeeling = tapped
+        }
 
         for case let button as UIButton in feelingButtonsStack.arrangedSubviews {
             let isSelected = button.accessibilityIdentifier == selectedFeeling

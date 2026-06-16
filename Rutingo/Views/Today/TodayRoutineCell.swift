@@ -152,8 +152,10 @@ class TodayRoutineCell: UITableViewCell {
         frequencyLabel.text = routine.frequency.displayText
 
         if isSkipped {
-            cardView.alpha = 0.6
-            checkmarkButton.isHidden = true
+            cardView.alpha = 0.7
+            checkmarkButton.isUserInteractionEnabled = false
+            checkmarkView.image = UIImage(systemName: "forward.circle.fill")
+            checkmarkView.tintColor = AppColors.accentOrange
             let attributes: [NSAttributedString.Key: Any] = [
                 .strikethroughStyle: NSUnderlineStyle.single.rawValue,
                 .foregroundColor: AppColors.secondary
@@ -197,8 +199,10 @@ class TodayRoutineCell: UITableViewCell {
         let iconSize: CGFloat = 18
         
         attachment.image = UIImage(systemName: "flame.fill")?
-            .withTintColor(streak > 0 ? AppColors.accentOrange : AppColors.tertiary,
-                           renderingMode: .alwaysOriginal)
+            .withTintColor(
+                streak > 0 ? AppColors.accentOrange : AppColors.tertiary,
+                renderingMode: .alwaysOriginal
+            )
         attachment.bounds = CGRect(x: 0, y: -2, width: iconSize, height: iconSize)
         
         let attributedString = NSMutableAttributedString(attachment: attachment)

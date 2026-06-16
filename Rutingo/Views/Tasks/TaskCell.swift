@@ -74,6 +74,7 @@ final class TaskCell: UITableViewCell {
     func configure(with task: Task) {
         if task.isCompleted {
             checkImageView.image = UIImage(systemName: "checkmark.circle.fill")
+            checkImageView.tintColor = AppColors.accentGreen
             titleLabel.attributedText = NSAttributedString(
                 string: task.title ?? "",
                 attributes: [

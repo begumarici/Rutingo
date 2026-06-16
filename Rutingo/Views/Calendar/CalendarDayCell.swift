@@ -16,7 +16,7 @@ class CalendarDayCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
-        label.font = AppFonts.bold(16)
+        label.font = AppFonts.regular(16)
         label.textColor = AppColors.secondary
         return label
     }()
@@ -92,13 +92,15 @@ class CalendarDayCell: UICollectionViewCell {
         
         if item.isSelected {
             if item.isToday {
-                contentView.backgroundColor = AppColors.primary
+                contentView.backgroundColor = AppColors.accentOrange
                 dayLabel.textColor = AppColors.background
+                dayLabel.font = AppFonts.bold(16)
                 routineIndicator.backgroundColor = AppColors.background
             } else {
-                contentView.backgroundColor = AppColors.tertiary
-                dayLabel.textColor = AppColors.primary
-                routineIndicator.backgroundColor = AppColors.primary
+                contentView.backgroundColor = AppColors.accentOrange
+                dayLabel.textColor = AppColors.background
+                dayLabel.font = AppFonts.bold(16)
+                routineIndicator.backgroundColor = AppColors.background
             }
             
         } else {
@@ -106,9 +108,13 @@ class CalendarDayCell: UICollectionViewCell {
             routineIndicator.backgroundColor = AppColors.primary
             
             if item.isToday {
+                contentView.backgroundColor = AppColors.accentOrange.withAlphaComponent(0.12)
                 dayLabel.textColor = AppColors.primary
+                dayLabel.font = AppFonts.regular(16)
             } else {
-                dayLabel.textColor = AppColors.secondary
+                contentView.backgroundColor = .clear
+                dayLabel.textColor = AppColors.primary
+                dayLabel.font = AppFonts.regular(16)
             }
         }
     }

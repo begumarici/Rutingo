@@ -26,6 +26,7 @@
 "complete" = "Complete";
 "uncomplete" = "Uncomplete";
 "view_detail" = "View Detail";
+"unskip" = "Unskip";
 
 /* Blocks Screen */
 "blocks_count" = "blocks";

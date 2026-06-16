@@ -11,9 +11,14 @@ class AddBlockViewController: UIViewController {
     
     // MARK: - Properties
     var onSave: ((String, Int, Int, Int, Int) -> Void)?
+    var onUpdate: ((String, Int, Int, Int, Int) -> Void)?
+    
+    enum Mode { case add; case edit }
+    var mode: Mode = .add
     
     private var selectedStartDate: Date = Date()
     private var selectedEndDate: Date = Date()
+    private var pendingTitle: String?
     
     // MARK: - UI
     private let scrollView: UIScrollView = {
@@ -126,16 +131,17 @@ class AddBlockViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = AppColors.background
-        setDefaultTimes()
+        if mode != .edit { setDefaultTimes() }
         setupNavigationBar()
         setupUI()
         setupPickers()
         setupActions()
+        if let t = pendingTitle { titleTextField.text = t }
     }
     
     // MARK: - Setup
     private func setupNavigationBar() {
-        title = "add_block".localized
+        title = (mode == .edit ? "edit_block" : "add_block").localized
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "xmark"),
             style: .plain,
@@ -269,14 +275,13 @@ class AddBlockViewController: UIViewController {
         selectedEndDate = cal.date(byAdding: .hour, value: 1, to: selectedStartDate)!
     }
     
-    // MARK: - Cofigure
+    // MARK: - Configure (edit mode)
     func configure(title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) {
-        titleTextField.text = title
+        mode = .edit
         let cal = Calendar.current
         selectedStartDate = cal.date(bySettingHour: startHour, minute: startMinute, second: 0, of: Date())!
         selectedEndDate   = cal.date(bySettingHour: endHour,   minute: endMinute,   second: 0, of: Date())!
-        startPicker.date = selectedStartDate
-        endPicker.date   = selectedEndDate
+        pendingTitle = title
     }
     
     // MARK: - Actions
@@ -297,7 +302,11 @@ class AddBlockViewController: UIViewController {
         let startMinute = cal.component(.minute, from: selectedStartDate)
         let endHour     = cal.component(.hour,   from: selectedEndDate)
         let endMinute   = cal.component(.minute, from: selectedEndDate)
-        onSave?(title, startHour, startMinute, endHour, endMinute)
+        if mode == .edit {
+            onUpdate?(title, startHour, startMinute, endHour, endMinute)
+        } else {
+            onSave?(title, startHour, startMinute, endHour, endMinute)
+        }
         dismiss(animated: true)
     }
     

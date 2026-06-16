@@ -111,10 +111,10 @@ class WeekStripView: UIView {
             numLabel.textAlignment = .center
             
             if isSelected {
-                circle.backgroundColor = AppColors.primary
+                circle.backgroundColor = AppColors.accentOrange
                 numLabel.textColor = AppColors.background
             } else if isToday {
-                circle.backgroundColor = AppColors.primary.withAlphaComponent(0.12)
+                circle.backgroundColor = AppColors.accentOrange.withAlphaComponent(0.12)
                 numLabel.textColor = AppColors.primary
             } else {
                 circle.backgroundColor = .clear

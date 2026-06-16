@@ -397,11 +397,21 @@ extension TodayViewController: UITableViewDataSource {
         cell.configure(with: routine, isNotToday: isPastOrFutureDay(), isSkipped: indexPath.section == 2)
         
         cell.onCheckmarkTapped = { [weak self] in
-            guard let self, !self.isPastOrFutureDay(), indexPath.section != 2 else {
-                self?.triggerWarningHaptic(); return
+            guard let self, !self.isPastOrFutureDay() else {
+                self?.triggerWarningHaptic()
+                return
             }
-            self.triggerHaptic(.medium)
-            self.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+            
+            if indexPath.section == 2 {
+                self.triggerHaptic(.light)
+                self.viewModel.unskipRoutine(routine) { [weak self] in
+                    self?.updateUIWithViewModel()
+                }
+            } else {
+                self.triggerHaptic(.medium)
+                self.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel()
+                }
+            }
         }
         
         return cell
@@ -443,7 +453,6 @@ extension TodayViewController: UITableViewDelegate {
    
         guard !isCompletedSectionHeader(at: indexPath),
               !isSkippedSectionHeader(at: indexPath),
-              indexPath.section != 2,
               let routine = routine(at: indexPath) else { return nil }
         
         return UIContextMenuConfiguration(
@@ -510,11 +519,34 @@ extension TodayViewController: UITableViewDelegate {
         guard !isPastOrFutureDay(),
               !isCompletedSectionHeader(at: indexPath),
               !isSkippedSectionHeader(at: indexPath),
-              indexPath.section != 2,
               let routine = routine(at: indexPath) else {
             return nil
         }
         
+        // skipped
+        if indexPath.section == 2 {
+            let complete = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
+                self?.triggerHaptic(.medium)
+                self?.viewModel.toggleRoutine(routine) { [weak self] in
+                    self?.updateUIWithViewModel()
+                    done(true)
+                }
+            }
+            
+            complete.image = UIImage(systemName: "checkmark")?
+
+                .withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+
+            complete.backgroundColor = AppColors.accentGreen
+
+            let config = UISwipeActionsConfiguration(actions: [complete])
+
+            config.performsFirstActionWithFullSwipe = true
+
+            return config
+        }
+        
+        // normal
         let isCompleted = routine.isCompletedToday
         let toggle = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
             self?.triggerHaptic(.medium)
@@ -538,30 +570,9 @@ private extension TodayViewController {
     
     func makeContextMenu(for routine: Routine, at indexPath: IndexPath) -> UIMenu {
         let isCompleted = routine.isCompletedToday
-        let isToday = !isPastOrFutureDay()
-        
-        // Complete / Uncomplete
-        let toggleTitle = isCompleted ? "uncomplete".localized : "complete".localized
-        let toggleIcon  = isCompleted ? "arrow.uturn.backward" : "checkmark.circle"
-        let complete = UIAction(
-            title: toggleTitle,
-            image: UIImage(systemName: toggleIcon),
-            attributes: []
-        ) { [weak self] _ in
-            guard let self, isToday else { return }
-            self.triggerHaptic(.medium)
-            self.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
-        }
-        
-        // Skip
-        let skip = UIAction(
-            title: "skip".localized,
-            image: UIImage(systemName: "forward.circle")
-        ) { [weak self] _ in
-            guard let self, isToday else { return }
-            self.triggerHaptic(.medium)
-            self.viewModel.skipRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
-        }
+        let isSkipped   = indexPath.section == 2
+        let isToday     = !isPastOrFutureDay()
+        let menuTitle   = routine.name ?? ""
         
         // Edit
         let edit = UIAction(
@@ -578,11 +589,46 @@ private extension TodayViewController {
         ) { [weak self] _ in
             self?.openDetail(for: routine)
         }
-        
-        if !isToday {
-            return UIMenu(title: routine.name ?? "", children: [detail, edit])
+
+        guard isToday else {
+            return UIMenu(title: menuTitle, children: [detail, edit])
         }
-        
-        return UIMenu(title: routine.name ?? "", children: [complete, skip, edit, detail])
+
+        if isSkipped {
+            let complete = UIAction(
+                title: "complete".localized,
+                image: UIImage(systemName: "checkmark.circle")
+            ) { [weak self] _ in
+                self?.triggerHaptic(.medium)
+                self?.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+            }
+            let unskip = UIAction(
+                title: "unskip".localized,
+                image: UIImage(systemName: "arrow.uturn.backward")
+            ) { [weak self] _ in
+                self?.triggerHaptic(.light)
+                self?.viewModel.unskipRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+            }
+            return UIMenu(title: menuTitle, children: [complete, unskip, edit, detail])
+        }
+
+        let toggleTitle = isCompleted ? "uncomplete".localized : "complete".localized
+        let toggleIcon  = isCompleted ? "arrow.uturn.backward" : "checkmark.circle"
+        let toggle = UIAction(
+            title: toggleTitle,
+            image: UIImage(systemName: toggleIcon)
+        ) { [weak self] _ in
+            self?.triggerHaptic(.medium)
+            self?.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+        }
+        let skip = UIAction(
+            title: "skip".localized,
+            image: UIImage(systemName: "forward.circle")
+        ) { [weak self] _ in
+            self?.triggerHaptic(.medium)
+            self?.viewModel.skipRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+        }
+
+        return UIMenu(title: menuTitle, children: [toggle, skip, edit, detail])
     }
 }

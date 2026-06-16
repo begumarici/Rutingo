@@ -16,6 +16,12 @@ struct CalendarDayItem {
     let hasRoutine: Bool
 }
 
+struct RoutineWithStatus {
+    let routine: Routine
+    let isCompleted: Bool
+    let isSkipped: Bool
+}
+
 class CalendarViewModel {
     
     // MARK: - Properties
@@ -91,16 +97,12 @@ class CalendarViewModel {
         for day in 1...numDays {
             guard let date = calendar.date(byAdding: .day, value: day - 1, to: startOfMonth) else { continue }
             
-            let isToday = calendar.isDateInToday(date)
-            let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
-            let hasRoutine = checkRoutine(for: date, in: allRoutines)
-            
             uiModels.append(CalendarDayItem(
                 date: date,
                 text: "\(day)",
-                isSelected: isSelected,
-                isToday: isToday,
-                hasRoutine: hasRoutine
+                isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
+                isToday: calendar.isDateInToday(date),
+                hasRoutine: checkRoutine(for: date, in: allRoutines)
             ))
         }
     }
@@ -125,20 +127,26 @@ class CalendarViewModel {
         return formatter.string(from: currentMonth).capitalized
     }
     
-    func getRoutinesForSelectedDate() -> [Routine] {
-        return getRoutinesForDate(selectedDate)
-    }
-    
-    private func getRoutinesForDate(_ date: Date) -> [Routine] {
+    func getRoutinesForSelectedDate() -> [RoutineWithStatus] {
         let allRoutines = dataManager.fetchAllRoutines()
-        let normalized = DateHelper.shared.startOfDay(date)
+        let normalized = DateHelper.shared.startOfDay(selectedDate)
         
-        return allRoutines.filter { routine in
-            guard let created = routine.createdAt else { return false }
-            let createdNorm = DateHelper.shared.startOfDay(created)
-            guard createdNorm <= normalized else { return false }
-            
-            return routine.wasScheduled(on: normalized) || routine.isCompleted(on: normalized)
-        }
+        return allRoutines
+            .filter { routine in
+                guard let created = routine.createdAt else { return false }
+                let createdNorm = DateHelper.shared.startOfDay(created)
+                guard createdNorm <= normalized else { return false }
+                return routine.wasScheduled(on: normalized) || routine.isCompleted(on: normalized)
+            }
+            .map { routine in
+                let isSkipped = routine.id.map {
+                    dataManager.hasSkipLog(routineId: $0, date: normalized)
+                } ?? false
+                return RoutineWithStatus(
+                    routine: routine,
+                    isCompleted: routine.isCompleted(on: normalized),
+                    isSkipped: isSkipped
+                )
+            }
     }
 }

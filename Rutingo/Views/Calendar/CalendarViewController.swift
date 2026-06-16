@@ -378,13 +378,13 @@ extension CalendarViewController: UITableViewDataSource, UITableViewDelegate {
         }
         
         let routines = viewModel.getRoutinesForSelectedDate()
-        cell.configure(routine: routines[indexPath.row], date: viewModel.selectedDate)
+        cell.configure(with: routines[indexPath.row])
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let routine = viewModel.getRoutinesForSelectedDate()[indexPath.row]
+        let routine = viewModel.getRoutinesForSelectedDate()[indexPath.row].routine
         navigationController?.pushViewController(RoutineDetailViewController(routine: routine), animated: true)
     }
     

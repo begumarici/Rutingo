@@ -225,8 +225,8 @@ class RoutineDetailViewController: UIViewController {
         }
 
         // Feeling
-        if let feeling = routine.feeling, !feeling.isEmpty {
-            addInfoCard(icon: "heart.fill", title: "feeling".localized, value: feeling)
+        if let feelingDisplay = routine.feelingType?.displayText {
+            addInfoCard(icon: "heart.fill", title: "feeling".localized, value: feelingDisplay)
         }
 
         // Motivation
