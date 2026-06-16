@@ -99,6 +99,15 @@ class RoutinesViewModel {
         loadData(completion: completion)
     }
 
+    // MARK: - Lookup
+    func routine(withID id: UUID) -> Routine? {
+        if !allRoutines.isEmpty {
+            return allRoutines.first { $0.id == id }
+        }
+        let routines = dataManager.fetchAllRoutines()
+        return routines.first { $0.id == id }
+    }
+    
     // MARK: - Statistics Calculation
     func getBestStreak(for routine: Routine) -> Int {
         return routine.bestStreak
@@ -121,3 +130,4 @@ class RoutinesViewModel {
         return progressMap
     }
 }
+

@@ -46,6 +46,7 @@
 "delete_block" = "Delete Block";
 "delete_block_message" = "Are you sure you want to delete this block?";
 "edit_block" = "Edit Block";
+"go_to_routine" = "Go to Routine";
 "weekday_mon" = "Mo";
 "weekday_tue" = "Tu";
 "weekday_wed" = "We";

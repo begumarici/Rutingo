@@ -17,7 +17,7 @@ final class TaskCell: UITableViewCell {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = AppColors.primary
+        imageView.tintColor = AppColors.accentGreen
         return imageView
     }()
     

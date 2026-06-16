@@ -174,6 +174,9 @@ class RoutineDetailViewController: UIViewController {
     
     // MARK: - Configuration
     private func configureWithRoutine() {
+        dynamicCards.forEach { $0.removeFromSuperview() }
+        dynamicCards.removeAll()
+        
         nameLabel.text = routine.name
         
         // Streak

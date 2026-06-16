@@ -1038,13 +1038,14 @@ class AddRoutineViewController: UIViewController {
 
             var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
             components.hour = Int(routine.startHour)
-            components.minute = 0
+            components.minute = Int(routine.startMinute)
             if let date = Calendar.current.date(from: components) {
                 startTimePicker.date = date
                 startTimeValueLabel.text = formattedTime(from: date)
             }
 
             components.hour = Int(routine.endHour)
+            components.minute = Int(routine.endMinute)
             if let date = Calendar.current.date(from: components) {
                 endTimePicker.date = date
                 endTimeValueLabel.text = formattedTime(from: date)

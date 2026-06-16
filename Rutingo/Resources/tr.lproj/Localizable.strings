@@ -46,6 +46,7 @@
 "delete_block" = "Bloğu Sil";
 "delete_block_message" = "Bu bloğu silmek istediğine emin misin?";
 "edit_block" = "Bloğu Düzenle";
+"go_to_routine" = "Rutine Git";
 "weekday_mon" = "Pt";
 "weekday_tue" = "Sa";
 "weekday_wed" = "Ça";

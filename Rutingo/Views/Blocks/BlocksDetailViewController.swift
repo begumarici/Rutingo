@@ -14,6 +14,7 @@ class BlocksDetailViewController: UIViewController {
     var onDelete: (() -> Void)?
     var onUpdate: ((String, Int, Int, Int, Int) -> Void)?
     private let viewModel: BlocksViewModel
+    private var goToRoutineHeightConstraint: NSLayoutConstraint?
     
     // MARK: - UI
     private let scrollView: UIScrollView = {
@@ -61,6 +62,32 @@ class BlocksDetailViewController: UIViewController {
         b.setTitleColor(.systemRed, for: .normal)
         return b
     }()
+
+    private let goToRoutineButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        b.titleLabel?.font = AppFonts.semibold(15)
+        b.setTitleColor(AppColors.primary, for: .normal)
+        b.backgroundColor = AppColors.cardBackground
+        b.layer.cornerRadius = Layout.cardCornerRadius
+        b.contentEdgeInsets = UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16)
+
+        // Sağ tarafta chevron ikonu
+        var config = UIButton.Configuration.plain()
+        config.title = "go_to_routine".localized
+        config.baseForegroundColor = AppColors.primary
+        config.image = UIImage(systemName: "chevron.right")
+        config.imagePlacement = .trailing
+        config.imagePadding = 8
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { container in
+            var c = container
+            c.font = AppFonts.semibold(15)
+            return c
+        }
+        b.configuration = config
+        b.isHidden = true
+        return b
+    }()
     
     // MARK: - Init
     init(block: TimeBlock, viewModel: BlocksViewModel) {
@@ -83,13 +110,15 @@ class BlocksDetailViewController: UIViewController {
     // MARK: - Setup
     private func setupNavigationBar() {
         navigationItem.largeTitleDisplayMode = .never
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "edit".localized,
-            style: .plain,
-            target: self,
-            action: #selector(editTapped)
-        )
-        navigationItem.rightBarButtonItem?.tintColor = AppColors.primary
+        if !block.isGeneratedFromRoutine {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(
+                title: "edit".localized,
+                style: .plain,
+                target: self,
+                action: #selector(editTapped)
+            )
+            navigationItem.rightBarButtonItem?.tintColor = AppColors.primary
+        }
     }
     
     private func setupUI() {
@@ -106,6 +135,7 @@ class BlocksDetailViewController: UIViewController {
         infoCard.addSubview(timeLabel)
         
         contentView.addSubview(deleteButton)
+        contentView.addSubview(goToRoutineButton)
     }
     
     private func setupConstraints() {
@@ -137,10 +167,19 @@ class BlocksDetailViewController: UIViewController {
             timeLabel.trailingAnchor.constraint(equalTo: infoCard.trailingAnchor, constant: -cp),
             timeLabel.bottomAnchor.constraint(equalTo: infoCard.bottomAnchor, constant: -cp),
 
-            deleteButton.topAnchor.constraint(equalTo: infoCard.bottomAnchor, constant: 12),
             deleteButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+
+            goToRoutineButton.topAnchor.constraint(equalTo: infoCard.bottomAnchor, constant: 12),
+            goToRoutineButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            goToRoutineButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+
+            deleteButton.topAnchor.constraint(equalTo: goToRoutineButton.bottomAnchor, constant: 8),
             deleteButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -p),
         ])
+
+        // goToRoutineButton gizliyken yer kaplamaması için height constraint saklıyoruz
+        let heightC = goToRoutineButton.heightAnchor.constraint(equalToConstant: 0)
+        goToRoutineHeightConstraint = heightC
     }
     
     // MARK: - Configure
@@ -152,10 +191,27 @@ class BlocksDetailViewController: UIViewController {
         let buttonTitle = block.isGeneratedFromRoutine ? "skip".localized : "delete_block".localized
         deleteButton.setTitle(buttonTitle, for: .normal)
         
+        if block.isGeneratedFromRoutine {
+            goToRoutineButton.isHidden = false
+            goToRoutineHeightConstraint?.isActive = false
+            goToRoutineButton.addTarget(self, action: #selector(goToRoutineTapped), for: .touchUpInside)
+        } else {
+            goToRoutineButton.isHidden = true
+            goToRoutineHeightConstraint?.isActive = true
+        }
+        
         deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
     }
     
     // MARK: - Actions
+    @objc private func goToRoutineTapped() {
+        guard let routineID = block.sourceRoutineID else { return }
+        let routinesVM = RoutinesViewModel()
+        guard let routine = routinesVM.routine(withID: routineID) else { return }
+        let detailVC = RoutineDetailViewController(routine: routine, viewModel: routinesVM)
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+
     @objc private func editTapped() {
         let addVC = AddBlockViewController()
         addVC.title = "edit_block".localized
