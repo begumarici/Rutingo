@@ -184,7 +184,7 @@ class BlocksDetailViewController: UIViewController {
     
     // MARK: - Configure
     private func configure() {
-        title = block.title
+        // title = block.title
         titleLabel.text = block.title
         timeLabel.text = block.timeRangeText
         

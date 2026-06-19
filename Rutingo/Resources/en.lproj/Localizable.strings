@@ -137,6 +137,9 @@
 "every_day" = "Every day";
 "edit" = "Edit";
 "days_suffix" = "days";
+"legend_done" = "Done";
+"legend_skipped" = "Skipped";
+"legend_missed" = "Missed";
 
 /* Short day names */
 "day_mon" = "Mon";

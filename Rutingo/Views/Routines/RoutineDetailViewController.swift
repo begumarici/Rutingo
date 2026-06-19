@@ -12,6 +12,7 @@ class RoutineDetailViewController: UIViewController {
     // MARK: - Properties
     var routine: Routine!
     private let viewModel: RoutinesViewModel
+    private let calendarViewModel = CalendarViewModel()
     
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -73,6 +74,65 @@ class RoutineDetailViewController: UIViewController {
     private let bestStreakValueLabel: UILabel = makeMiniLabel()
     private let completionValueLabel: UILabel = makeMiniLabel()
 
+    // MARK: - Calendar Card
+    private let calendarCard: UIView = makeCard()
+
+    private let monthLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.bold(17)
+        label.textColor = AppColors.primary
+        label.textAlignment = .center
+        return label
+    }()
+
+    private lazy var previousButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        button.tintColor = AppColors.primary
+        button.addTarget(self, action: #selector(previousMonthTapped), for: .touchUpInside)
+        return button
+    }()
+
+    private lazy var nextButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "chevron.right"), for: .normal)
+        button.tintColor = AppColors.primary
+        button.addTarget(self, action: #selector(nextMonthTapped), for: .touchUpInside)
+        return button
+    }()
+
+    private let weekdayStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
+        return stack
+    }()
+
+    private lazy var calendarCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 0
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        cv.backgroundColor = .clear
+        cv.isScrollEnabled = false
+        cv.register(CalendarDayCell.self, forCellWithReuseIdentifier: CalendarDayCell.identifier)
+        return cv
+    }()
+
+    private let legendStack: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
+        stack.spacing = 8
+        return stack
+    }()
+
     // MARK: - Dynamic Info Cards
     private var dynamicCards: [UIView] = []
 
@@ -91,6 +151,7 @@ class RoutineDetailViewController: UIViewController {
         view.backgroundColor = AppColors.background
         setupNavigationBar()
         setupUI()
+        setupCalendarCard()
         configureWithRoutine()
     }
     
@@ -171,6 +232,88 @@ class RoutineDetailViewController: UIViewController {
             completionMiniCard.heightAnchor.constraint(equalToConstant: 72),
         ])
     }
+
+    // MARK: - Calendar Card Setup
+    private func setupCalendarCard() {
+        let weekdays = ["day_mon".localized, "day_tue".localized, "day_wed".localized,
+                        "day_thu".localized, "day_fri".localized, "day_sat".localized, "day_sun".localized]
+        for day in weekdays {
+            let label = UILabel()
+            label.text = day
+            label.font = AppFonts.bold(11)
+            label.textColor = AppColors.secondary
+            label.textAlignment = .center
+            weekdayStackView.addArrangedSubview(label)
+        }
+
+        // Legend
+        let legendItems: [(UIColor, String)] = [
+            (AppColors.accentGreen, "legend_done".localized),
+            (AppColors.accentOrange, "legend_skipped".localized),
+            (UIColor.dynamic(light: "D93025", dark: "FF3B30"), "legend_missed".localized),
+        ]
+        for (color, text) in legendItems {
+            let dot = UIView()
+            dot.translatesAutoresizingMaskIntoConstraints = false
+            dot.backgroundColor = color
+            dot.layer.cornerRadius = 5
+            let lbl = UILabel()
+            lbl.font = AppFonts.regular(11)
+            lbl.textColor = AppColors.secondary
+            lbl.text = text
+            let row = UIStackView(arrangedSubviews: [dot, lbl])
+            row.axis = .horizontal
+            row.spacing = 5
+            row.alignment = .center
+            NSLayoutConstraint.activate([
+                dot.widthAnchor.constraint(equalToConstant: 10),
+                dot.heightAnchor.constraint(equalToConstant: 10),
+            ])
+            legendStack.addArrangedSubview(row)
+        }
+
+        calendarCard.addSubview(monthLabel)
+        calendarCard.addSubview(previousButton)
+        calendarCard.addSubview(nextButton)
+        calendarCard.addSubview(weekdayStackView)
+        calendarCard.addSubview(calendarCollectionView)
+        calendarCard.addSubview(legendStack)
+
+        NSLayoutConstraint.activate([
+            monthLabel.topAnchor.constraint(equalTo: calendarCard.topAnchor, constant: 16),
+            monthLabel.centerXAnchor.constraint(equalTo: calendarCard.centerXAnchor),
+
+            previousButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
+            previousButton.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            previousButton.widthAnchor.constraint(equalToConstant: 36),
+            previousButton.heightAnchor.constraint(equalToConstant: 36),
+
+            nextButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
+            nextButton.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            nextButton.widthAnchor.constraint(equalToConstant: 36),
+            nextButton.heightAnchor.constraint(equalToConstant: 36),
+
+            weekdayStackView.topAnchor.constraint(equalTo: monthLabel.bottomAnchor, constant: 12),
+            weekdayStackView.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            weekdayStackView.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            weekdayStackView.heightAnchor.constraint(equalToConstant: 24),
+
+            calendarCollectionView.topAnchor.constraint(equalTo: weekdayStackView.bottomAnchor, constant: 4),
+            calendarCollectionView.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            calendarCollectionView.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            calendarCollectionView.heightAnchor.constraint(equalToConstant: 240),
+
+            legendStack.topAnchor.constraint(equalTo: calendarCollectionView.bottomAnchor, constant: 12),
+            legendStack.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            legendStack.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            legendStack.bottomAnchor.constraint(equalTo: calendarCard.bottomAnchor, constant: -16),
+        ])
+
+        calendarCollectionView.delegate = self
+        calendarCollectionView.dataSource = self
+
+        mainStackView.addArrangedSubview(calendarCard)
+    }
     
     // MARK: - Configuration
     private func configureWithRoutine() {
@@ -206,9 +349,12 @@ class RoutineDetailViewController: UIViewController {
         )
         addTooltip(to: completionMiniCard, text: "overall_completion".localized)
 
-        // Dynamic info cards
-        dynamicCards.forEach { $0.removeFromSuperview() }
-        dynamicCards.removeAll()
+        // update calendar
+        calendarViewModel.filteredRoutine = routine
+        calendarViewModel.loadData { [weak self] in
+            self?.monthLabel.text = self?.calendarViewModel.getMonthTitle()
+            self?.calendarCollectionView.reloadData()
+        }
 
         // Frequency
         addInfoCard(icon: "repeat", title: "frequency".localized, value: routine.frequency.displayText)
@@ -242,6 +388,21 @@ class RoutineDetailViewController: UIViewController {
         let card = makeInfoCard(icon: icon, title: title, value: value, multiline: multiline)
         dynamicCards.append(card)
         mainStackView.addArrangedSubview(card)
+    }
+
+    // MARK: - Calendar Actions
+    @objc private func previousMonthTapped() {
+        calendarViewModel.changeMonth(by: -1) { [weak self] in
+            self?.monthLabel.text = self?.calendarViewModel.getMonthTitle()
+            self?.calendarCollectionView.reloadData()
+        }
+    }
+
+    @objc private func nextMonthTapped() {
+        calendarViewModel.changeMonth(by: 1) { [weak self] in
+            self?.monthLabel.text = self?.calendarViewModel.getMonthTitle()
+            self?.calendarCollectionView.reloadData()
+        }
     }
 
     // MARK: - Actions
@@ -323,6 +484,28 @@ class RoutineDetailViewController: UIViewController {
                 tooltip.removeFromSuperview()
             }
         }
+    }
+}
+
+// MARK: - CollectionView (Calendar)
+extension RoutineDetailViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        calendarViewModel.uiModels.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: CalendarDayCell.identifier, for: indexPath
+        ) as? CalendarDayCell else { return UICollectionViewCell() }
+        cell.configure(with: calendarViewModel.uiModels[indexPath.item])
+        return cell
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = floor(collectionView.bounds.width / 7)
+        return CGSize(width: width, height: 40)
     }
 }
 

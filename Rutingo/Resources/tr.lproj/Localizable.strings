@@ -138,6 +138,9 @@
 "every_day" = "Her gün";
 "edit" = "Düzenle";
 "days_suffix" = "gün";
+"legend_done" = "Yapıldı";
+"legend_skipped" = "Atlandı";
+"legend_missed" = "Yapılmadı";
 
 /* Short day names */
 "day_mon" = "Pzt";
