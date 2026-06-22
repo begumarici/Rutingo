@@ -10,8 +10,11 @@ import UIKit
 class AddBlockViewController: UIViewController {
     
     // MARK: - Properties
-    var onSave: ((String, Int, Int, Int, Int) -> Void)?
-    var onUpdate: ((String, Int, Int, Int, Int) -> Void)?
+    var onSave: ((String, Int, Int, Int, Int, Routine?) -> Void)?
+    var onUpdate: ((String, Int, Int, Int, Int, Routine?) -> Void)?
+    var linkedRoutine: Routine?
+    private var allRoutines: [Routine] = []
+    private let viewModel: BlocksViewModel
     
     enum Mode { case add; case edit }
     var mode: Mode = .add
@@ -19,6 +22,13 @@ class AddBlockViewController: UIViewController {
     private var selectedStartDate: Date = Date()
     private var selectedEndDate: Date = Date()
     private var pendingTitle: String?
+    
+    init(viewModel: BlocksViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
     
     // MARK: - UI
     private let scrollView: UIScrollView = {
@@ -64,6 +74,47 @@ class AddBlockViewController: UIViewController {
             attributes: [.foregroundColor: AppColors.secondary]
         )
         return tf
+    }()
+    
+    private let routineContainer: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = AppColors.cardBackground
+        v.layer.cornerRadius = Layout.cardCornerRadius
+        return v
+    }()
+
+    private let routineSectionLabel: UILabel = {
+        let l = UILabel()
+        l.translatesAutoresizingMaskIntoConstraints = false
+        l.text = "link_routine".localized
+        l.font = AppFonts.semibold(16)
+        l.textColor = AppColors.primary
+        return l
+    }()
+
+    private lazy var routinePickerButton: UIButton = {
+        var config = UIButton.Configuration.filled()
+        config.baseBackgroundColor = AppColors.secondaryCardBackground
+        config.baseForegroundColor = AppColors.secondary
+        config.title = "link_routine_placeholder".localized
+        config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+            var a = attrs
+            a.font = AppFonts.regular(16)
+            return a
+        }
+        config.image = UIImage(systemName: "chevron.up.chevron.down")
+        config.imagePlacement = .trailing
+        config.imagePadding = 8
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
+        config.cornerStyle = .fixed
+
+        let b = UIButton(configuration: config)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        b.layer.cornerRadius = Layout.cornerRadius
+        b.contentHorizontalAlignment = .left
+        b.showsMenuAsPrimaryAction = true
+        return b
     }()
     
     private let startContainer: UIView = {
@@ -137,6 +188,13 @@ class AddBlockViewController: UIViewController {
         setupPickers()
         setupActions()
         if let t = pendingTitle { titleTextField.text = t }
+
+        allRoutines = viewModel.fetchAllRoutines()
+        buildRoutineMenu()
+
+        if let linked = linkedRoutine {
+            updateRoutineButton(selected: linked)
+        }
     }
     
     // MARK: - Setup
@@ -163,6 +221,10 @@ class AddBlockViewController: UIViewController {
         contentView.addSubview(titleContainer)
         titleContainer.addSubview(titleSectionLabel)
         titleContainer.addSubview(titleTextField)
+
+        contentView.addSubview(routineContainer)
+        routineContainer.addSubview(routineSectionLabel)
+        routineContainer.addSubview(routinePickerButton)
 
         contentView.addSubview(startContainer)
         startContainer.addSubview(startLabel)
@@ -206,8 +268,23 @@ class AddBlockViewController: UIViewController {
             titleTextField.heightAnchor.constraint(equalToConstant: 44),
             titleTextField.bottomAnchor.constraint(equalTo: titleContainer.bottomAnchor, constant: -cp),
 
+            // routine container
+            routineContainer.topAnchor.constraint(equalTo: titleContainer.bottomAnchor, constant: p),
+            routineContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: p),
+            routineContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -p),
+
+            routineSectionLabel.topAnchor.constraint(equalTo: routineContainer.topAnchor, constant: cp),
+            routineSectionLabel.leadingAnchor.constraint(equalTo: routineContainer.leadingAnchor, constant: cp),
+            routineSectionLabel.trailingAnchor.constraint(equalTo: routineContainer.trailingAnchor, constant: -cp),
+
+            routinePickerButton.topAnchor.constraint(equalTo: routineSectionLabel.bottomAnchor, constant: 8),
+            routinePickerButton.leadingAnchor.constraint(equalTo: routineContainer.leadingAnchor, constant: cp),
+            routinePickerButton.trailingAnchor.constraint(equalTo: routineContainer.trailingAnchor, constant: -cp),
+            routinePickerButton.heightAnchor.constraint(equalToConstant: 44),
+            routinePickerButton.bottomAnchor.constraint(equalTo: routineContainer.bottomAnchor, constant: -cp),
+
             // start container
-            startContainer.topAnchor.constraint(equalTo: titleContainer.bottomAnchor, constant: p),
+            startContainer.topAnchor.constraint(equalTo: routineContainer.bottomAnchor, constant: p),
             startContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: p),
             startContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -p),
 
@@ -242,7 +319,57 @@ class AddBlockViewController: UIViewController {
             saveButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -p),
         ])
     }
+
+    // MARK: - Routine menu
+    private func buildRoutineMenu() {
+        var actions: [UIAction] = []
+
+        for routine in allRoutines {
+            let isSelected = linkedRoutine?.id == routine.id
+            let action = UIAction(
+                title: routine.name ?? "",
+                image: isSelected ? UIImage(systemName: "checkmark") : nil
+            ) { [weak self] _ in
+                self?.linkedRoutine = routine
+                self?.updateRoutineButton(selected: routine)
+                self?.buildRoutineMenu()
+            }
+            actions.append(action)
+        }
+
+        if linkedRoutine != nil {
+            let unlink = UIAction(
+                title: "unlink_routine".localized,
+                image: UIImage(systemName: "xmark"),
+                attributes: .destructive
+            ) { [weak self] _ in
+                self?.linkedRoutine = nil
+                self?.updateRoutineButton(selected: nil)
+                self?.buildRoutineMenu()
+            }
+            actions.append(unlink)
+        }
+
+        routinePickerButton.menu = UIMenu(title: "", children: [
+                UIDeferredMenuElement.uncached { completion in
+                    completion(actions)
+                }
+            ])
+    }
+
+    private func updateRoutineButton(selected routine: Routine?) {
+        var config = routinePickerButton.configuration ?? UIButton.Configuration.filled()
+        if let routine = routine {
+            config.title = routine.name ?? ""
+            config.baseForegroundColor = AppColors.primary
+        } else {
+            config.title = "link_routine_placeholder".localized
+            config.baseForegroundColor = AppColors.secondary
+        }
+        routinePickerButton.configuration = config
+    }
     
+    // MARK: - Pickers / Actions
     private func setupPickers() {
         startPicker.date = selectedStartDate
         endPicker.date = selectedEndDate
@@ -276,12 +403,13 @@ class AddBlockViewController: UIViewController {
     }
     
     // MARK: - Configure (edit mode)
-    func configure(title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int) {
+    func configure(title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int, linkedRoutine: Routine? = nil) {
         mode = .edit
         let cal = Calendar.current
         selectedStartDate = cal.date(bySettingHour: startHour, minute: startMinute, second: 0, of: Date())!
-        selectedEndDate   = cal.date(bySettingHour: endHour,   minute: endMinute,   second: 0, of: Date())!
+        selectedEndDate = cal.date(bySettingHour: endHour, minute: endMinute, second: 0, of: Date())!
         pendingTitle = title
+        self.linkedRoutine = linkedRoutine
     }
     
     // MARK: - Actions
@@ -303,9 +431,9 @@ class AddBlockViewController: UIViewController {
         let endHour     = cal.component(.hour,   from: selectedEndDate)
         let endMinute   = cal.component(.minute, from: selectedEndDate)
         if mode == .edit {
-            onUpdate?(title, startHour, startMinute, endHour, endMinute)
+            onUpdate?(title, startHour, startMinute, endHour, endMinute, linkedRoutine)
         } else {
-            onSave?(title, startHour, startMinute, endHour, endMinute)
+            onSave?(title, startHour, startMinute, endHour, endMinute, linkedRoutine)
         }
         dismiss(animated: true)
     }

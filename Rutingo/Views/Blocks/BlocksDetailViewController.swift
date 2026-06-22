@@ -15,6 +15,7 @@ class BlocksDetailViewController: UIViewController {
     var onUpdate: ((String, Int, Int, Int, Int) -> Void)?
     private let viewModel: BlocksViewModel
     private var goToRoutineHeightConstraint: NSLayoutConstraint?
+    private var linkedRoutineLabelHeightConstraint: NSLayoutConstraint?
     
     // MARK: - UI
     private let scrollView: UIScrollView = {
@@ -54,25 +55,24 @@ class BlocksDetailViewController: UIViewController {
         return l
     }()
     
-    private let deleteButton: UIButton = {
-        let b = UIButton(type: .system)
-        b.translatesAutoresizingMaskIntoConstraints = false
-        b.setTitle("delete_block".localized, for: .normal)
-        b.titleLabel?.font = AppFonts.semibold(16)
-        b.setTitleColor(.systemRed, for: .normal)
-        return b
+    private let linkedRoutineLabel: UILabel = {
+        let l = UILabel()
+        l.translatesAutoresizingMaskIntoConstraints = false
+        l.font = AppFonts.medium(13)
+        l.textColor = AppColors.accentPurple
+        l.backgroundColor = AppColors.tagPurpleBackground
+        l.layer.cornerRadius = Layout.pillRadius
+        l.clipsToBounds = true
+        l.textAlignment = .center
+        l.isHidden = true
+        return l
     }()
 
     private let goToRoutineButton: UIButton = {
         let b = UIButton(type: .system)
         b.translatesAutoresizingMaskIntoConstraints = false
-        b.titleLabel?.font = AppFonts.semibold(15)
-        b.setTitleColor(AppColors.primary, for: .normal)
         b.backgroundColor = AppColors.cardBackground
         b.layer.cornerRadius = Layout.cardCornerRadius
-        b.contentEdgeInsets = UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16)
-
-        // Sağ tarafta chevron ikonu
         var config = UIButton.Configuration.plain()
         config.title = "go_to_routine".localized
         config.baseForegroundColor = AppColors.primary
@@ -89,6 +89,14 @@ class BlocksDetailViewController: UIViewController {
         return b
     }()
     
+    private let deleteButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        b.titleLabel?.font = AppFonts.semibold(16)
+        b.setTitleColor(.systemRed, for: .normal)
+        return b
+    }()
+
     // MARK: - Init
     init(block: TimeBlock, viewModel: BlocksViewModel) {
         self.block = block
@@ -105,6 +113,8 @@ class BlocksDetailViewController: UIViewController {
         setupNavigationBar()
         setupUI()
         configure()
+        goToRoutineButton.addTarget(self, action: #selector(goToRoutineTapped), for: .touchUpInside)
+        deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
     }
     
     // MARK: - Setup
@@ -133,9 +143,10 @@ class BlocksDetailViewController: UIViewController {
         contentView.addSubview(infoCard)
         infoCard.addSubview(titleLabel)
         infoCard.addSubview(timeLabel)
+        infoCard.addSubview(linkedRoutineLabel)
         
-        contentView.addSubview(deleteButton)
         contentView.addSubview(goToRoutineButton)
+        contentView.addSubview(deleteButton)
     }
     
     private func setupConstraints() {
@@ -162,70 +173,99 @@ class BlocksDetailViewController: UIViewController {
             titleLabel.leadingAnchor.constraint(equalTo: infoCard.leadingAnchor, constant: cp),
             titleLabel.trailingAnchor.constraint(equalTo: infoCard.trailingAnchor, constant: -cp),
 
-            timeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 6),
+            timeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
             timeLabel.leadingAnchor.constraint(equalTo: infoCard.leadingAnchor, constant: cp),
             timeLabel.trailingAnchor.constraint(equalTo: infoCard.trailingAnchor, constant: -cp),
-            timeLabel.bottomAnchor.constraint(equalTo: infoCard.bottomAnchor, constant: -cp),
 
-            deleteButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            linkedRoutineLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 10),
+            linkedRoutineLabel.leadingAnchor.constraint(equalTo: infoCard.leadingAnchor, constant: cp),
+            linkedRoutineLabel.trailingAnchor.constraint(lessThanOrEqualTo: infoCard.trailingAnchor, constant: -cp),
+            linkedRoutineLabel.bottomAnchor.constraint(equalTo: infoCard.bottomAnchor, constant: -cp),
 
             goToRoutineButton.topAnchor.constraint(equalTo: infoCard.bottomAnchor, constant: 12),
-            goToRoutineButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            goToRoutineButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            goToRoutineButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: p),
+            goToRoutineButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -p),
 
             deleteButton.topAnchor.constraint(equalTo: goToRoutineButton.bottomAnchor, constant: 8),
+            deleteButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             deleteButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -p),
         ])
 
-        // goToRoutineButton gizliyken yer kaplamaması için height constraint saklıyoruz
-        let heightC = goToRoutineButton.heightAnchor.constraint(equalToConstant: 0)
-        goToRoutineHeightConstraint = heightC
+        let hGoTo = goToRoutineButton.heightAnchor.constraint(equalToConstant: 0)
+        goToRoutineHeightConstraint = hGoTo
+
+        let hLinked = linkedRoutineLabel.heightAnchor.constraint(equalToConstant: 0)
+        linkedRoutineLabelHeightConstraint = hLinked
     }
     
     // MARK: - Configure
     private func configure() {
-        // title = block.title
         titleLabel.text = block.title
-        timeLabel.text = block.timeRangeText
+        timeLabel.text  = block.timeRangeText
+        
+        let routineName: String?
+        if block.isGeneratedFromRoutine {
+            if let rid = block.sourceRoutineID {
+                routineName = viewModel.routine(withID: rid)?.name
+            } else {
+                routineName = nil
+            }
+        } else {
+            routineName = block.linkedRoutines.first?.name
+        }
+
+        if let name = routineName {
+            linkedRoutineLabel.text    = "  \(name)  "
+            linkedRoutineLabel.isHidden = false
+            linkedRoutineLabelHeightConstraint?.isActive = false
+            linkedRoutineLabel.layoutIfNeeded()
+            linkedRoutineLabel.layer.cornerRadius = linkedRoutineLabel.bounds.height / 2
+        } else {
+            linkedRoutineLabel.isHidden = true
+            linkedRoutineLabelHeightConstraint?.isActive = true
+        }
         
         let buttonTitle = block.isGeneratedFromRoutine ? "skip".localized : "delete_block".localized
         deleteButton.setTitle(buttonTitle, for: .normal)
         
-        if block.isGeneratedFromRoutine {
-            goToRoutineButton.isHidden = false
-            goToRoutineHeightConstraint?.isActive = false
-            goToRoutineButton.addTarget(self, action: #selector(goToRoutineTapped), for: .touchUpInside)
-        } else {
-            goToRoutineButton.isHidden = true
-            goToRoutineHeightConstraint?.isActive = true
-        }
-        
-        deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
+        let hasLinked = block.isGeneratedFromRoutine || block.linkedRoutines.first != nil
+        goToRoutineButton.isHidden = !hasLinked
+        goToRoutineHeightConstraint?.isActive = !hasLinked
     }
     
     // MARK: - Actions
     @objc private func goToRoutineTapped() {
-        guard let routineID = block.sourceRoutineID else { return }
+        let routineID: UUID?
+        if block.isGeneratedFromRoutine {
+            routineID = block.sourceRoutineID
+        } else {
+            routineID = block.linkedRoutines.first?.id
+        }
+        guard let id = routineID else { return }
         let routinesVM = RoutinesViewModel()
-        guard let routine = routinesVM.routine(withID: routineID) else { return }
+        guard let routine = routinesVM.routine(withID: id) else { return }
         let detailVC = RoutineDetailViewController(routine: routine, viewModel: routinesVM)
         navigationController?.pushViewController(detailVC, animated: true)
     }
 
     @objc private func editTapped() {
-        let addVC = AddBlockViewController()
-        addVC.title = "edit_block".localized
-        
-        addVC.configure(title: block.title ?? "",
-                        startHour: Int(block.startHour),
-                        startMinute: Int(block.startMinute),
-                        endHour: Int(block.endHour),
-                        endMinute: Int(block.endMinute)
+        let addVC = AddBlockViewController(viewModel: viewModel)
+        addVC.configure(
+            title: block.title ?? "",
+            startHour:    Int(block.startHour),
+            startMinute:  Int(block.startMinute),
+            endHour:      Int(block.endHour),
+            endMinute:    Int(block.endMinute),
+            linkedRoutine: block.linkedRoutines.first
         )
-        
-        addVC.onSave = { [weak self] title, startHour, startMinute, endHour, endMinute in
+        addVC.onUpdate = { [weak self] title, startHour, startMinute, endHour, endMinute, newLinkedRoutine in
             guard let self else { return }
-            self.viewModel.updateBlock(self.block, title: title, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) {
+            self.viewModel.updateBlockWithRoutine(
+                self.block, title: title,
+                startHour: startHour, startMinute: startMinute,
+                endHour: endHour, endMinute: endMinute,
+                newLinkedRoutine: newLinkedRoutine
+            ) {
                 self.configure()
             }
             self.onUpdate?(title, startHour, startMinute, endHour, endMinute)
@@ -244,11 +284,7 @@ class BlocksDetailViewController: UIViewController {
             alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
             alert.addAction(UIAlertAction(title: "skip".localized, style: .destructive) { [weak self] _ in
                 guard let self else { return }
-                if let routineID = self.block.sourceRoutineID,
-                   let date = self.block.date {
-                    CoreDataManager.shared.saveSkipLog(routineId: routineID, date: date, reason: "skipped_from_block")
-                }
-                self.viewModel.deleteBlock(self.block) {
+                self.viewModel.skipBlock(self.block) {
                     self.onDelete?()
                     self.navigationController?.popViewController(animated: true)
                 }

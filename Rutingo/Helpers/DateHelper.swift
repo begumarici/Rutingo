@@ -55,7 +55,14 @@ class DateHelper {
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.locale = .current
-        formatter.dateFormat = "EEEE, MMMM d"
+        
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+        if languageCode == "tr" {
+            formatter.dateFormat = "d MMMM EEEE"
+        } else {
+            formatter.dateFormat = "EEEE, MMMM d"
+        }
+        
         return formatter.string(from: date)
     }
     

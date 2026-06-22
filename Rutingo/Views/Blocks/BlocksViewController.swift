@@ -167,9 +167,9 @@ class BlocksViewController: UIViewController {
             let currentHour   = currentOffset / timelineView.hourHeight
 
             timelineView.hourHeight = newHeight
-
-            let newOffset = currentHour * timelineView.hourHeight
-            scrollView.setContentOffset(CGPoint(x: 0, y: newOffset), animated: false)
+            scrollView.setContentOffset(
+                CGPoint(x: 0, y: currentHour * timelineView.hourHeight), animated: false
+            )
 
         default:
             break
@@ -178,9 +178,14 @@ class BlocksViewController: UIViewController {
 
     // MARK: - Actions
     @objc private func addBlockTapped() {
-        let addVC = AddBlockViewController()
-        addVC.onSave = { [weak self] title, startHour, startMinute, endHour, endMinute in
-            self?.viewModel.addBlock(title: title, startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute) {
+        let addVC = AddBlockViewController(viewModel: viewModel)
+        addVC.onSave = { [weak self] title, startHour, startMinute, endHour, endMinute, routine in
+            self?.viewModel.addBlock(
+                title: title,
+                startHour: startHour, startMinute: startMinute,
+                endHour: endHour,     endMinute: endMinute,
+                linkedRoutine: routine
+            ) {
                 self?.timelineView.blocks = self?.viewModel.blocks ?? []
             }
         }
@@ -217,17 +222,18 @@ extension BlocksViewController: TimelineViewDelegate {
     }
 }
 
-// MARK: - Comparable
-extension Comparable {
-    func clamped(to range: ClosedRange<Self>) -> Self {
-        return min(max(self, range.lowerBound), range.upperBound)
-    }
-}
-
+// MARK: - WeekStripViewDelegate
 extension BlocksViewController: WeekStripViewDelegate {
     func weekStripView(_ view: WeekStripView, didSelectDate date: Date) {
         let isForward = date > viewModel.selectedDate
         viewModel.selectedDate = date
         loadData(animateFrom: isForward ? .right : .left)
+    }
+}
+
+// MARK: - Comparable helper
+extension Comparable {
+    func clamped(to range: ClosedRange<Self>) -> Self {
+        return min(max(self, range.lowerBound), range.upperBound)
     }
 }

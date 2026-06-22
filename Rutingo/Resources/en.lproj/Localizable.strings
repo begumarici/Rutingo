@@ -57,6 +57,9 @@
 "skip_routine_confirm_message" = "Do you want to skip this routine for now?";
 "skip" = "Skip";
 "this_block_created_from_routine" = "This block was created from a routine.";
+"link_routine" = "Link Routine";
+"link_routine_placeholder" = "Select a routine...";
+"unlink_routine" = "Remove Link";
 
 /* Tasks Screen */
 "tasks_title" = "Tasks";
