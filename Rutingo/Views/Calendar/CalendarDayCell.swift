@@ -102,20 +102,20 @@ class CalendarDayCell: UICollectionViewCell {
         dayLabel.font = AppFonts.bold(16)
         
         if item.isSelected {
-            contentView.backgroundColor = AppColors.accentOrange
+            contentView.backgroundColor = AppColors.accentPurple
             dayLabel.textColor = AppColors.background
             routineIndicator.backgroundColor = AppColors.background
         } else {
             contentView.backgroundColor = .clear
-            routineIndicator.backgroundColor = AppColors.primary
+            routineIndicator.backgroundColor = AppColors.secondary
             
             if item.isToday {
-                contentView.backgroundColor = AppColors.accentOrange.withAlphaComponent(0.12)
-                dayLabel.textColor = AppColors.primary
+                contentView.backgroundColor = AppColors.accentPurple.withAlphaComponent(0.12)
+                dayLabel.textColor = AppColors.secondary
                 dayLabel.font = AppFonts.regular(16)
             } else {
                 contentView.backgroundColor = .clear
-                dayLabel.textColor = AppColors.primary
+                dayLabel.textColor = AppColors.secondary
                 dayLabel.font = AppFonts.regular(16)
             }
         }

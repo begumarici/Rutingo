@@ -17,11 +17,6 @@ class DayRoutineCell: UITableViewCell {
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = AppColors.cardBackground
         view.layer.cornerRadius = Layout.cardCornerRadius
-        
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.1
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
         view.layer.masksToBounds = false
         
         return view
@@ -80,23 +75,27 @@ class DayRoutineCell: UITableViewCell {
     
     // MARK: - Configuration
     func configure(with item: RoutineWithStatus) {
+        nameLabel.text = item.routine.name
+        containerView.alpha = 1.0
+        nameLabel.textColor = AppColors.primary
+
         if item.isSkipped {
             containerView.alpha = 0.7
             nameLabel.textColor = AppColors.secondary
             statusIcon.image = UIImage(systemName: "forward.circle.fill")
             statusIcon.tintColor = AppColors.accentOrange
         } else if item.isCompleted {
-            containerView.alpha = 1.0
-            nameLabel.textColor = AppColors.primary
             statusIcon.image = UIImage(systemName: "checkmark.circle.fill")
             statusIcon.tintColor = AppColors.accentGreen
+        } else if item.isMissed {
+            let missedColor = UIColor.dynamic(light: "D93025", dark: "FF3B30")
+            statusIcon.image = UIImage(systemName: "xmark.circle.fill")
+            statusIcon.tintColor = missedColor
+            nameLabel.textColor = AppColors.secondary
+            containerView.alpha = 0.8
         } else {
-            containerView.alpha = 1.0
-            nameLabel.textColor = AppColors.primary
             statusIcon.image = UIImage(systemName: "circle")
             statusIcon.tintColor = AppColors.secondary
         }
-        
-        nameLabel.text = item.routine.name
     }
 }

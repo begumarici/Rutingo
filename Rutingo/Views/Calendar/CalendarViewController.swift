@@ -29,6 +29,20 @@ class CalendarViewController: UIViewController {
         return view
     }()
     
+    private let calendarCard: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = Layout.cardCornerRadius
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.07
+        view.layer.shadowOffset = CGSize(width: 0, height: 2)
+        view.layer.shadowRadius = 8
+        view.layer.masksToBounds = false
+        view.clipsToBounds = true
+        return view
+    }()
+
     private let monthLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -171,39 +185,45 @@ class CalendarViewController: UIViewController {
     }
     
     private func setupHeaderView() {
-        headerContainerView.addSubview(monthLabel)
-        headerContainerView.addSubview(previousButton)
-        headerContainerView.addSubview(nextButton)
-        headerContainerView.addSubview(weekdayStackView)
-        headerContainerView.addSubview(calendarCollectionView)
+        headerContainerView.addSubview(calendarCard)
+        calendarCard.addSubview(monthLabel)
+        calendarCard.addSubview(previousButton)
+        calendarCard.addSubview(nextButton)
+        calendarCard.addSubview(weekdayStackView)
+        calendarCard.addSubview(calendarCollectionView)
         headerContainerView.addSubview(dividerView)
         headerContainerView.addSubview(dayDetailLabel)
         
         NSLayoutConstraint.activate([
-            monthLabel.topAnchor.constraint(equalTo: headerContainerView.topAnchor, constant: 16),
-            monthLabel.centerXAnchor.constraint(equalTo: headerContainerView.centerXAnchor),
+            calendarCard.topAnchor.constraint(equalTo: headerContainerView.topAnchor, constant: 16),
+            calendarCard.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
+            calendarCard.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -16),
+
+            monthLabel.topAnchor.constraint(equalTo: calendarCard.topAnchor, constant: 16),
+            monthLabel.centerXAnchor.constraint(equalTo: calendarCard.centerXAnchor),
             
             previousButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
-            previousButton.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 20),
+            previousButton.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
             previousButton.widthAnchor.constraint(equalToConstant: 44),
             previousButton.heightAnchor.constraint(equalToConstant: 44),
             
             nextButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
-            nextButton.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -20),
+            nextButton.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
             nextButton.widthAnchor.constraint(equalToConstant: 44),
             nextButton.heightAnchor.constraint(equalToConstant: 44),
             
-            weekdayStackView.topAnchor.constraint(equalTo: monthLabel.bottomAnchor, constant: 20),
-            weekdayStackView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
-            weekdayStackView.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -16),
+            weekdayStackView.topAnchor.constraint(equalTo: monthLabel.bottomAnchor, constant: 12),
+            weekdayStackView.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            weekdayStackView.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
             weekdayStackView.heightAnchor.constraint(equalToConstant: 30),
             
             calendarCollectionView.topAnchor.constraint(equalTo: weekdayStackView.bottomAnchor, constant: 4),
-            calendarCollectionView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
-            calendarCollectionView.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -16),
+            calendarCollectionView.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            calendarCollectionView.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
             calendarCollectionView.heightAnchor.constraint(equalToConstant: 240),
-            
-            dividerView.topAnchor.constraint(equalTo: calendarCollectionView.bottomAnchor, constant: 4),
+            calendarCollectionView.bottomAnchor.constraint(equalTo: calendarCard.bottomAnchor, constant: -12),
+
+            dividerView.topAnchor.constraint(equalTo: calendarCard.bottomAnchor, constant: 12),
             dividerView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
             dividerView.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -16),
             dividerView.heightAnchor.constraint(equalToConstant: 1),

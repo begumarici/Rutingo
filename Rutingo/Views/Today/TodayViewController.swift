@@ -49,7 +49,7 @@ class TodayViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .medium)
         button.setImage(UIImage(systemName: "plus.circle.fill", withConfiguration: config), for: .normal)
-        button.tintColor = AppColors.accentOrange
+        button.tintColor = AppColors.accentPurple
         return button
     }()
     

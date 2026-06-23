@@ -86,7 +86,7 @@ class DayCircleView: UIView {
     
     private func setAppearance(progress: Double, isToday: Bool, isSelected: Bool) {
         if isToday {
-            backgroundColor = AppColors.accentOrange
+            backgroundColor = AppColors.accentPurple
             dayLabel.textColor = AppColors.onAccent
             dateLabel.textColor = AppColors.onAccent
             layer.borderWidth = 0

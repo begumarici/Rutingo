@@ -9,9 +9,9 @@ import UIKit
 
 enum AppColors {
     // MARK: - Base surfaces
-    static let background = UIColor.dynamic(light: "FAF8F5", dark: "1C1B22")
+    static let background = UIColor.dynamic(light: "F5F5F7", dark: "1C1B22")
     static let cardBackground = UIColor.dynamic(light: "FFFFFF", dark: "26242E")
-    static let secondaryCardBackground = UIColor.dynamic(light: "F1EDE7", dark: "322F3B")
+    static let secondaryCardBackground = UIColor.dynamic(light: "EBEBED", dark: "322F3B")
     static let border = UIColor.dynamic(light: "ECE8E2", dark: "3A3744")
 
     // MARK: - Text
@@ -26,7 +26,7 @@ enum AppColors {
     static let accentGreen  = UIColor.dynamic(light: "34C77B", dark: "4ADE94")
 
     /// Main call-to-action accent (save buttons, primary actions)
-    static let accent = accentOrange
+    static let accent = accentPurple
 
     /// On-color text — used when a label sits on top of an accent-filled
     /// background (e.g. text inside an orange button)

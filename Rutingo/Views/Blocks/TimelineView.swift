@@ -219,7 +219,7 @@ class TimelineView: UIView {
 
         let container = UIView()
         container.translatesAutoresizingMaskIntoConstraints = false
-        container.backgroundColor = isActive ? AppColors.accent.withAlphaComponent(0.12) : AppColors.cardBackground
+        container.backgroundColor = isActive ? AppColors.accent.withAlphaComponent(0.18) : AppColors.accent.withAlphaComponent(0.06)
         container.layer.cornerRadius = 10
         container.layer.masksToBounds = true
         
@@ -347,7 +347,6 @@ class TimelineView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         guard bounds.width > 0, !blocks.isEmpty else { return }
-        // Block view'ları zaten varsa yeniden çizme
         if blockViews.isEmpty {
             drawBlocks()
         }

@@ -33,6 +33,7 @@ struct RoutineWithStatus {
     let routine: Routine
     let isCompleted: Bool
     let isSkipped: Bool
+    let isMissed: Bool
 }
 
 class CalendarViewModel {
@@ -209,10 +210,13 @@ class CalendarViewModel {
                 let isSkipped = routine.id.map {
                     dataManager.hasSkipLog(routineId: $0, date: normalized)
                 } ?? false
+                let isCompleted = routine.isCompleted(on: normalized)
+                let today = DateHelper.shared.startOfDay()
                 return RoutineWithStatus(
                     routine: routine,
-                    isCompleted: routine.isCompleted(on: normalized),
-                    isSkipped: isSkipped
+                    isCompleted: isCompleted,
+                    isSkipped: isSkipped,
+                    isMissed: !isCompleted && !isSkipped && normalized < today
                 )
             }
     }

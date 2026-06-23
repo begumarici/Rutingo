@@ -22,9 +22,9 @@ class MainTabBarController: UITabBarController {
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = AppColors.cardBackground
 
-        appearance.stackedLayoutAppearance.selected.iconColor   = AppColors.accentOrange
+        appearance.stackedLayoutAppearance.selected.iconColor   = AppColors.accentPurple
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-            .foregroundColor: AppColors.accentOrange,
+            .foregroundColor: AppColors.accentPurple,
             .font: AppFonts.medium(10)
         ]
 
