@@ -34,10 +34,6 @@ class CalendarViewController: UIViewController {
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = AppColors.cardBackground
         view.layer.cornerRadius = Layout.cardCornerRadius
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.07
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
         view.layer.masksToBounds = false
         view.clipsToBounds = true
         return view

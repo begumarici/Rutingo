@@ -97,10 +97,6 @@
 "start_time" = "Başlangıç";
 "end_time" = "Bitiş";
 "validation_end_after_start" = "Bitiş saati başlangıç saatinden sonra olmalı.";
-"time_range" = "Saat aralığı";
-"start_time" = "Başlangıç";
-"end_time" = "Bitiş";
-"validation_end_after_start" = "Bitiş saati başlangıç saatinden sonra olmalı.";
 
 /* Calendar Screen */
 "calendar" = "Takvim";

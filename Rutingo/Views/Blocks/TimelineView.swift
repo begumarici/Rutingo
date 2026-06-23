@@ -354,8 +354,8 @@ class TimelineView: UIView {
 
     // MARK: - Actions
     @objc private func blockViewTapped(_ gesture: UITapGestureRecognizer) {
-        guard gesture.view?.tag ?? -1 < blocks.count else { return }
-        let block = blocks[gesture.view!.tag]
+        guard let tag = gesture.view?.tag, tag < blocks.count else { return }
+        let block = blocks[tag]
         delegate?.timelineView(self, didTapBlock: block)
     }
 }
