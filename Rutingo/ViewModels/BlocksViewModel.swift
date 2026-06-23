@@ -115,4 +115,19 @@ class BlocksViewModel {
         let count = blocks.count
         return "\(count) \("blocks_count".localized)"
     }
+
+    func duration(for block: TimeBlock) -> String {
+        let totalMinutes = Int(block.endHour) * 60 + Int(block.endMinute)
+                         - Int(block.startHour) * 60 - Int(block.startMinute)
+        guard totalMinutes > 0 else { return "" }
+        let hours   = totalMinutes / 60
+        let minutes = totalMinutes % 60
+        if hours > 0 && minutes > 0 {
+            return "\(hours) \("hour".localized) \(minutes) \("minute".localized)"
+        } else if hours > 0 {
+            return "\(hours) \("hour".localized)"
+        } else {
+            return "\(minutes) \("minute".localized)"
+        }
+    }
 }

@@ -60,6 +60,9 @@
 "link_routine" = "Rutin Bağla";
 "link_routine_placeholder" = "Rutin seç...";
 "unlink_routine" = "Bağlantıyı Kaldır";
+"linked_routine" = "Bağlı Rutin";
+"hour" = "saat";
+"minute" = "dakika";
 
 /* Tasks Screen */
 "tasks_title" = "Görevler";

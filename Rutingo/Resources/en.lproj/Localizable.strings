@@ -60,6 +60,9 @@
 "link_routine" = "Link Routine";
 "link_routine_placeholder" = "Select a routine...";
 "unlink_routine" = "Remove Link";
+"linked_routine" = "Linked Routine";
+"hour" = "hour";
+"minute" = "min";
 
 /* Tasks Screen */
 "tasks_title" = "Tasks";

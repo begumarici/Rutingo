@@ -190,9 +190,9 @@ class RoutineDetailViewController: UIViewController {
         statsInner.addArrangedSubview(statsRowStack)
 
         // Mini cards
-        embedInMiniCard(streakValueLabel, into: streakMiniCard)
-        embedInMiniCard(bestStreakValueLabel, into: bestStreakMiniCard)
-        embedInMiniCard(completionValueLabel, into: completionMiniCard)
+        embedInMiniCard(streakValueLabel, labelText: "streak".localized, into: streakMiniCard)
+        embedInMiniCard(bestStreakValueLabel, labelText: "best".localized, into: bestStreakMiniCard)
+        embedInMiniCard(completionValueLabel, labelText: "completion".localized, into: completionMiniCard)
 
         statsRowStack.addArrangedSubview(streakMiniCard)
         statsRowStack.addArrangedSubview(bestStreakMiniCard)
@@ -322,14 +322,13 @@ class RoutineDetailViewController: UIViewController {
         
         nameLabel.text = routine.name
         
-        // Streak
+        // stat mini cards
         let streak = routine.currentStreak
         streakValueLabel.attributedText = makeIconText(
             icon: "flame.fill",
             text: " \(streak)",
             iconColor: streak > 0 ? AppColors.accentOrange : AppColors.secondary
         )
-        addTooltip(to: streakMiniCard, text: "current_streak".localized)
 
         // Best streak
         let best = viewModel.getBestStreak(for: routine)
@@ -338,7 +337,6 @@ class RoutineDetailViewController: UIViewController {
             text: " \(best)",
             iconColor: AppColors.secondary
         )
-        addTooltip(to: bestStreakMiniCard, text: "best".localized)
 
         // Completion
         let rate = viewModel.getCompletionRate(for: routine)
@@ -347,7 +345,6 @@ class RoutineDetailViewController: UIViewController {
             text: " \(rate)%",
             iconColor: AppColors.primary
         )
-        addTooltip(to: completionMiniCard, text: "overall_completion".localized)
 
         // update calendar
         calendarViewModel.filteredRoutine = routine
@@ -356,38 +353,191 @@ class RoutineDetailViewController: UIViewController {
             self?.calendarCollectionView.reloadData()
         }
 
-        // Frequency
-        addInfoCard(icon: "repeat", title: "frequency".localized, value: routine.frequency.displayText)
+        // time info
+        var scheduleItems: [(icon: String, iconColor: UIColor, iconBg: UIColor,
+                             title: String, value: String, multiline: Bool)] = []
 
-        // Time range
+        scheduleItems.append((
+            icon: "repeat",
+            iconColor: UIColor(hex: "#185FA5"),
+            iconBg: UIColor(hex: "#E6F1FB"),
+            title: "frequency".localized,
+            value: routine.frequency.displayText,
+            multiline: false
+        ))
+        
         if routine.startHour >= 0, routine.endHour >= 0 {
             let start = String(format: "%02d:%02d", routine.startHour, routine.startMinute)
-            let end   = String(format: "%02d:%02d", routine.endHour,   routine.endMinute)
-            addInfoCard(icon: "clock", title: "time_range".localized, value: "\(start) – \(end)")
+            let end   = String(format: "%02d:%02d", routine.endHour, routine.endMinute)
+            scheduleItems.append((
+                icon: "clock",
+                iconColor: AppColors.secondary,
+                iconBg: AppColors.secondaryCardBackground,
+                title: "time_range".localized,
+                value: "\(start) – \(end)",
+                multiline: false
+            ))
         }
 
         // Reminder
         if routine.hasReminder, let time = routine.reminderTime {
             let fmt = DateFormatter()
             fmt.timeStyle = .short
-            addInfoCard(icon: "bell.fill", title: "reminder".localized, value: fmt.string(from: time))
+            scheduleItems.append((
+                icon: "bell.fill",
+                iconColor: UIColor(hex: "#854F0B"),
+                iconBg: UIColor(hex: "#FAEEDA"),
+                title: "reminder".localized,
+                value: fmt.string(from: time),
+                multiline: false
+            ))
         }
 
-        // Feeling
+        let scheduleCard = makeGroupedCard(items: scheduleItems)
+        dynamicCards.append(scheduleCard)
+        mainStackView.addArrangedSubview(scheduleCard)
+
+        // personal info
+        var personalItems: [(icon: String, iconColor: UIColor, iconBg: UIColor,
+                              title: String, value: String, multiline: Bool)] = []
+        
         if let feelingDisplay = routine.feelingType?.displayText {
-            addInfoCard(icon: "heart.fill", title: "feeling".localized, value: feelingDisplay)
+            personalItems.append((
+                icon: "heart.fill",
+                iconColor: UIColor(hex: "#A32D2D"),
+                iconBg: UIColor(hex: "#FCEBEB"),
+                title: "feeling".localized,
+                value: feelingDisplay,
+                multiline: false
+            ))
         }
 
         // Motivation
         if let motivation = routine.motivation, !motivation.isEmpty {
-            addInfoCard(icon: "lightbulb.fill", title: "motivation".localized, value: motivation, multiline: true)
+            personalItems.append((
+                icon: "lightbulb.fill",
+                iconColor: UIColor(hex: "#534AB7"),
+                iconBg: UIColor(hex: "#EEEDFE"),
+                title: "motivation".localized,
+                value: motivation,
+                multiline: true
+            ))
+        }
+        
+        if !personalItems.isEmpty {
+            let personalCard = makeGroupedCard(items: personalItems)
+            dynamicCards.append(personalCard)
+            mainStackView.addArrangedSubview(personalCard)
         }
     }
 
-    private func addInfoCard(icon: String, title: String, value: String, multiline: Bool = false) {
-        let card = makeInfoCard(icon: icon, title: title, value: value, multiline: multiline)
-        dynamicCards.append(card)
-        mainStackView.addArrangedSubview(card)
+    // MARK: - Grouped card builder
+    private func makeGroupedCard(items: [(icon: String, iconColor: UIColor, iconBg: UIColor,
+                                          title: String, value: String, multiline: Bool)]) -> UIView {
+        let card = UIView()
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.backgroundColor = AppColors.cardBackground
+        card.layer.cornerRadius = Layout.cardCornerRadius
+        card.clipsToBounds = true
+
+        var previousAnchor = card.topAnchor
+
+        for (index, item) in items.enumerated() {
+            let row = makeInfoRow(icon: item.icon, iconColor: item.iconColor,
+                                  iconBg: item.iconBg, title: item.title,
+                                  value: item.value, multiline: item.multiline)
+            card.addSubview(row)
+
+            if index > 0 {
+                let separator = UIView()
+                separator.translatesAutoresizingMaskIntoConstraints = false
+                separator.backgroundColor = AppColors.separator
+                card.addSubview(separator)
+                NSLayoutConstraint.activate([
+                    separator.topAnchor.constraint(equalTo: previousAnchor),
+                    separator.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+                    separator.trailingAnchor.constraint(equalTo: card.trailingAnchor),
+                    separator.heightAnchor.constraint(equalToConstant: 0.5),
+                ])
+                NSLayoutConstraint.activate([
+                    row.topAnchor.constraint(equalTo: separator.bottomAnchor),
+                ])
+            } else {
+                NSLayoutConstraint.activate([
+                    row.topAnchor.constraint(equalTo: card.topAnchor),
+                ])
+            }
+
+            NSLayoutConstraint.activate([
+                row.leadingAnchor.constraint(equalTo: card.leadingAnchor),
+                row.trailingAnchor.constraint(equalTo: card.trailingAnchor),
+            ])
+
+            previousAnchor = row.bottomAnchor
+
+            if index == items.count - 1 {
+                row.bottomAnchor.constraint(equalTo: card.bottomAnchor).isActive = true
+            }
+        }
+
+        return card
+    }
+
+    private func makeInfoRow(icon: String, iconColor: UIColor, iconBg: UIColor,
+                             title: String, value: String, multiline: Bool) -> UIView {
+        let row = UIView()
+        row.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconBox = UIView()
+        iconBox.translatesAutoresizingMaskIntoConstraints = false
+        iconBox.backgroundColor = iconBg
+        iconBox.layer.cornerRadius = 8
+
+        let iconView = UIImageView(image: UIImage(systemName: icon))
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        iconView.tintColor = iconColor
+        iconView.contentMode = .scaleAspectFit
+
+        let titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.font = AppFonts.regular(12)
+        titleLabel.textColor = AppColors.secondary
+        titleLabel.text = title
+
+        let valueLabel = UILabel()
+        valueLabel.translatesAutoresizingMaskIntoConstraints = false
+        valueLabel.font = AppFonts.semibold(15)
+        valueLabel.textColor = AppColors.primary
+        valueLabel.text = value
+        valueLabel.numberOfLines = multiline ? 0 : 1
+
+        let textStack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
+        textStack.translatesAutoresizingMaskIntoConstraints = false
+        textStack.axis = .vertical
+        textStack.spacing = 2
+
+        iconBox.addSubview(iconView)
+        row.addSubview(iconBox)
+        row.addSubview(textStack)
+
+        NSLayoutConstraint.activate([
+            iconBox.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: 16),
+            iconBox.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            iconBox.widthAnchor.constraint(equalToConstant: 32),
+            iconBox.heightAnchor.constraint(equalToConstant: 32),
+
+            iconView.centerXAnchor.constraint(equalTo: iconBox.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: iconBox.centerYAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: 16),
+            iconView.heightAnchor.constraint(equalToConstant: 16),
+
+            textStack.leadingAnchor.constraint(equalTo: iconBox.trailingAnchor, constant: 12),
+            textStack.trailingAnchor.constraint(equalTo: row.trailingAnchor, constant: -16),
+            textStack.topAnchor.constraint(equalTo: row.topAnchor, constant: 14),
+            textStack.bottomAnchor.constraint(equalTo: row.bottomAnchor, constant: -14),
+        ])
+
+        return row
     }
 
     // MARK: - Calendar Actions
@@ -441,49 +591,6 @@ class RoutineDetailViewController: UIViewController {
         
         let navVC = UINavigationController(rootViewController: addVC)
         present(navVC, animated: true)
-    }
-    
-    // MARK: - Tooltip
-    private func addTooltip(to view: UIView, text: String) {
-        view.gestureRecognizers?.removeAll()
-        let gestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-        gestureRecognizer.minimumPressDuration = 0.4
-        view.isUserInteractionEnabled = true
-        view.addGestureRecognizer(gestureRecognizer)
-        view.accessibilityHint = text
-    }
-
-    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-        guard gesture.state == .began, let source = gesture.view else { return }
-
-        self.view.viewWithTag(9999)?.removeFromSuperview()
-
-        let tooltip = UILabel()
-        tooltip.tag = 9999
-        tooltip.text = "  \(source.accessibilityHint ?? "")  "
-        tooltip.font = AppFonts.medium(13)
-        tooltip.textColor = AppColors.background
-        tooltip.backgroundColor = AppColors.primary
-        tooltip.layer.cornerRadius = 8
-        tooltip.clipsToBounds = true
-        tooltip.textAlignment = .center
-        tooltip.translatesAutoresizingMaskIntoConstraints = false
-        tooltip.alpha = 0
-        self.view.addSubview(tooltip)
-
-        let frame = source.convert(source.bounds, to: self.view)
-        NSLayoutConstraint.activate([
-            tooltip.centerXAnchor.constraint(equalTo: self.view.leadingAnchor, constant: frame.midX),
-            tooltip.bottomAnchor.constraint(equalTo: self.view.topAnchor, constant: frame.minY - 6),
-            tooltip.heightAnchor.constraint(equalToConstant: 32),
-        ])
-
-        UIView.animate(withDuration: 0.7) { tooltip.alpha = 1 }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            UIView.animate(withDuration: 0.2, animations: { tooltip.alpha = 0 }) { _ in
-                tooltip.removeFromSuperview()
-            }
-        }
     }
 }
 
@@ -544,58 +651,27 @@ private extension RoutineDetailViewController {
         return label
     }
 
-    func embedInMiniCard(_ label: UILabel, into card: UIView) {
+    func embedInMiniCard(_ valueLabel: UILabel, labelText: String, into card: UIView) {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.regular(11)
+        label.textColor = AppColors.secondary
+        label.textAlignment = .center
+        label.text = labelText
+        
+        card.addSubview(valueLabel)
         card.addSubview(label)
+        
         NSLayoutConstraint.activate([
+            valueLabel.topAnchor.constraint(equalTo: card.topAnchor, constant: 12),
+            valueLabel.centerXAnchor.constraint(equalTo: card.centerXAnchor),
+            valueLabel.leadingAnchor.constraint(greaterThanOrEqualTo: card.leadingAnchor, constant: 8),
+            valueLabel.trailingAnchor.constraint(lessThanOrEqualTo: card.trailingAnchor, constant: -8),
+
+            label.topAnchor.constraint(equalTo: valueLabel.bottomAnchor, constant: 4),
             label.centerXAnchor.constraint(equalTo: card.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: card.centerYAnchor),
-            label.leadingAnchor.constraint(greaterThanOrEqualTo: card.leadingAnchor, constant: 8),
-            label.trailingAnchor.constraint(lessThanOrEqualTo: card.trailingAnchor, constant: -8),
+            label.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -12),
         ])
-    }
-
-    func makeInfoCard(icon: String, title: String, value: String, multiline: Bool = false) -> UIView {
-        let card = RoutineDetailViewController.makeCard()
-
-        let iconView = UIImageView(image: UIImage(systemName: icon))
-        iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.tintColor = AppColors.secondary
-        iconView.contentMode = .scaleAspectFit
-
-        let titleLabel = UILabel()
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = AppFonts.regular(12)
-        titleLabel.textColor = AppColors.secondary
-        titleLabel.text = title
-
-        let valueLabel = UILabel()
-        valueLabel.translatesAutoresizingMaskIntoConstraints = false
-        valueLabel.font = AppFonts.semibold(15)
-        valueLabel.textColor = AppColors.primary
-        valueLabel.text = value
-        valueLabel.numberOfLines = multiline ? 0 : 1
-
-        let textStack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
-        textStack.translatesAutoresizingMaskIntoConstraints = false
-        textStack.axis = .vertical
-        textStack.spacing = 2
-
-        card.addSubview(iconView)
-        card.addSubview(textStack)
-
-        NSLayoutConstraint.activate([
-            iconView.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
-            iconView.centerYAnchor.constraint(equalTo: card.centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 20),
-            iconView.heightAnchor.constraint(equalToConstant: 20),
-
-            textStack.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 12),
-            textStack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
-            textStack.topAnchor.constraint(equalTo: card.topAnchor, constant: 14),
-            textStack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -14),
-        ])
-
-        return card
     }
 
     func makeIconText(icon: String, text: String, iconColor: UIColor) -> NSAttributedString {

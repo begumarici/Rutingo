@@ -66,6 +66,14 @@ class DateHelper {
         return formatter.string(from: date)
     }
     
+    func formattedDayName(_ date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = .current
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
+    }
+    
     // MARK: - Date Calculations
     func lastSevenDays() -> [Date] {
         let today = startOfDay()
