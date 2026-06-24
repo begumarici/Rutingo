@@ -324,6 +324,15 @@ class AddBlockViewController: UIViewController {
     private func buildRoutineMenu() {
         var actions: [UIAction] = []
 
+        if allRoutines.isEmpty {
+            let empty = UIAction(
+                title: "no_routines_yet".localized,
+                attributes: .disabled
+            ) { _ in }
+            routinePickerButton.menu = UIMenu(title: "", children: [empty])
+            return
+        }
+
         for routine in allRoutines {
             let isSelected = linkedRoutine?.id == routine.id
             let action = UIAction(

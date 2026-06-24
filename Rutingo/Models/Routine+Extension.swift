@@ -82,27 +82,35 @@ extension Routine {
     }
     
     var bestStreak: Int {
-        let sortedCompletions = completionArray.sorted { ($0.date ?? Date.distantPast) < ($1.date ?? Date.distantPast) }
-        
-        guard !sortedCompletions.isEmpty else { return 0 }
-        
-        var bestStreak = 1
-        var currentStreak = 1
-        
-        for i in 1..<sortedCompletions.count {
-            let prevDate = sortedCompletions[i-1].date!
-            let currDate = sortedCompletions[i].date!
-            
-            if missedScheduledDay(between: prevDate, and: currDate) {
-                currentStreak = 1
+        guard let createdAt = self.createdAt else { return 0 }
+
+        let today = DateHelper.shared.startOfDay()
+        let startDate = DateHelper.shared.startOfDay(createdAt)
+        let totalDays = DateHelper.shared.daysBetween(startDate, today) + 1
+
+        var best = 0
+        var current = 0
+
+        for i in 0..<totalDays {
+            guard let date = Calendar.current.date(byAdding: .day, value: i, to: startDate) else { continue }
+
+            let scheduled = wasScheduled(on: date)
+            let completed = isCompleted(on: date)
+            let skipped   = isSkipped(on: date)
+
+            if !scheduled {
+                continue
+            } else if completed {
+                current += 1
+                best = max(best, current)
+            } else if skipped {
+                continue
             } else {
-                currentStreak += 1
+                current = 0
             }
-            
-            bestStreak = max(bestStreak, currentStreak)
         }
-        
-        return bestStreak
+
+        return best
     }
     
     var completionRate: Int {

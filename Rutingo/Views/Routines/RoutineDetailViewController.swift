@@ -10,7 +10,7 @@ import UIKit
 class RoutineDetailViewController: UIViewController {
     
     // MARK: - Properties
-    var routine: Routine!
+    var routine: Routine! // !!!!
     private let viewModel: RoutinesViewModel
     private let calendarViewModel = CalendarViewModel()
     

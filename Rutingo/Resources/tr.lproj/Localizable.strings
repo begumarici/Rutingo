@@ -61,6 +61,7 @@
 "link_routine_placeholder" = "Rutin seç...";
 "unlink_routine" = "Bağlantıyı Kaldır";
 "linked_routine" = "Bağlı Rutin";
+"no_routines_yet" = "Henüz bir rutin oluşturmadın";
 "hour" = "saat";
 "minute" = "dakika";
 
@@ -134,6 +135,8 @@
 "current_streak" = "Mevcut seri";
 "no_streak" = "Seri yok";
 "best" = "En iyi";
+"streak" = "Streak";
+"completion" = "Tamamlama";
 "overall_completion" = "Genel tamamlama";
 "total_completions" = "toplam tamamlama";
 "completed_days_this_week" = "Bu hafta tamamlanan günler";

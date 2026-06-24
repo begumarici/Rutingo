@@ -61,6 +61,7 @@
 "link_routine_placeholder" = "Select a routine...";
 "unlink_routine" = "Remove Link";
 "linked_routine" = "Linked Routine";
+"no_routines_yet" = "You haven't created any routines yet";
 "hour" = "hour";
 "minute" = "min";
 
@@ -133,6 +134,8 @@
 "current_streak" = "Current Streak";
 "no_streak" = "No streak";
 "best" = "Best";
+"streak" = "Streak";
+"completion" = "Completion";
 "overall_completion" = "Overall Completion";
 "total_completions" = "total completions";
 "completed_days_this_week" = "Completed days this week";
