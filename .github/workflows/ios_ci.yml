@@ -14,10 +14,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Resolve available iOS simulator
+        id: simulator
+        run: |
+          DEVICE_NAME=$(xcrun simctl list devices available -j \
+            | jq -r '.devices | to_entries | map(select(.key | contains("iOS"))) | sort_by(.key) | reverse | .[0].value[] | select(.name | startswith("iPhone")) | .name' \
+            | head -1)
+          echo "name=$DEVICE_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Run tests
         run: |
           xcodebuild test \
             -project Rutingo.xcodeproj \
             -scheme Rutingo \
-            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            -destination "platform=iOS Simulator,name=${{ steps.simulator.outputs.name }},OS=latest" \
             -resultBundlePath TestResults
