@@ -16,7 +16,7 @@ class CalendarDayCell: UICollectionViewCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textAlignment = .center
-        label.font = AppFonts.bold(16)
+        label.font = AppFonts.regular(16)
         label.textColor = AppColors.secondary
         return label
     }()
@@ -81,6 +81,17 @@ class CalendarDayCell: UICollectionViewCell {
     // MARK: - Configuration
     func configure(with item: CalendarDayItem) {
         dayLabel.text = item.text
+        
+        if item.dayStatus != .empty {
+            configureDetailMode(with: item)
+            return
+        }
+        
+        configureNormalMode(with: item)
+    }
+    
+    // MARK: - Normal Calendar Mode
+    private func configureNormalMode(with item: CalendarDayItem) {
         routineIndicator.isHidden = !item.hasRoutine
         
         if item.date == nil {
@@ -91,25 +102,71 @@ class CalendarDayCell: UICollectionViewCell {
         dayLabel.font = AppFonts.bold(16)
         
         if item.isSelected {
-            if item.isToday {
-                contentView.backgroundColor = AppColors.primary
-                dayLabel.textColor = AppColors.background
-                routineIndicator.backgroundColor = AppColors.background
-            } else {
-                contentView.backgroundColor = AppColors.tertiary
-                dayLabel.textColor = AppColors.primary
-                routineIndicator.backgroundColor = AppColors.primary
-            }
-            
+            contentView.backgroundColor = AppColors.accentPurple
+            dayLabel.textColor = AppColors.background
+            routineIndicator.backgroundColor = AppColors.background
         } else {
             contentView.backgroundColor = .clear
-            routineIndicator.backgroundColor = AppColors.primary
+            routineIndicator.backgroundColor = AppColors.secondary
             
             if item.isToday {
-                dayLabel.textColor = AppColors.primary
-            } else {
+                contentView.backgroundColor = AppColors.accentPurple.withAlphaComponent(0.12)
                 dayLabel.textColor = AppColors.secondary
+                dayLabel.font = AppFonts.regular(16)
+            } else {
+                contentView.backgroundColor = .clear
+                dayLabel.textColor = AppColors.secondary
+                dayLabel.font = AppFonts.regular(16)
             }
+        }
+    }
+    
+    // MARK: - Detail Calendar Mode
+    private func configureDetailMode(with item: CalendarDayItem) {
+        routineIndicator.isHidden = true
+        
+        switch item.dayStatus {
+        case .empty:
+            contentView.backgroundColor = .clear
+            dayLabel.textColor = .clear
+            
+        case .notScheduled:
+            contentView.backgroundColor = .clear
+            dayLabel.textColor = AppColors.tertiary
+            dayLabel.font = AppFonts.regular(14)
+            
+        case .future:
+            contentView.backgroundColor = .clear
+            dayLabel.textColor = AppColors.secondary
+            dayLabel.font = AppFonts.regular(16)
+            
+        case .pending:
+            contentView.backgroundColor = .clear
+            dayLabel.textColor = AppColors.secondary
+            dayLabel.font = AppFonts.bold(16)
+            
+        case .completed:
+            contentView.backgroundColor = AppColors.accentGreen.withAlphaComponent(0.25)
+            dayLabel.textColor = AppColors.accentGreen
+            dayLabel.font = AppFonts.regular(16)
+            
+        case .skipped:
+            contentView.backgroundColor = AppColors.accentOrange.withAlphaComponent(0.25)
+            dayLabel.textColor = AppColors.accentOrange
+            dayLabel.font = AppFonts.regular(16)
+            
+        case .missed:
+            let missedColor = UIColor.dynamic(light: "D93025", dark: "FF3B30")
+            contentView.backgroundColor = missedColor.withAlphaComponent(0.18)
+            dayLabel.textColor = missedColor
+        }
+        
+        if item.isToday {
+            dayLabel.font = AppFonts.bold(16)
+            contentView.layer.borderWidth = 1.5
+            contentView.layer.borderColor = AppColors.accentPurple.cgColor
+        } else {
+            contentView.layer.borderWidth = 0
         }
     }
 }

@@ -53,22 +53,54 @@ class CoreDataManager: DataManager {
     }
     
     // MARK: - CRUD Operations
-    func saveRoutine(name: String, frequency: Frequency, hasReminder: Bool = false, reminderTime: Date? = nil) -> Routine {
+    func saveRoutine(
+        name: String,
+        frequency: Frequency,
+        feeling: String? = nil,
+        motivation: String? = nil,
+        blockType: String? = nil,
+        hasReminder: Bool = false,
+        reminderTime: Date? = nil,
+        startHour: Int16,
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16
+    ) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()
         routine.name = name
         routine.frequency = frequency
+        routine.feeling    = feeling
+        routine.motivation = motivation
+        routine.blockType  = blockType
         routine.createdAt = Date()
         
         routine.lastFrequencyChangeDate = DateHelper.shared.startOfDay(Date())
         
         routine.hasReminder = hasReminder
         routine.reminderTime = reminderTime
+        routine.startHour = startHour
+        routine.startMinute = startMinute
+        routine.endHour = endHour
+        routine.endMinute = endMinute
         save()
         return routine
     }
     
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool = false, reminderTime: Date? = nil) {
+    func updateRoutine(
+        routine: Routine,
+        name: String,
+        frequency: Frequency,
+        feeling: String? = nil,
+        motivation: String? = nil,
+        blockType: String? = nil,
+        hasReminder: Bool = false,
+        reminderTime: Date? = nil,
+        startHour: Int16,
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16
+    ) {
         
         if let oldData = routine.frequencyData {
             let oldFrequencyData = try? JSONEncoder().encode(frequency)
@@ -80,8 +112,15 @@ class CoreDataManager: DataManager {
         
         routine.name = name
         routine.frequencyData = try? JSONEncoder().encode(frequency)
+        routine.feeling    = feeling
+        routine.motivation = motivation
+        routine.blockType  = blockType
         routine.hasReminder = hasReminder
         routine.reminderTime = reminderTime
+        routine.startHour = startHour
+        routine.startMinute = startMinute
+        routine.endHour = endHour
+        routine.endMinute = endMinute
         save()
     }
     
@@ -92,12 +131,17 @@ class CoreDataManager: DataManager {
     
     func toggleCompletion(_ routine: Routine) {
         let today = DateHelper.shared.startOfDay()
+        guard let routineId = routine.id else { return }
+
         if let existing = routine.completionArray.first(where: {
             guard let date = $0.date else { return false }
             return Calendar.current.isDate(date, inSameDayAs: today)
         }) {
             viewContext.delete(existing)
         } else {
+            // delete related skip log if there is a skip log for that day
+            deleteSkipLog(routineId: routineId, date: today)
+            
             let completion = RoutineCompletion(context: viewContext)
             completion.id = UUID()
             completion.date = today
@@ -124,4 +168,333 @@ class CoreDataManager: DataManager {
             print("Error clearing all data: \(error)")
         }
     }
+    
+    // MARK: - TimeBlock
+    func fetchBlocks(for date: Date) -> [TimeBlock] {
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        let startOfDay = DateHelper.shared.startOfDay(date)
+        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+        request.predicate = NSPredicate(
+            format: "date >= %@ AND date < %@",
+            startOfDay as CVarArg,
+            endOfDay   as CVarArg
+        )
+        request.sortDescriptors = [NSSortDescriptor(key: "startHour", ascending: true),
+                                   NSSortDescriptor(key: "startMinute", ascending: true)
+        ]
+       
+        return (try? viewContext.fetch(request)) ?? []
+    }
+
+    func saveBlock(title: String, startHour: Int, startMinute: Int, endHour: Int, endMinute: Int, date: Date = Date()) -> TimeBlock {
+        let block = TimeBlock(context: viewContext)
+        block.id = UUID()
+        block.title = title
+        block.startHour = Int16(startHour)
+        block.startMinute = Int16(startMinute)
+        block.endHour = Int16(endHour)
+        block.endMinute = Int16(endMinute)
+        block.date = DateHelper.shared.startOfDay(date)
+        block.createdAt = Date()
+        save()
+        return block
+    }
+
+    func deleteBlock(_ block: TimeBlock) {
+        viewContext.delete(block)
+        save()
+    }
+
+    func addRoutineToBlock(_ routine: Routine, block: TimeBlock) {
+        block.addToRoutines(routine)
+        save()
+    }
+
+    func removeRoutineFromBlock(_ routine: Routine, block: TimeBlock) {
+        block.removeFromRoutines(routine)
+        save()
+    }
+    
+    func deleteGeneratedBlocks(for routine: Routine) {
+        guard let routineID = routine.id else { return }
+        
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "isGeneratedFromRoutine == YES AND sourceRoutineID == %@",
+            routineID as CVarArg
+        )
+        do {
+            let blocks = try viewContext.fetch(request)
+            blocks.forEach { viewContext.delete($0) }
+            save()
+        } catch {
+            print("failed to delete generated blocks: ", error)
+        }
+    }
+    
+    func deleteGeneratedBlocksFromNow(for routine: Routine) {
+        guard let routineID = routine.id else { return }
+        
+        let now = Date()
+        let todayStart = Calendar.current.startOfDay(for: now)
+        let currentHour = Calendar.current.component(.hour, from: now)
+        let currentMinute = Calendar.current.component(.minute, from: now)
+        
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "isGeneratedFromRoutine == YES AND sourceRoutineID == %@ AND date >= %@",
+            routineID as CVarArg,
+            todayStart as CVarArg
+        )
+        
+        do {
+            let blocks = try viewContext.fetch(request)
+            for block in blocks {
+                guard let blockDate = block.date else { continue }
+                let isToday = Calendar.current.isDate(blockDate, inSameDayAs: now)
+                
+                if isToday {
+                    // Aynı gün — block'un bitiş saati şu andan önceyse silme
+                    let blockEndHour = Int(block.endHour)
+                    let blockEndMinute = Int(block.endMinute)
+                    let blockAlreadyPassed = (blockEndHour < currentHour) ||
+                                             (blockEndHour == currentHour && blockEndMinute <= currentMinute)
+                    if blockAlreadyPassed { continue }
+                }
+                
+                viewContext.delete(block)
+            }
+            save()
+        } catch {
+            print("failed to delete future generated blocks: \(error)")
+        }
+    }
+    
+    func syncGeneratedBlocks(for routine: Routine) {
+        guard
+            let routineID = routine.id,
+            let routineName = routine.name,
+            routine.startHour >= 0,
+            routine.endHour >= 0
+        else {
+            deleteGeneratedBlocks(for: routine)
+            return
+        }
+        
+        deleteGeneratedBlocks(for: routine)
+        let dates = scheduledDates(for: routine, daysAhead: 30)
+        
+        for date in dates {
+            let block = TimeBlock(context: viewContext)
+            block.id = UUID()
+            block.title = routineName
+            block.date = Calendar.current.startOfDay(for: date)
+            block.createdAt = Date()
+            block.startHour = routine.startHour
+            block.startMinute = routine.startMinute
+            block.endHour = routine.endHour
+            block.endMinute = routine.endMinute
+            block.isGeneratedFromRoutine = true
+            block.sourceRoutineID = routineID
+            
+            block.addToRoutines(routine)
+        }
+        
+        save()
+    }
+    
+    // helper
+    private func scheduledDates(for routine: Routine, daysAhead: Int) -> [Date] {
+        let today = Calendar.current.startOfDay(for: Date())
+        var dates: [Date] = []
+        for offset in 0..<daysAhead {
+            guard let date = Calendar.current.date(
+                byAdding: .day,
+                value: offset,
+                to: today
+            ) else {
+                continue
+            }
+            if isRoutine(routine, scheduledOn: date) {
+                dates.append(date)
+            }
+        }
+        return dates
+    }
+    
+    private func isRoutine(_ routine: Routine, scheduledOn date: Date) -> Bool {
+        let frequency = routine.frequency
+        let weekday = Calendar.current.component(.weekday, from: date)
+
+        switch frequency {
+        case .daily:
+            return true
+
+        case .specificDays(let days):
+            return days.contains(weekday)
+        }
+    }
+    
+
+    // MARK: - Task
+    func fetchAllTasks() -> [Task] {
+        let request: NSFetchRequest<Task> = Task.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
+        return (try? viewContext.fetch(request)) ?? []
+    }
+
+    func saveTask(title: String, category: String, priority: String, dueDate: Date? = nil) -> Task {
+        let task         = Task(context: viewContext)
+        task.id          = UUID()
+        task.title       = title
+        task.category    = category
+        task.priority    = priority
+        task.dueDate     = dueDate
+        task.isCompleted = false
+        task.createdAt   = Date()
+        save()
+        return task
+    }
+
+    func toggleTask(_ task: Task) {
+        task.isCompleted = !task.isCompleted
+        task.completedAt = task.isCompleted ? Date() : nil
+        save()
+    }
+
+    func deleteTask(_ task: Task) {
+        viewContext.delete(task)
+        save()
+    }
+
+    // MARK: - Event
+    func fetchEvents(for date: Date) -> [Event] {
+        let request: NSFetchRequest<Event> = Event.fetchRequest()
+        let startOfDay = DateHelper.shared.startOfDay(date)
+        let endOfDay   = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+        request.predicate = NSPredicate(
+            format: "date >= %@ AND date < %@",
+            startOfDay as CVarArg,
+            endOfDay   as CVarArg
+        )
+        request.sortDescriptors = [NSSortDescriptor(key: "time", ascending: true)]
+        return (try? viewContext.fetch(request)) ?? []
+    }
+
+    func saveEvent(title: String, date: Date, time: Date? = nil) -> Event {
+        let event       = Event(context: viewContext)
+        event.id        = UUID()
+        event.title     = title
+        event.date      = DateHelper.shared.startOfDay(date)
+        event.time      = time
+        event.createdAt = Date()
+        save()
+        return event
+    }
+
+    func deleteEvent(_ event: Event) {
+        viewContext.delete(event)
+        save()
+    }
+
+    // MARK: - HabitSkipLog
+    func saveSkipLog(routineId: UUID, date: Date, reason: String) {
+        let todayStart = DateHelper.shared.startOfDay(date)
+
+        // delete related copmletion if there is a completion in that day
+        let fetchRequest: NSFetchRequest<RoutineCompletion> = RoutineCompletion.fetchRequest()
+        fetchRequest.predicate = NSPredicate(
+            format: "routine.id == %@ AND date == %@",
+            routineId as CVarArg,
+            todayStart as CVarArg
+        )
+
+        if let completions = try? viewContext.fetch(fetchRequest) {
+            completions.forEach { viewContext.delete($0) }
+        }
+
+        let log       = HabitSkipLog(context: viewContext)
+        log.id        = UUID()
+        log.routineId = routineId
+        log.date      = todayStart
+        log.reason    = reason
+        log.createdAt = Date()
+        save()
+    }
+
+    func hasSkipLog(routineId: UUID, date: Date) -> Bool {
+        let request: NSFetchRequest<HabitSkipLog> = HabitSkipLog.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "routineId == %@ AND date == %@",
+            routineId as CVarArg,
+            DateHelper.shared.startOfDay(date) as CVarArg
+        )
+        return ((try? viewContext.fetch(request))?.count ?? 0) > 0
+    }
+
+    func deleteSkipLog(routineId: UUID, date: Date) {
+        let request: NSFetchRequest<HabitSkipLog> = HabitSkipLog.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "routineId == %@ AND date == %@",
+            routineId as CVarArg,
+            DateHelper.shared.startOfDay(date) as CVarArg
+        )
+        do {
+            let logs = try viewContext.fetch(request)
+            logs.forEach { viewContext.delete($0) }
+            save()
+        } catch {
+            print("failed to delete skip log: \(error)")
+        }
+    }
+
+    func deleteGeneratedBlockForDate(routineId: UUID?, date: Date) {
+        guard let routineId else { return }
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        let startOfDay = DateHelper.shared.startOfDay(date)
+        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+        request.predicate = NSPredicate(
+            format: "isGeneratedFromRoutine == YES AND sourceRoutineID == %@ AND date >= %@ AND date < %@",
+            routineId as CVarArg,
+            startOfDay as CVarArg,
+            endOfDay as CVarArg
+        )
+        do {
+            let blocks = try viewContext.fetch(request)
+            blocks.forEach { viewContext.delete($0) }
+            save()
+        } catch {
+            print("failed to delete generated block for date: \(error)")
+        }
+    }
+
+    // MARK: - WeeklyReview
+    func saveWeeklyReview(weekStartDate: Date, rating: Int, note: String?) {
+        let review           = WeeklyReview(context: viewContext)
+        review.id            = UUID()
+        review.weekStartDate = DateHelper.shared.startOfDay(weekStartDate)
+        review.rating        = Int16(rating)
+        review.note          = note
+        review.createdAt     = Date()
+        save()
+    }
+
+    func hasWeeklyReview(for weekStart: Date) -> Bool {
+        let request: NSFetchRequest<WeeklyReview> = WeeklyReview.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "weekStartDate == %@",
+            DateHelper.shared.startOfDay(weekStart) as CVarArg
+        )
+        return ((try? viewContext.fetch(request))?.count ?? 0) > 0
+    }
+
+    func fetchAllReviews() -> [WeeklyReview] {
+        let request: NSFetchRequest<WeeklyReview> = WeeklyReview.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "weekStartDate", ascending: false)]
+        return (try? viewContext.fetch(request)) ?? []
+    }
+    
+    
+    
 }
+

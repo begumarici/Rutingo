@@ -66,9 +66,8 @@ class CompletedSectionHeaderCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(count: Int, isExpanded: Bool) {
-        titleLabel.text = "completed".localized + " (\(count))"
-        
+    func configure(count: Int, isExpanded: Bool, title: String? = nil) {
+        titleLabel.text = (title ?? "completed".localized) + " (\(count))"
         let chevronName = isExpanded ? "chevron.down" : "chevron.right"
         chevronIcon.image = UIImage(systemName: chevronName)
     }

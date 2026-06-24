@@ -12,27 +12,29 @@ class TodayRoutineCell: UITableViewCell {
     // MARK: - Properties
     static let identifier = "TodayRoutineCell"
     
+    var onCheckmarkTapped: (() -> Void)?
     
     // MARK: - UI Components
     private let cardView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.secondaryCardBackground
-        view.layer.cornerRadius = 16
-        
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.1
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = Layout.cardCornerRadius
         view.layer.masksToBounds = false
         return view
+    }()
+    
+    private let checkmarkButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
     private let checkmarkView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = .white
+        imageView.isUserInteractionEnabled = false
         return imageView
     }()
     
@@ -84,13 +86,16 @@ class TodayRoutineCell: UITableViewCell {
         nameLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
         nameLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         
+        checkmarkButton.addTarget(self, action: #selector(checkmarkButtonTapped), for: .touchUpInside)
+        
         addSubviews()
         setupConstraints()
     }
     
     private func addSubviews() {
         contentView.addSubview(cardView)
-        cardView.addSubview(checkmarkView)
+        cardView.addSubview(checkmarkButton)
+        checkmarkButton.addSubview(checkmarkView)
         cardView.addSubview(nameLabel)
         cardView.addSubview(streakLabel)
         cardView.addSubview(frequencyLabel)
@@ -104,12 +109,17 @@ class TodayRoutineCell: UITableViewCell {
             cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -6),
             cardView.heightAnchor.constraint(equalToConstant: 72),
             
-            checkmarkView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
-            checkmarkView.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
+            checkmarkButton.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
+            checkmarkButton.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
+            checkmarkButton.widthAnchor.constraint(equalToConstant: 60),
+            checkmarkButton.heightAnchor.constraint(equalTo: cardView.heightAnchor),
+            
+            checkmarkView.centerXAnchor.constraint(equalTo: checkmarkButton.centerXAnchor),
+            checkmarkView.centerYAnchor.constraint(equalTo: checkmarkButton.centerYAnchor),
             checkmarkView.widthAnchor.constraint(equalToConstant: 28),
             checkmarkView.heightAnchor.constraint(equalToConstant: 28),
 
-            nameLabel.leadingAnchor.constraint(equalTo: checkmarkView.trailingAnchor, constant: 16),
+            nameLabel.leadingAnchor.constraint(equalTo: checkmarkButton.trailingAnchor, constant: 4),
             nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
             nameLabel.trailingAnchor.constraint(lessThanOrEqualTo: streakLabel.leadingAnchor, constant: -12),
 
@@ -122,39 +132,65 @@ class TodayRoutineCell: UITableViewCell {
         ])
     }
     
+    // MARK: - Actions
+    @objc private func checkmarkButtonTapped() {
+        onCheckmarkTapped?()
+    }
+
     // MARK: - Configuration
-    func configure(with routine: Routine, isNotToday: Bool = false) {
+    func configure(with routine: Routine, isNotToday: Bool = false, isSkipped: Bool = false) {
+        // reset
+        nameLabel.attributedText = nil
+        nameLabel.textColor = AppColors.primary
+        frequencyLabel.textColor = AppColors.secondary
+        streakLabel.isHidden = false
+        checkmarkButton.isHidden = false
+        checkmarkButton.isUserInteractionEnabled = true
+        cardView.alpha = 1.0
+
         nameLabel.text = routine.name
         frequencyLabel.text = routine.frequency.displayText
-        
-        if isNotToday {
+
+        if isSkipped {
             cardView.alpha = 0.7
-            checkmarkView.isHidden = true
+            checkmarkButton.isUserInteractionEnabled = false
+            checkmarkView.image = UIImage(systemName: "forward.circle.fill")
+            checkmarkView.tintColor = AppColors.accentOrange
+            let attributes: [NSAttributedString.Key: Any] = [
+                .strikethroughStyle: NSUnderlineStyle.single.rawValue,
+                .foregroundColor: AppColors.secondary
+            ]
+            nameLabel.attributedText = NSAttributedString(string: routine.name ?? "", attributes: attributes)
+            frequencyLabel.textColor = AppColors.secondary.withAlphaComponent(0.6)
+            streakLabel.attributedText = createStreakText(routine.currentStreak)
+
+        } else if isNotToday {
+            cardView.alpha = 0.7
+            checkmarkButton.isHidden = true
             streakLabel.isHidden = true
             nameLabel.textColor = AppColors.secondary
+            frequencyLabel.textColor = AppColors.secondary
+
         } else {
-            cardView.alpha = 1.0
-            checkmarkView.isHidden = false
-            streakLabel.isHidden = false
             updateCompletionState(isCompleted: routine.isCompletedToday)
-            
-            let streak = routine.currentStreak
-            streakLabel.attributedText = createStreakText(streak)
+            streakLabel.attributedText = createStreakText(routine.currentStreak)
         }
     }
     
     // MARK: - Helpers
     private func updateCompletionState(isCompleted: Bool) {
         if isCompleted {
-            cardView.alpha = 0.7
+            cardView.alpha = 0.75
             checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")
-            checkmarkView.tintColor = AppColors.primary
+            checkmarkView.tintColor = AppColors.accentGreen
             nameLabel.textColor = AppColors.secondary
+            frequencyLabel.textColor = AppColors.tertiary
         } else {
-            cardView.alpha = 1
+            cardView.alpha = 1.0
             checkmarkView.image = UIImage(systemName: "circle")
-            checkmarkView.tintColor = AppColors.secondary
+            checkmarkView.tintColor = AppColors.tertiary
             nameLabel.textColor = AppColors.primary
+            frequencyLabel.textColor = AppColors.secondary
         }
     }
     
@@ -163,12 +199,17 @@ class TodayRoutineCell: UITableViewCell {
         let iconSize: CGFloat = 18
         
         attachment.image = UIImage(systemName: "flame.fill")?
-            .withTintColor(streak > 0 ? .orange : AppColors.secondary, renderingMode: .alwaysOriginal)
-        
+            .withTintColor(
+                streak > 0 ? AppColors.accentOrange : AppColors.tertiary,
+                renderingMode: .alwaysOriginal
+            )
         attachment.bounds = CGRect(x: 0, y: -2, width: iconSize, height: iconSize)
         
         let attributedString = NSMutableAttributedString(attachment: attachment)
-        attributedString.append(NSAttributedString(string: " \(streak)"))
+        attributedString.append(NSAttributedString(
+            string: " \(streak)",
+            attributes: [.foregroundColor: streak > 0 ? AppColors.accentOrange : AppColors.tertiary]
+        ))
         
         return attributedString
     }

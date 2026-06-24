@@ -29,6 +29,16 @@ class CalendarViewController: UIViewController {
         return view
     }()
     
+    private let calendarCard: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = Layout.cardCornerRadius
+        view.layer.masksToBounds = false
+        view.clipsToBounds = true
+        return view
+    }()
+
     private let monthLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -139,11 +149,11 @@ class CalendarViewController: UIViewController {
         
         refreshData()
     }
-    
+
+    // statsVC manages navbar as parent
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         refreshData()
-        configureNavigationBarAppearance()
     }
     
     override func viewDidLayoutSubviews() {
@@ -171,37 +181,45 @@ class CalendarViewController: UIViewController {
     }
     
     private func setupHeaderView() {
-        headerContainerView.addSubview(monthLabel)
-        headerContainerView.addSubview(previousButton)
-        headerContainerView.addSubview(nextButton)
-        headerContainerView.addSubview(weekdayStackView)
-        headerContainerView.addSubview(calendarCollectionView)
+        headerContainerView.addSubview(calendarCard)
+        calendarCard.addSubview(monthLabel)
+        calendarCard.addSubview(previousButton)
+        calendarCard.addSubview(nextButton)
+        calendarCard.addSubview(weekdayStackView)
+        calendarCard.addSubview(calendarCollectionView)
         headerContainerView.addSubview(dividerView)
         headerContainerView.addSubview(dayDetailLabel)
         
         NSLayoutConstraint.activate([
-            monthLabel.topAnchor.constraint(equalTo: headerContainerView.topAnchor, constant: 16),
-            monthLabel.centerXAnchor.constraint(equalTo: headerContainerView.centerXAnchor),
+            calendarCard.topAnchor.constraint(equalTo: headerContainerView.topAnchor, constant: 16),
+            calendarCard.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
+            calendarCard.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -16),
+
+            monthLabel.topAnchor.constraint(equalTo: calendarCard.topAnchor, constant: 16),
+            monthLabel.centerXAnchor.constraint(equalTo: calendarCard.centerXAnchor),
             
             previousButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
-            previousButton.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 20),
-            previousButton.widthAnchor.constraint(equalToConstant: 44), previousButton.heightAnchor.constraint(equalToConstant: 44),
+            previousButton.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            previousButton.widthAnchor.constraint(equalToConstant: 44),
+            previousButton.heightAnchor.constraint(equalToConstant: 44),
             
             nextButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
-            nextButton.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -20),
-            nextButton.widthAnchor.constraint(equalToConstant: 44), nextButton.heightAnchor.constraint(equalToConstant: 44),
+            nextButton.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            nextButton.widthAnchor.constraint(equalToConstant: 44),
+            nextButton.heightAnchor.constraint(equalToConstant: 44),
             
-            weekdayStackView.topAnchor.constraint(equalTo: monthLabel.bottomAnchor, constant: 20),
-            weekdayStackView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
-            weekdayStackView.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -16),
+            weekdayStackView.topAnchor.constraint(equalTo: monthLabel.bottomAnchor, constant: 12),
+            weekdayStackView.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            weekdayStackView.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
             weekdayStackView.heightAnchor.constraint(equalToConstant: 30),
             
             calendarCollectionView.topAnchor.constraint(equalTo: weekdayStackView.bottomAnchor, constant: 4),
-            calendarCollectionView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
-            calendarCollectionView.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -16),
+            calendarCollectionView.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            calendarCollectionView.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
             calendarCollectionView.heightAnchor.constraint(equalToConstant: 240),
-            
-            dividerView.topAnchor.constraint(equalTo: calendarCollectionView.bottomAnchor, constant: 4),
+            calendarCollectionView.bottomAnchor.constraint(equalTo: calendarCard.bottomAnchor, constant: -12),
+
+            dividerView.topAnchor.constraint(equalTo: calendarCard.bottomAnchor, constant: 12),
             dividerView.leadingAnchor.constraint(equalTo: headerContainerView.leadingAnchor, constant: 16),
             dividerView.trailingAnchor.constraint(equalTo: headerContainerView.trailingAnchor, constant: -16),
             dividerView.heightAnchor.constraint(equalToConstant: 1),
@@ -217,7 +235,9 @@ class CalendarViewController: UIViewController {
     
     private func layoutTableHeaderView() {
         let width = routinesTableView.bounds.width
-        let size = headerContainerView.systemLayoutSizeFitting(CGSize(width: width, height: UIView.layoutFittingCompressedSize.height))
+        let size = headerContainerView.systemLayoutSizeFitting(
+            CGSize(width: width, height: UIView.layoutFittingCompressedSize.height)
+        )
         
         if headerContainerView.frame.size.height != size.height {
             headerContainerView.frame.size.height = size.height
@@ -250,44 +270,6 @@ class CalendarViewController: UIViewController {
         
         calendarCollectionView.addGestureRecognizer(swipeLeft)
         calendarCollectionView.addGestureRecognizer(swipeRight)
-    }
-    
-    // MARK: - Navigation Bar Configuration
-    private func configureNavigationBarAppearance() {
-        title = "calendar".localized
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.largeTitleDisplayMode = .always
-        
-        guard let navigationBar = navigationController?.navigationBar else { return }
-        
-        let standardAppearance = UINavigationBarAppearance()
-        standardAppearance.configureWithOpaqueBackground()
-        standardAppearance.backgroundColor = AppColors.background
-        standardAppearance.shadowColor = .clear
-        standardAppearance.titleTextAttributes = [
-            .font: AppFonts.semibold(17),
-            .foregroundColor: AppColors.navbarTitle
-        ]
-        standardAppearance.largeTitleTextAttributes = [
-            .font: AppFonts.bold(34),
-            .foregroundColor: AppColors.navbarTitle
-        ]
-        
-        let scrollEdgeAppearance = UINavigationBarAppearance()
-        scrollEdgeAppearance.configureWithTransparentBackground()
-        scrollEdgeAppearance.backgroundColor = .clear
-        scrollEdgeAppearance.largeTitleTextAttributes = [
-            .font: AppFonts.bold(34),
-            .foregroundColor: AppColors.navbarTitle
-        ]
-        scrollEdgeAppearance.titleTextAttributes = [
-            .font: AppFonts.semibold(17),
-            .foregroundColor: AppColors.navbarTitle
-        ]
-        
-        navigationBar.standardAppearance = standardAppearance
-        navigationBar.compactAppearance = standardAppearance
-        navigationBar.scrollEdgeAppearance = scrollEdgeAppearance
     }
     
     // MARK: - Data Loading
@@ -373,12 +355,12 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CalendarDayCell.identifier, for: indexPath) as? CalendarDayCell else {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: CalendarDayCell.identifier, for: indexPath
+        ) as? CalendarDayCell else {
             return UICollectionViewCell()
         }
-        
-        let item = viewModel.uiModels[indexPath.item]
-        cell.configure(with: item)
+        cell.configure(with: viewModel.uiModels[indexPath.item])
         return cell
     }
     
@@ -388,7 +370,11 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         }
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
         let width = floor(collectionView.bounds.width / 7)
         return CGSize(width: width, height: 40)
     }
@@ -401,22 +387,20 @@ extension CalendarViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: DayRoutineCell.identifier, for: indexPath) as? DayRoutineCell else {
+        guard let cell = tableView.dequeueReusableCell(
+            withIdentifier: DayRoutineCell.identifier, for: indexPath
+        ) as? DayRoutineCell else {
             return UITableViewCell()
         }
         
         let routines = viewModel.getRoutinesForSelectedDate()
-        let routine = routines[indexPath.row]
-        cell.configure(routine: routine, date: viewModel.selectedDate)
-        
+        cell.configure(with: routines[indexPath.row])
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        let routines = viewModel.getRoutinesForSelectedDate()
-        let routine = routines[indexPath.row]
+        let routine = viewModel.getRoutinesForSelectedDate()[indexPath.row].routine
         navigationController?.pushViewController(RoutineDetailViewController(routine: routine), animated: true)
     }
     

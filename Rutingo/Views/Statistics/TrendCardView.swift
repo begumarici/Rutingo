@@ -32,7 +32,7 @@ class TrendCardView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.bold(32)
-        label.textColor = AppColors.primary
+        label.textColor = AppColors.accentOrange   // primary → accentOrange
         return label
     }()
     
@@ -106,18 +106,33 @@ class TrendCardView: UIView {
         
         let arrowAttachment = NSTextAttachment()
         if diff > 0 {
-            arrowAttachment.image = UIImage(systemName: "arrow.up")?.withTintColor(AppColors.primary, renderingMode: .alwaysOriginal)
+            arrowAttachment.image = UIImage(systemName: "arrow.up")?
+                .withTintColor(AppColors.accentGreen, renderingMode: .alwaysOriginal)
         } else if diff < 0 {
-            arrowAttachment.image = UIImage(systemName: "arrow.down")?.withTintColor(AppColors.primary, renderingMode: .alwaysOriginal)
+            arrowAttachment.image = UIImage(systemName: "arrow.down")?
+                .withTintColor(AppColors.feelingHard, renderingMode: .alwaysOriginal)
         } else {
-            arrowAttachment.image = UIImage(systemName: "minus")?.withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
+            arrowAttachment.image = UIImage(systemName: "minus")?
+                .withTintColor(AppColors.secondary, renderingMode: .alwaysOriginal)
         }
         
         arrowAttachment.bounds = CGRect(x: 0, y: -2, width: 14, height: 14)
         
+        let comparisonColor: UIColor
+        if diff > 0 {
+            comparisonColor = AppColors.accentGreen
+        } else if diff < 0 {
+            comparisonColor = AppColors.feelingHard
+        } else {
+            comparisonColor = AppColors.secondary
+        }
+        
         attributedText.append(NSAttributedString(attachment: arrowAttachment))
         let diffText = String(format: "percent_format".localized, abs(diff))
-        attributedText.append(NSAttributedString(string: " \(sign)\(diffText) \("from_last_week".localized)"))
+        attributedText.append(NSAttributedString(
+            string: " \(sign)\(diffText) \("from_last_week".localized)",
+            attributes: [.foregroundColor: comparisonColor, .font: AppFonts.regular(14)]
+        ))
         
         comparisonLabel.attributedText = attributedText
         
@@ -166,9 +181,9 @@ class TrendCardView: UIView {
         barView.translatesAutoresizingMaskIntoConstraints = false
         
         if isToday {
-            barView.backgroundColor = AppColors.primary
+            barView.backgroundColor = AppColors.accentOrange
         } else {
-            barView.backgroundColor = AppColors.secondary
+            barView.backgroundColor = progressColor(for: rate)
         }
 
         let barHeight = 40.0 * CGFloat(rate) / 100.0
@@ -177,7 +192,7 @@ class TrendCardView: UIView {
         let dayLabel = UILabel()
         dayLabel.text = dayName
         dayLabel.font = AppFonts.regular(11)
-        dayLabel.textColor = AppColors.secondary
+        dayLabel.textColor = isToday ? AppColors.accentOrange : AppColors.secondary
         dayLabel.textAlignment = .center
         dayLabel.translatesAutoresizingMaskIntoConstraints = false
         dayLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
@@ -187,5 +202,15 @@ class TrendCardView: UIView {
         column.addArrangedSubview(dayLabel)
         
         return column
+    }
+    
+    private func progressColor(for rate: Int) -> UIColor {
+        switch rate {
+        case 0:        return AppColors.progressEmpty
+        case 1...33:   return AppColors.progressLow
+        case 34...66:  return AppColors.progressMedium
+        case 67...99:  return AppColors.progressHigh
+        default:       return AppColors.progressComplete
+        }
     }
 }

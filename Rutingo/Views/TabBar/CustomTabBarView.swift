@@ -5,6 +5,7 @@
 //  Created by Begüm Arıcı on 12.01.2026.
 //
 
+// MARK: - NOT BEING USED ANYMORE!
 import UIKit
 
 protocol CustomTabBarDelegate: AnyObject {
@@ -26,7 +27,7 @@ class CustomTabBarView: UIView {
         stack.axis = .horizontal
         stack.distribution = .equalSpacing
         stack.alignment = .center
-        stack.spacing = 50
+        stack.spacing = 32
         return stack
     }()
     

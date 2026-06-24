@@ -16,13 +16,13 @@ class RoutineCell: UITableViewCell {
     private let cardView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.secondaryCardBackground
-        view.layer.cornerRadius = 16
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = Layout.cardCornerRadius
         
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.1
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
+      //  view.layer.shadowColor = UIColor.black.cgColor
+    //    view.layer.shadowOpacity = 0.1
+      //  view.layer.shadowOffset = CGSize(width: 0, height: 2)
+   //     view.layer.shadowRadius = 8
         view.layer.masksToBounds = false
         
         return view
@@ -131,7 +131,7 @@ class RoutineCell: UITableViewCell {
         let iconSize: CGFloat = 18
         
         attachment.image = UIImage(systemName: "flame.fill")?
-            .withTintColor(streak > 0 ? .orange : AppColors.secondary, renderingMode: .alwaysOriginal)
+            .withTintColor(streak > 0 ? AppColors.accentOrange : AppColors.secondary, renderingMode: .alwaysOriginal)
         
         attachment.bounds = CGRect(x: 0, y: -2, width: iconSize, height: iconSize)
         

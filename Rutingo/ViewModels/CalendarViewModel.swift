@@ -7,6 +7,17 @@
 
 import Foundation
 
+// MARK: - Day Status (normal calendar + detail calendar)
+enum DayStatus {
+    case empty
+    case future
+    case notScheduled
+    case completed
+    case skipped
+    case missed
+    case pending
+}
+
 // MARK: - View State Item
 struct CalendarDayItem {
     let date: Date?
@@ -14,6 +25,15 @@ struct CalendarDayItem {
     let isSelected: Bool
     let isToday: Bool
     let hasRoutine: Bool
+    // additional space for detail calendar, .empty for normal calendar
+    var dayStatus: DayStatus = .empty
+}
+
+struct RoutineWithStatus {
+    let routine: Routine
+    let isCompleted: Bool
+    let isSkipped: Bool
+    let isMissed: Bool
 }
 
 class CalendarViewModel {
@@ -24,6 +44,9 @@ class CalendarViewModel {
     
     private(set) var currentMonth: Date
     private(set) var selectedDate: Date
+    
+    /// if it is set, only filters for this routine (detail screen)
+    var filteredRoutine: Routine?
     
     // MARK: - Init
     init(dataManager: DataManager = CoreDataManager.shared) {
@@ -68,7 +91,13 @@ class CalendarViewModel {
         uiModels.removeAll()
         
         let calendar = Calendar.current
-        let allRoutines = dataManager.fetchAllRoutines()
+        let allRoutines: [Routine]
+        
+        if let filtered = filteredRoutine {
+            allRoutines = [filtered]
+        } else {
+            allRoutines = dataManager.fetchAllRoutines()
+        }
         
         let components = calendar.dateComponents([.year, .month], from: currentMonth)
         guard let startOfMonth = calendar.date(from: components),
@@ -84,25 +113,60 @@ class CalendarViewModel {
                 text: "",
                 isSelected: false,
                 isToday: false,
-                hasRoutine: false
+                hasRoutine: false,
+                dayStatus: .empty
             ))
         }
         
+        let today = DateHelper.shared.startOfDay()
+        
         for day in 1...numDays {
             guard let date = calendar.date(byAdding: .day, value: day - 1, to: startOfMonth) else { continue }
+            let normalized = DateHelper.shared.startOfDay(date)
             
-            let isToday = calendar.isDateInToday(date)
-            let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
-            let hasRoutine = checkRoutine(for: date, in: allRoutines)
+            let status: DayStatus
+            if let routine = filteredRoutine {
+                status = dayStatus(for: normalized, routine: routine, today: today)
+            } else {
+                status = .empty
+            }
             
             uiModels.append(CalendarDayItem(
                 date: date,
                 text: "\(day)",
-                isSelected: isSelected,
-                isToday: isToday,
-                hasRoutine: hasRoutine
+                isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
+                isToday: calendar.isDateInToday(date),
+                hasRoutine: checkRoutine(for: date, in: allRoutines),
+                dayStatus: status
             ))
         }
+    }
+    
+    // MARK: - Detail Mode
+    private func dayStatus(for date: Date, routine: Routine, today: Date) -> DayStatus {
+        guard let createdAt = routine.createdAt else { return .notScheduled }
+        let created = DateHelper.shared.startOfDay(createdAt)
+        
+        guard created <= date else { return .notScheduled }
+        
+        let isFuture = date > today
+        let scheduled = routine.wasScheduled(on: date)
+        
+        if !scheduled { return .notScheduled }
+        
+        if isFuture { return .future }
+        
+        if Calendar.current.isDate(date, inSameDayAs: today) {
+            // today
+            if routine.isCompleted(on: date) { return .completed }
+            if routine.isSkipped(on: date)   { return .skipped }
+            return .pending
+        }
+        
+        // past day
+        if routine.isCompleted(on: date) { return .completed }
+        if routine.isSkipped(on: date)   { return .skipped }
+        return .missed
     }
     
     private func checkRoutine(for date: Date, in routines: [Routine]) -> Bool {
@@ -125,20 +189,35 @@ class CalendarViewModel {
         return formatter.string(from: currentMonth).capitalized
     }
     
-    func getRoutinesForSelectedDate() -> [Routine] {
-        return getRoutinesForDate(selectedDate)
-    }
-    
-    private func getRoutinesForDate(_ date: Date) -> [Routine] {
-        let allRoutines = dataManager.fetchAllRoutines()
-        let normalized = DateHelper.shared.startOfDay(date)
-        
-        return allRoutines.filter { routine in
-            guard let created = routine.createdAt else { return false }
-            let createdNorm = DateHelper.shared.startOfDay(created)
-            guard createdNorm <= normalized else { return false }
-            
-            return routine.wasScheduled(on: normalized) || routine.isCompleted(on: normalized)
+    func getRoutinesForSelectedDate() -> [RoutineWithStatus] {
+        let allRoutines: [Routine]
+        if let filtered = filteredRoutine {
+            allRoutines = [filtered]
+        } else {
+            allRoutines = dataManager.fetchAllRoutines()
         }
+        
+        let normalized = DateHelper.shared.startOfDay(selectedDate)
+        
+        return allRoutines
+            .filter { routine in
+                guard let created = routine.createdAt else { return false }
+                let createdNorm = DateHelper.shared.startOfDay(created)
+                guard createdNorm <= normalized else { return false }
+                return routine.wasScheduled(on: normalized) || routine.isCompleted(on: normalized)
+            }
+            .map { routine in
+                let isSkipped = routine.id.map {
+                    dataManager.hasSkipLog(routineId: $0, date: normalized)
+                } ?? false
+                let isCompleted = routine.isCompleted(on: normalized)
+                let today = DateHelper.shared.startOfDay()
+                return RoutineWithStatus(
+                    routine: routine,
+                    isCompleted: isCompleted,
+                    isSkipped: isSkipped,
+                    isMissed: !isCompleted && !isSkipped && normalized < today
+                )
+            }
     }
 }

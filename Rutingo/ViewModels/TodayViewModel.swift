@@ -16,6 +16,8 @@ class TodayViewModel {
     var todayRoutines: [Routine] = []
     var notCompletedRoutines: [Routine] = []
     var completedRoutines: [Routine] = []
+    var skippedRoutines: [Routine] = []
+    var isSkippedSectionExpanded: Bool = true
     var isCompletedSectionExpanded: Bool = true
     var selectedDate: Date = DateHelper.shared.startOfDay()
     
@@ -81,17 +83,53 @@ class TodayViewModel {
         
         // only show completed section on current day
         if selectedDate == today {
-            notCompletedRoutines = todayRoutines.filter { !$0.isCompletedToday }
+            notCompletedRoutines = todayRoutines.filter {
+                !$0.isCompletedToday && !dataManager.hasSkipLog(routineId: $0.id ?? UUID(), date: today)
+            }
             completedRoutines = todayRoutines.filter { $0.isCompletedToday }
+            skippedRoutines = todayRoutines.filter {
+                dataManager.hasSkipLog(routineId: $0.id ?? UUID(), date: today)
+            }
         } else {
             notCompletedRoutines = todayRoutines
             completedRoutines = []
+            skippedRoutines = []
         }
+    }
+    
+    func skipRoutine(_ routine: Routine, completion: () -> Void) {
+        let today = DateHelper.shared.startOfDay()
+        guard selectedDate == today else {
+            completion()
+            return
+        }
+        
+        if let id = routine.id {
+            dataManager.saveSkipLog(routineId: id, date: today, reason: "skipped_from_today")
+        }
+        
+        CoreDataManager.shared.deleteGeneratedBlockForDate(routineId: routine.id, date: today)
+        loadData(completion: completion)
+    }
+    
+    func unskipRoutine(_ routine: Routine, completion: () -> Void) {
+        let today = DateHelper.shared.startOfDay()
+        guard selectedDate == today else {
+            completion()
+            return
+        }
+        
+        if let id = routine.id {
+            dataManager.deleteSkipLog(routineId: id, date: today)
+        }
+        
+        CoreDataManager.shared.syncGeneratedBlocks(for: routine)
+        loadData(completion: completion)
     }
 
 // MARK: - Week Calendar Methods
     func getCurrentWeekDates() -> [Date] {
-        return DateHelper.shared.currentWeekDays()
+        return DateHelper.shared.weekDays(for: selectedDate)
     }
     
     func getWeekProgressMap(for dates: [Date]) -> [Date: Double] {
@@ -127,6 +165,26 @@ class TodayViewModel {
             
             return routine.wasScheduled(on: normalizedDate)
         }
+    }
+    
+    func goToNextDay(completion: () -> Void) {
+        guard let next = Calendar.current.date(byAdding: .day, value: 1, to: selectedDate) else { return }
+        setSelectedDate(next, completion: completion)
+    }
+
+    func goToPreviousDay(completion: () -> Void) {
+        guard let prev = Calendar.current.date(byAdding: .day, value: -1, to: selectedDate) else { return }
+        setSelectedDate(prev, completion: completion)
+    }
+
+    func goToNextWeek(completion: () -> Void) {
+        guard let next = Calendar.current.date(byAdding: .weekOfYear, value: 1, to: selectedDate) else { return }
+        setSelectedDate(next, completion: completion)
+    }
+
+    func goToPreviousWeek(completion: () -> Void) {
+        guard let prev = Calendar.current.date(byAdding: .weekOfYear, value: -1, to: selectedDate) else { return }
+        setSelectedDate(prev, completion: completion)
     }
     
     func toggleCompletedSection() {

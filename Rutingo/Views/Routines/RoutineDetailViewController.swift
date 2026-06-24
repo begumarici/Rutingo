@@ -10,8 +10,9 @@ import UIKit
 class RoutineDetailViewController: UIViewController {
     
     // MARK: - Properties
-    var routine: Routine!
+    var routine: Routine! // !!!!
     private let viewModel: RoutinesViewModel
+    private let calendarViewModel = CalendarViewModel()
     
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -27,37 +28,25 @@ class RoutineDetailViewController: UIViewController {
     }()
 
     private let mainStackView: UIStackView = {
-        let stack = UIStackView()
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .vertical
-        stack.spacing = 20
-        return stack
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 12
+        return stackView
     }()
 
-    // Stats Card
-    private let mainStatsCard: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.cardBackground
-        view.layer.cornerRadius = 16
-        
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.1
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
-        view.layer.masksToBounds = false
-        
-        return view
-    }()
+    // MARK: - Stats Card
+    private let statsCard: UIView = makeCard()
 
-    private let statsStackView: UIStackView = {
-        let stack = UIStackView()
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .vertical
-        stack.spacing = 20
-        return stack
+    private let statsInner: UIStackView = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 20
+        stackView.alignment = .center
+        return stackView
     }()
-
+    
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -68,102 +57,93 @@ class RoutineDetailViewController: UIViewController {
         return label
     }()
     
-    private let frequencyValueLabel: UILabel = {
+    private let statsRowStack: UIStackView = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.spacing = 12
+        return stackView
+    }()
+
+    private let streakMiniCard: UIView = makeMiniCard()
+    private let bestStreakMiniCard: UIView = makeMiniCard()
+    private let completionMiniCard: UIView = makeMiniCard()
+
+    private let streakValueLabel: UILabel = makeMiniLabel()
+    private let bestStreakValueLabel: UILabel = makeMiniLabel()
+    private let completionValueLabel: UILabel = makeMiniLabel()
+
+    // MARK: - Calendar Card
+    private let calendarCard: UIView = makeCard()
+
+    private let monthLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.medium(15)
+        label.font = AppFonts.bold(17)
+        label.textColor = AppColors.primary
         label.textAlignment = .center
-        label.textColor = AppColors.secondary
         return label
     }()
 
-    private let streakStackView: UIStackView = {
+    private lazy var previousButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        button.tintColor = AppColors.primary
+        button.addTarget(self, action: #selector(previousMonthTapped), for: .touchUpInside)
+        return button
+    }()
+
+    private lazy var nextButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setImage(UIImage(systemName: "chevron.right"), for: .normal)
+        button.tintColor = AppColors.primary
+        button.addTarget(self, action: #selector(nextMonthTapped), for: .touchUpInside)
+        return button
+    }()
+
+    private let weekdayStackView: UIStackView = {
         let stack = UIStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.axis = .horizontal
-        stack.distribution = .equalSpacing
-        stack.alignment = .center
+        stack.distribution = .fillEqually
         return stack
     }()
 
-    private let currentStreakStackView: UIStackView = {
+    private lazy var calendarCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 0
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        cv.backgroundColor = .clear
+        cv.isScrollEnabled = false
+        cv.register(CalendarDayCell.self, forCellWithReuseIdentifier: CalendarDayCell.identifier)
+        return cv
+    }()
+
+    private let legendStack: UIStackView = {
         let stack = UIStackView()
         stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .vertical
-        stack.spacing = 4
-        stack.alignment = .leading
-        return stack
-    }()
-
-    private let currentStreakLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.bold(32)
-        label.textColor = AppColors.secondary
-        return label
-    }()
-
-    private let currentStreakTitleLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "current_streak".localized
-        label.font = AppFonts.regular(14)
-        label.textColor = AppColors.secondary
-        return label
-    }()
-
-    private let bestStreakLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(17)
-        label.textColor = AppColors.secondary
-        return label
-    }()
-
-    private let completionRateStackView: UIStackView = {
-        let stack = UIStackView()
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .vertical
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
         stack.spacing = 8
-        stack.alignment = .center
         return stack
     }()
 
-    private let completionRateValueLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.bold(64)
-        label.textColor = AppColors.primary
-        return label
-    }()
+    // MARK: - Dynamic Info Cards
+    private var dynamicCards: [UIView] = []
 
-    private let completionRateTitleLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "overall_completion".localized
-        label.font = AppFonts.semibold(17)
-        label.textColor = AppColors.secondary
-        return label
-    }()
-
-    private let completionRateDetailLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.regular(14)
-        label.textColor = AppColors.secondary
-        return label
-    }()
-
-    // MARK: - Initialization
+    // MARK: - Init
     init(routine: Routine, viewModel: RoutinesViewModel = RoutinesViewModel()) {
         self.routine = routine
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { fatalError() }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -171,6 +151,7 @@ class RoutineDetailViewController: UIViewController {
         view.backgroundColor = AppColors.background
         setupNavigationBar()
         setupUI()
+        setupCalendarCard()
         configureWithRoutine()
     }
     
@@ -204,30 +185,20 @@ class RoutineDetailViewController: UIViewController {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         contentView.addSubview(mainStackView)
- 
-        mainStackView.addArrangedSubview(mainStatsCard)
-        
-        mainStatsCard.addSubview(statsStackView)
-        
-        statsStackView.addArrangedSubview(nameLabel)
-        statsStackView.addArrangedSubview(frequencyValueLabel)
-        
-        statsStackView.setCustomSpacing(4, after: nameLabel)
-        statsStackView.setCustomSpacing(24, after: frequencyValueLabel)
-        
-        currentStreakStackView.addArrangedSubview(currentStreakLabel)
-        currentStreakStackView.addArrangedSubview(currentStreakTitleLabel)
-        
-        streakStackView.addArrangedSubview(currentStreakStackView)
-        streakStackView.addArrangedSubview(bestStreakLabel)
-        statsStackView.addArrangedSubview(streakStackView)
-        
-        statsStackView.setCustomSpacing(24, after: streakStackView)
-        
-        completionRateStackView.addArrangedSubview(completionRateValueLabel)
-        completionRateStackView.addArrangedSubview(completionRateTitleLabel)
-        completionRateStackView.addArrangedSubview(completionRateDetailLabel)
-        statsStackView.addArrangedSubview(completionRateStackView)
+        statsCard.addSubview(statsInner)
+        statsInner.addArrangedSubview(nameLabel)
+        statsInner.addArrangedSubview(statsRowStack)
+
+        // Mini cards
+        embedInMiniCard(streakValueLabel, labelText: "streak".localized, into: streakMiniCard)
+        embedInMiniCard(bestStreakValueLabel, labelText: "best".localized, into: bestStreakMiniCard)
+        embedInMiniCard(completionValueLabel, labelText: "completion".localized, into: completionMiniCard)
+
+        statsRowStack.addArrangedSubview(streakMiniCard)
+        statsRowStack.addArrangedSubview(bestStreakMiniCard)
+        statsRowStack.addArrangedSubview(completionMiniCard)
+
+        mainStackView.addArrangedSubview(statsCard)
     }
     
     private func setupConstraints() {
@@ -236,102 +207,375 @@ class RoutineDetailViewController: UIViewController {
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
+
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-            
+
             mainStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 24),
             mainStackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Layout.padding),
             mainStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Layout.padding),
             mainStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24),
-            
-            statsStackView.topAnchor.constraint(equalTo: mainStatsCard.topAnchor, constant: 32),
-            statsStackView.leadingAnchor.constraint(equalTo: mainStatsCard.leadingAnchor, constant: 24),
-            statsStackView.trailingAnchor.constraint(equalTo: mainStatsCard.trailingAnchor, constant: -24),
-            statsStackView.bottomAnchor.constraint(equalTo: mainStatsCard.bottomAnchor, constant: -32)
+
+            statsInner.topAnchor.constraint(equalTo: statsCard.topAnchor, constant: 24),
+            statsInner.leadingAnchor.constraint(equalTo: statsCard.leadingAnchor, constant: 20),
+            statsInner.trailingAnchor.constraint(equalTo: statsCard.trailingAnchor, constant: -20),
+            statsInner.bottomAnchor.constraint(equalTo: statsCard.bottomAnchor, constant: -24),
+
+            statsRowStack.leadingAnchor.constraint(equalTo: statsInner.leadingAnchor),
+            statsRowStack.trailingAnchor.constraint(equalTo: statsInner.trailingAnchor),
+
+            streakMiniCard.heightAnchor.constraint(equalToConstant: 72),
+            bestStreakMiniCard.heightAnchor.constraint(equalToConstant: 72),
+            completionMiniCard.heightAnchor.constraint(equalToConstant: 72),
         ])
+    }
+
+    // MARK: - Calendar Card Setup
+    private func setupCalendarCard() {
+        let weekdays = ["day_mon".localized, "day_tue".localized, "day_wed".localized,
+                        "day_thu".localized, "day_fri".localized, "day_sat".localized, "day_sun".localized]
+        for day in weekdays {
+            let label = UILabel()
+            label.text = day
+            label.font = AppFonts.bold(11)
+            label.textColor = AppColors.secondary
+            label.textAlignment = .center
+            weekdayStackView.addArrangedSubview(label)
+        }
+
+        // Legend
+        let legendItems: [(UIColor, String)] = [
+            (AppColors.accentGreen, "legend_done".localized),
+            (AppColors.accentOrange, "legend_skipped".localized),
+            (UIColor.dynamic(light: "D93025", dark: "FF3B30"), "legend_missed".localized),
+        ]
+        for (color, text) in legendItems {
+            let dot = UIView()
+            dot.translatesAutoresizingMaskIntoConstraints = false
+            dot.backgroundColor = color
+            dot.layer.cornerRadius = 5
+            let lbl = UILabel()
+            lbl.font = AppFonts.regular(11)
+            lbl.textColor = AppColors.secondary
+            lbl.text = text
+            let row = UIStackView(arrangedSubviews: [dot, lbl])
+            row.axis = .horizontal
+            row.spacing = 5
+            row.alignment = .center
+            NSLayoutConstraint.activate([
+                dot.widthAnchor.constraint(equalToConstant: 10),
+                dot.heightAnchor.constraint(equalToConstant: 10),
+            ])
+            legendStack.addArrangedSubview(row)
+        }
+
+        calendarCard.addSubview(monthLabel)
+        calendarCard.addSubview(previousButton)
+        calendarCard.addSubview(nextButton)
+        calendarCard.addSubview(weekdayStackView)
+        calendarCard.addSubview(calendarCollectionView)
+        calendarCard.addSubview(legendStack)
+
+        NSLayoutConstraint.activate([
+            monthLabel.topAnchor.constraint(equalTo: calendarCard.topAnchor, constant: 16),
+            monthLabel.centerXAnchor.constraint(equalTo: calendarCard.centerXAnchor),
+
+            previousButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
+            previousButton.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            previousButton.widthAnchor.constraint(equalToConstant: 36),
+            previousButton.heightAnchor.constraint(equalToConstant: 36),
+
+            nextButton.centerYAnchor.constraint(equalTo: monthLabel.centerYAnchor),
+            nextButton.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            nextButton.widthAnchor.constraint(equalToConstant: 36),
+            nextButton.heightAnchor.constraint(equalToConstant: 36),
+
+            weekdayStackView.topAnchor.constraint(equalTo: monthLabel.bottomAnchor, constant: 12),
+            weekdayStackView.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            weekdayStackView.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            weekdayStackView.heightAnchor.constraint(equalToConstant: 24),
+
+            calendarCollectionView.topAnchor.constraint(equalTo: weekdayStackView.bottomAnchor, constant: 4),
+            calendarCollectionView.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            calendarCollectionView.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            calendarCollectionView.heightAnchor.constraint(equalToConstant: 240),
+
+            legendStack.topAnchor.constraint(equalTo: calendarCollectionView.bottomAnchor, constant: 12),
+            legendStack.leadingAnchor.constraint(equalTo: calendarCard.leadingAnchor, constant: 12),
+            legendStack.trailingAnchor.constraint(equalTo: calendarCard.trailingAnchor, constant: -12),
+            legendStack.bottomAnchor.constraint(equalTo: calendarCard.bottomAnchor, constant: -16),
+        ])
+
+        calendarCollectionView.delegate = self
+        calendarCollectionView.dataSource = self
+
+        mainStackView.addArrangedSubview(calendarCard)
     }
     
     // MARK: - Configuration
     private func configureWithRoutine() {
+        dynamicCards.forEach { $0.removeFromSuperview() }
+        dynamicCards.removeAll()
+        
         nameLabel.text = routine.name
-        configureStreakLabels()
-        configureCompletionRate()
-        configureFrequency()
-    }
-    
-    private func configureStreakLabels() {
-        let currentStreak = routine.currentStreak
         
-        let streakText = currentStreak == 0 ? " \("no_streak".localized)" : " \(currentStreak) \("days_suffix".localized)"
-
-        currentStreakLabel.attributedText = createAttributedText(
+        // stat mini cards
+        let streak = routine.currentStreak
+        streakValueLabel.attributedText = makeIconText(
             icon: "flame.fill",
-            text: streakText,
-            iconColor: currentStreak > 0 ? .orange : AppColors.secondary,
-            iconSize: 28,
-            yOffset: -4
+            text: " \(streak)",
+            iconColor: streak > 0 ? AppColors.accentOrange : AppColors.secondary
         )
-        
-        let bestStreak = viewModel.getBestStreak(for: routine)
-        bestStreakLabel.attributedText = createAttributedText(
-            icon: "trophy.fill",
-            text: " \("best".localized): \(bestStreak)",
-            iconColor: AppColors.secondary,
-            iconSize: 18,
-            yOffset: -2
-        )
-    }
 
-    private func createAttributedText(
-        icon: String,
-        text: String,
-        iconColor: UIColor,
-        iconSize: CGFloat,
-        yOffset: CGFloat
-    ) -> NSAttributedString {
-        let attachment = NSTextAttachment()
-        attachment.image = UIImage(systemName: icon)?
-            .withTintColor(iconColor, renderingMode: .alwaysOriginal)
-        attachment.bounds = CGRect(x: 0, y: yOffset, width: iconSize, height: iconSize)
-        
-        let attributedString = NSMutableAttributedString(attachment: attachment)
-        attributedString.append(NSAttributedString(
-            string: text,
-            attributes: [.foregroundColor: AppColors.secondary]
+        // Best streak
+        let best = viewModel.getBestStreak(for: routine)
+        bestStreakValueLabel.attributedText = makeIconText(
+            icon: "trophy.fill",
+            text: " \(best)",
+            iconColor: AppColors.secondary
+        )
+
+        // Completion
+        let rate = viewModel.getCompletionRate(for: routine)
+        completionValueLabel.attributedText = makeIconText(
+            icon: "checkmark.seal.fill",
+            text: " \(rate)%",
+            iconColor: AppColors.primary
+        )
+
+        // update calendar
+        calendarViewModel.filteredRoutine = routine
+        calendarViewModel.loadData { [weak self] in
+            self?.monthLabel.text = self?.calendarViewModel.getMonthTitle()
+            self?.calendarCollectionView.reloadData()
+        }
+
+        // time info
+        var scheduleItems: [(icon: String, iconColor: UIColor, iconBg: UIColor,
+                             title: String, value: String, multiline: Bool)] = []
+
+        scheduleItems.append((
+            icon: "repeat",
+            iconColor: UIColor(hex: "#185FA5"),
+            iconBg: UIColor(hex: "#E6F1FB"),
+            title: "frequency".localized,
+            value: routine.frequency.displayText,
+            multiline: false
         ))
         
-        return attributedString
-    }
-    
-    private func configureCompletionRate() {
-        let completionRate = viewModel.getCompletionRate(for: routine)
-        let totalCompletions = routine.completionDates.count
+        if routine.startHour >= 0, routine.endHour >= 0 {
+            let start = String(format: "%02d:%02d", routine.startHour, routine.startMinute)
+            let end   = String(format: "%02d:%02d", routine.endHour, routine.endMinute)
+            scheduleItems.append((
+                icon: "clock",
+                iconColor: AppColors.secondary,
+                iconBg: AppColors.secondaryCardBackground,
+                title: "time_range".localized,
+                value: "\(start) – \(end)",
+                multiline: false
+            ))
+        }
+
+        // Reminder
+        if routine.hasReminder, let time = routine.reminderTime {
+            let fmt = DateFormatter()
+            fmt.timeStyle = .short
+            scheduleItems.append((
+                icon: "bell.fill",
+                iconColor: UIColor(hex: "#854F0B"),
+                iconBg: UIColor(hex: "#FAEEDA"),
+                title: "reminder".localized,
+                value: fmt.string(from: time),
+                multiline: false
+            ))
+        }
+
+        let scheduleCard = makeGroupedCard(items: scheduleItems)
+        dynamicCards.append(scheduleCard)
+        mainStackView.addArrangedSubview(scheduleCard)
+
+        // personal info
+        var personalItems: [(icon: String, iconColor: UIColor, iconBg: UIColor,
+                              title: String, value: String, multiline: Bool)] = []
         
-        completionRateValueLabel.text = String(format: "percent_format".localized, completionRate)
-        completionRateDetailLabel.text = "\(totalCompletions) \("total_completions".localized)"
+        if let feelingDisplay = routine.feelingType?.displayText {
+            personalItems.append((
+                icon: "heart.fill",
+                iconColor: UIColor(hex: "#A32D2D"),
+                iconBg: UIColor(hex: "#FCEBEB"),
+                title: "feeling".localized,
+                value: feelingDisplay,
+                multiline: false
+            ))
+        }
+
+        // Motivation
+        if let motivation = routine.motivation, !motivation.isEmpty {
+            personalItems.append((
+                icon: "lightbulb.fill",
+                iconColor: UIColor(hex: "#534AB7"),
+                iconBg: UIColor(hex: "#EEEDFE"),
+                title: "motivation".localized,
+                value: motivation,
+                multiline: true
+            ))
+        }
+        
+        if !personalItems.isEmpty {
+            let personalCard = makeGroupedCard(items: personalItems)
+            dynamicCards.append(personalCard)
+            mainStackView.addArrangedSubview(personalCard)
+        }
     }
-    
-    private func configureFrequency() {
-        frequencyValueLabel.text = routine.frequency.displayText
+
+    // MARK: - Grouped card builder
+    private func makeGroupedCard(items: [(icon: String, iconColor: UIColor, iconBg: UIColor,
+                                          title: String, value: String, multiline: Bool)]) -> UIView {
+        let card = UIView()
+        card.translatesAutoresizingMaskIntoConstraints = false
+        card.backgroundColor = AppColors.cardBackground
+        card.layer.cornerRadius = Layout.cardCornerRadius
+        card.clipsToBounds = true
+
+        var previousAnchor = card.topAnchor
+
+        for (index, item) in items.enumerated() {
+            let row = makeInfoRow(icon: item.icon, iconColor: item.iconColor,
+                                  iconBg: item.iconBg, title: item.title,
+                                  value: item.value, multiline: item.multiline)
+            card.addSubview(row)
+
+            if index > 0 {
+                let separator = UIView()
+                separator.translatesAutoresizingMaskIntoConstraints = false
+                separator.backgroundColor = AppColors.separator
+                card.addSubview(separator)
+                NSLayoutConstraint.activate([
+                    separator.topAnchor.constraint(equalTo: previousAnchor),
+                    separator.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+                    separator.trailingAnchor.constraint(equalTo: card.trailingAnchor),
+                    separator.heightAnchor.constraint(equalToConstant: 0.5),
+                ])
+                NSLayoutConstraint.activate([
+                    row.topAnchor.constraint(equalTo: separator.bottomAnchor),
+                ])
+            } else {
+                NSLayoutConstraint.activate([
+                    row.topAnchor.constraint(equalTo: card.topAnchor),
+                ])
+            }
+
+            NSLayoutConstraint.activate([
+                row.leadingAnchor.constraint(equalTo: card.leadingAnchor),
+                row.trailingAnchor.constraint(equalTo: card.trailingAnchor),
+            ])
+
+            previousAnchor = row.bottomAnchor
+
+            if index == items.count - 1 {
+                row.bottomAnchor.constraint(equalTo: card.bottomAnchor).isActive = true
+            }
+        }
+
+        return card
     }
-    
+
+    private func makeInfoRow(icon: String, iconColor: UIColor, iconBg: UIColor,
+                             title: String, value: String, multiline: Bool) -> UIView {
+        let row = UIView()
+        row.translatesAutoresizingMaskIntoConstraints = false
+
+        let iconBox = UIView()
+        iconBox.translatesAutoresizingMaskIntoConstraints = false
+        iconBox.backgroundColor = iconBg
+        iconBox.layer.cornerRadius = 8
+
+        let iconView = UIImageView(image: UIImage(systemName: icon))
+        iconView.translatesAutoresizingMaskIntoConstraints = false
+        iconView.tintColor = iconColor
+        iconView.contentMode = .scaleAspectFit
+
+        let titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.font = AppFonts.regular(12)
+        titleLabel.textColor = AppColors.secondary
+        titleLabel.text = title
+
+        let valueLabel = UILabel()
+        valueLabel.translatesAutoresizingMaskIntoConstraints = false
+        valueLabel.font = AppFonts.semibold(15)
+        valueLabel.textColor = AppColors.primary
+        valueLabel.text = value
+        valueLabel.numberOfLines = multiline ? 0 : 1
+
+        let textStack = UIStackView(arrangedSubviews: [titleLabel, valueLabel])
+        textStack.translatesAutoresizingMaskIntoConstraints = false
+        textStack.axis = .vertical
+        textStack.spacing = 2
+
+        iconBox.addSubview(iconView)
+        row.addSubview(iconBox)
+        row.addSubview(textStack)
+
+        NSLayoutConstraint.activate([
+            iconBox.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: 16),
+            iconBox.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            iconBox.widthAnchor.constraint(equalToConstant: 32),
+            iconBox.heightAnchor.constraint(equalToConstant: 32),
+
+            iconView.centerXAnchor.constraint(equalTo: iconBox.centerXAnchor),
+            iconView.centerYAnchor.constraint(equalTo: iconBox.centerYAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: 16),
+            iconView.heightAnchor.constraint(equalToConstant: 16),
+
+            textStack.leadingAnchor.constraint(equalTo: iconBox.trailingAnchor, constant: 12),
+            textStack.trailingAnchor.constraint(equalTo: row.trailingAnchor, constant: -16),
+            textStack.topAnchor.constraint(equalTo: row.topAnchor, constant: 14),
+            textStack.bottomAnchor.constraint(equalTo: row.bottomAnchor, constant: -14),
+        ])
+
+        return row
+    }
+
+    // MARK: - Calendar Actions
+    @objc private func previousMonthTapped() {
+        calendarViewModel.changeMonth(by: -1) { [weak self] in
+            self?.monthLabel.text = self?.calendarViewModel.getMonthTitle()
+            self?.calendarCollectionView.reloadData()
+        }
+    }
+
+    @objc private func nextMonthTapped() {
+        calendarViewModel.changeMonth(by: 1) { [weak self] in
+            self?.monthLabel.text = self?.calendarViewModel.getMonthTitle()
+            self?.calendarCollectionView.reloadData()
+        }
+    }
+
     // MARK: - Actions
     @objc private func editTapped() {
         let addVC = AddRoutineViewController()
         addVC.mode = .edit(routine)
         
-        addVC.onUpdate = { [weak self] routine, name, frequency, hasReminder, reminderTime in
+        addVC.onUpdate = { [weak self] routine, name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute in
             guard let self = self else { return }
-       
+            
             self.viewModel.updateRoutine(routine: routine,
                                          name: name,
                                          frequency: frequency,
+                                         feeling: feeling,
+                                         motivation: motivation,
+                                         blockType: blockType,
                                          hasReminder: hasReminder,
-                                         reminderTime: reminderTime) {
+                                         reminderTime: reminderTime,
+                                         startHour: startHour,
+                                         startMinute: startMinute,
+                                         endHour: endHour,
+                                         endMinute: endMinute
+            ) {
                 
                 self.routine = routine
                 self.configureWithRoutine()
@@ -347,5 +591,95 @@ class RoutineDetailViewController: UIViewController {
         
         let navVC = UINavigationController(rootViewController: addVC)
         present(navVC, animated: true)
+    }
+}
+
+// MARK: - CollectionView (Calendar)
+extension RoutineDetailViewController: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        calendarViewModel.uiModels.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: CalendarDayCell.identifier, for: indexPath
+        ) as? CalendarDayCell else { return UICollectionViewCell() }
+        cell.configure(with: calendarViewModel.uiModels[indexPath.item])
+        return cell
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = floor(collectionView.bounds.width / 7)
+        return CGSize(width: width, height: 40)
+    }
+}
+
+// MARK: - Builder Helpers
+private extension RoutineDetailViewController {
+
+    static func makeCard() -> UIView {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = Layout.cardCornerRadius
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.07
+        view.layer.shadowOffset = CGSize(width: 0, height: 2)
+        view.layer.shadowRadius = 8
+        view.layer.masksToBounds = false
+        return view
+    }
+
+    static func makeMiniCard() -> UIView {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.secondaryCardBackground
+        view.layer.cornerRadius = Layout.cornerRadius
+        return view
+    }
+
+    static func makeMiniLabel() -> UILabel {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.bold(20)
+        label.textColor = AppColors.primary
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.7
+        label.textAlignment = .center
+        return label
+    }
+
+    func embedInMiniCard(_ valueLabel: UILabel, labelText: String, into card: UIView) {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.regular(11)
+        label.textColor = AppColors.secondary
+        label.textAlignment = .center
+        label.text = labelText
+        
+        card.addSubview(valueLabel)
+        card.addSubview(label)
+        
+        NSLayoutConstraint.activate([
+            valueLabel.topAnchor.constraint(equalTo: card.topAnchor, constant: 12),
+            valueLabel.centerXAnchor.constraint(equalTo: card.centerXAnchor),
+            valueLabel.leadingAnchor.constraint(greaterThanOrEqualTo: card.leadingAnchor, constant: 8),
+            valueLabel.trailingAnchor.constraint(lessThanOrEqualTo: card.trailingAnchor, constant: -8),
+
+            label.topAnchor.constraint(equalTo: valueLabel.bottomAnchor, constant: 4),
+            label.centerXAnchor.constraint(equalTo: card.centerXAnchor),
+            label.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -12),
+        ])
+    }
+
+    func makeIconText(icon: String, text: String, iconColor: UIColor) -> NSAttributedString {
+        let attachment = NSTextAttachment()
+        attachment.image = UIImage(systemName: icon)?.withTintColor(iconColor, renderingMode: .alwaysOriginal)
+        attachment.bounds = CGRect(x: 0, y: -3, width: 20, height: 20)
+        let result = NSMutableAttributedString(attachment: attachment)
+        result.append(NSAttributedString(string: text, attributes: [.foregroundColor: AppColors.primary]))
+        return result
     }
 }

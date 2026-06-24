@@ -7,7 +7,10 @@
 */
 
 /* Tab Bar */
-"tab_today" = "Bugün";
+"tab_today" = "Odaklar";
+"tab_blocks" = "Bloklar";
+"tab_week" = "Hafta";
+"tab_tasks" = "Görevler";
 "tab_routines" = "Rutinler";
 "tab_statistics" = "İstatistikler";
 
@@ -19,6 +22,55 @@
 "no_routines_today" = "Bugün için planlanmış bir rutin yok";
 "daily_focus" = "Günlük odağın";
 "completed" = "Tamamlananlar";
+"skipped" = "Atlananlar";
+"complete" = "Tamamla";
+"uncomplete" = "Tamamlamayı Geri Al";
+"view_detail" = "Detayı Görüntüle";
+"unskip" = "Atlamayı Geri Al";
+
+/* Blocks Screen */
+"blocks_count" = "blok";
+"morning_block" = "Sabah rutini";
+"deep_work_block" = "Derin çalışma";
+"afternoon_block" = "Öğleden sonra";
+"evening_block" = "Akşam rutini";
+"no_blocks" = "Henüz blok eklenmedi";
+"add_block" = "Blok Ekle";
+"block_title_placeholder" = "Blok adı...";
+"block_title" = "Blok Adı";
+"block_start_time" = "Başlangıç Saati";
+"block_end_time" = "Bitiş Saati";
+"block_end_after_start" = "Bitiş saati başlangıçtan sonra olmalı.";
+"block_routines" = "Rutinler";
+"block_no_routines" = "Bu bloğa henüz rutin eklenmedi";
+"delete_block" = "Bloğu Sil";
+"delete_block_message" = "Bu bloğu silmek istediğine emin misin?";
+"edit_block" = "Bloğu Düzenle";
+"go_to_routine" = "Rutine Git";
+"weekday_mon" = "Pt";
+"weekday_tue" = "Sa";
+"weekday_wed" = "Ça";
+"weekday_thu" = "Pe";
+"weekday_fri" = "Cu";
+"weekday_sat" = "Ct";
+"weekday_sun" = "Pa";
+"skip_routine_confirm_message" = "Bu rutini bu sefer atlamak istiyor musunuz?";
+"skip" = "Atla";
+"this_block_created_from_routine" = "Bu blok bir rutinden oluşturuldu.";
+"link_routine" = "Rutin Bağla";
+"link_routine_placeholder" = "Rutin seç...";
+"unlink_routine" = "Bağlantıyı Kaldır";
+"linked_routine" = "Bağlı Rutin";
+"no_routines_yet" = "Henüz bir rutin oluşturmadın";
+"hour" = "saat";
+"minute" = "dakika";
+
+/* Tasks Screen */
+"tasks_title" = "Görevler";
+"tasks_add_placeholder" = "+ Görev ekle";
+"tasks_empty_title" = "Henüz görev yok";
+"tasks_empty_message" = "Bugün yapmak istediğin bir şeyi ekle.";
+"tasks_completed" = "Tamamlananlar";
 
 /* Routines Screen */
 "routines" = "Rutinler";
@@ -42,6 +94,10 @@
 "validation_name_empty" = "Lütfen rutin adını gir.";
 "validation_select_day" = "Lütfen en az bir gün seç.";
 "error" = "Hata";
+"time_range" = "Saat aralığı";
+"start_time" = "Başlangıç";
+"end_time" = "Bitiş";
+"validation_end_after_start" = "Bitiş saati başlangıç saatinden sonra olmalı.";
 
 /* Calendar Screen */
 "calendar" = "Takvim";
@@ -79,12 +135,17 @@
 "current_streak" = "Mevcut seri";
 "no_streak" = "Seri yok";
 "best" = "En iyi";
+"streak" = "Streak";
+"completion" = "Tamamlama";
 "overall_completion" = "Genel tamamlama";
 "total_completions" = "toplam tamamlama";
 "completed_days_this_week" = "Bu hafta tamamlanan günler";
 "every_day" = "Her gün";
 "edit" = "Düzenle";
 "days_suffix" = "gün";
+"legend_done" = "Yapıldı";
+"legend_skipped" = "Atlandı";
+"legend_missed" = "Yapılmadı";
 
 /* Short day names */
 "day_mon" = "Pzt";
@@ -116,3 +177,14 @@
 
 /* Format */
 "percent_format" = "%%%d";
+
+/* Feeling and Motivation */
+"motivation" = "Motivasyon";
+"feeling" = "Hissettirdiği";
+"feeling_energy" = "Enerji veriyor";
+"feeling_hard" = "Zor ama önemli";
+"feeling_boring" = "Sıkıcı ama gerekli";
+"feeling_deep" = "Derin odak";
+"feeling_question" = "Bu rutin sana ne hissettiriyor?";
+"motivation_question" = "Neden oluşturuyorsun?";
+"motivation_placeholder" = "Örn: Sabah enerjimi artırmak ve güne güçlü başlamak istiyorum.";

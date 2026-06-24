@@ -24,9 +24,35 @@ class RoutinesViewModel {
         completion()
     }
     
-    func addRoutine(name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date?, completion: () -> Void) {
-        let newRoutine = dataManager.saveRoutine(name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
+    func addRoutine(
+        name: String,
+        frequency: Frequency,
+        feeling: String?,
+        motivation: String?,
+        blockType: String?,
+        hasReminder: Bool,
+        reminderTime: Date?,
+        startHour: Int16,
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16,
+        completion: () -> Void
+    ) {
+        let newRoutine = dataManager.saveRoutine(
+            name: name,
+            frequency: frequency,
+            feeling: feeling,
+            motivation: motivation,
+            blockType: blockType,
+            hasReminder: hasReminder,
+            reminderTime: reminderTime,
+            startHour: startHour,
+            startMinute: startMinute,
+            endHour: endHour,
+            endMinute: endMinute
+        )
         NotificationManager.shared.scheduleNotification(for: newRoutine)
+        dataManager.syncGeneratedBlocks(for: newRoutine)
         loadData {
             completion()
         }
@@ -34,16 +60,54 @@ class RoutinesViewModel {
     
     func deleteRoutine(_ routine: Routine, completion: () -> Void) {
         NotificationManager.shared.cancelNotification(for: routine)
+        dataManager.deleteGeneratedBlocksFromNow(for: routine)
         dataManager.deleteRoutine(routine)
         loadData(completion: completion)
     }
     
-    func updateRoutine(routine: Routine, name: String, frequency: Frequency, hasReminder: Bool, reminderTime: Date? = nil, completion: () -> Void) {
-        dataManager.updateRoutine(routine: routine, name: name, frequency: frequency, hasReminder: hasReminder, reminderTime: reminderTime)
+    func updateRoutine(
+        routine: Routine,
+        name: String,
+        frequency: Frequency,
+        feeling: String?,
+        motivation: String?,
+        blockType: String?,
+        hasReminder: Bool,
+        reminderTime: Date? = nil,
+        startHour: Int16,
+        startMinute: Int16,
+        endHour: Int16,
+        endMinute: Int16,
+        completion: () -> Void
+    ) {
+        dataManager.updateRoutine(
+            routine: routine,
+            name: name,
+            frequency: frequency,
+            feeling: feeling,
+            motivation: motivation,
+            blockType: blockType,
+            hasReminder: hasReminder,
+            reminderTime: reminderTime,
+            startHour: startHour,
+            startMinute: startMinute,
+            endHour: endHour,
+            endMinute: endMinute
+        )
         NotificationManager.shared.scheduleNotification(for: routine)
+        dataManager.syncGeneratedBlocks(for: routine)
         loadData(completion: completion)
     }
 
+    // MARK: - Lookup
+    func routine(withID id: UUID) -> Routine? {
+        if !allRoutines.isEmpty {
+            return allRoutines.first { $0.id == id }
+        }
+        let routines = dataManager.fetchAllRoutines()
+        return routines.first { $0.id == id }
+    }
+    
     // MARK: - Statistics Calculation
     func getBestStreak(for routine: Routine) -> Int {
         return routine.bestStreak
@@ -66,3 +130,4 @@ class RoutinesViewModel {
         return progressMap
     }
 }
+

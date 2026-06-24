@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import UIKit
+import CoreData
 
 extension Routine {
     
@@ -56,12 +58,15 @@ extension Routine {
         while true {
             let scheduled = wasScheduled(on: currentDate)
             let completed = isCompleted(on: currentDate)
+            let skipped = isSkipped(on: currentDate)
             
             if completed {
                 streak += 1
                 guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else { break }
                 currentDate = previousDay
-                
+            } else if skipped {
+                guard let previousDay = Calendar.current.date(byAdding: .day, value: -1, to: currentDate) else { break }
+                currentDate = previousDay
             } else if scheduled {
                 break
             } else {
@@ -77,27 +82,35 @@ extension Routine {
     }
     
     var bestStreak: Int {
-        let sortedCompletions = completionArray.sorted { ($0.date ?? Date.distantPast) < ($1.date ?? Date.distantPast) }
-        
-        guard !sortedCompletions.isEmpty else { return 0 }
-        
-        var bestStreak = 1
-        var currentStreak = 1
-        
-        for i in 1..<sortedCompletions.count {
-            let prevDate = sortedCompletions[i-1].date!
-            let currDate = sortedCompletions[i].date!
-            
-            if missedScheduledDay(between: prevDate, and: currDate) {
-                currentStreak = 1
+        guard let createdAt = self.createdAt else { return 0 }
+
+        let today = DateHelper.shared.startOfDay()
+        let startDate = DateHelper.shared.startOfDay(createdAt)
+        let totalDays = DateHelper.shared.daysBetween(startDate, today) + 1
+
+        var best = 0
+        var current = 0
+
+        for i in 0..<totalDays {
+            guard let date = Calendar.current.date(byAdding: .day, value: i, to: startDate) else { continue }
+
+            let scheduled = wasScheduled(on: date)
+            let completed = isCompleted(on: date)
+            let skipped   = isSkipped(on: date)
+
+            if !scheduled {
+                continue
+            } else if completed {
+                current += 1
+                best = max(best, current)
+            } else if skipped {
+                continue
             } else {
-                currentStreak += 1
+                current = 0
             }
-            
-            bestStreak = max(bestStreak, currentStreak)
         }
-        
-        return bestStreak
+
+        return best
     }
     
     var completionRate: Int {
@@ -183,12 +196,69 @@ extension Routine {
         
         while currentDate < endDate {
             if wasScheduled(on: currentDate) {
-                if !isCompleted(on: currentDate) {
+                if !isCompleted(on: currentDate) && !isSkipped(on: currentDate) {
                     return true
                 }
             }
             currentDate = Calendar.current.date(byAdding: .day, value: 1, to: currentDate)!
         }
         return false
+    }
+    
+    func isSkipped(on date: Date) -> Bool {
+        guard let id = self.id else { return false }
+        return CoreDataManager.shared.hasSkipLog(routineId: id, date: date)
+    }
+    
+    // MARK: - Feeling
+    enum FeelingType: String {
+        case energy = "energy"
+        case hard   = "hard"
+        case boring = "boring"
+        case deep   = "deep"
+
+        var displayText: String {
+            switch self {
+            case .energy: return "feeling_energy".localized
+            case .hard:   return "feeling_hard".localized
+            case .boring: return "feeling_boring".localized
+            case .deep:   return "feeling_deep".localized
+            }
+        }
+
+        var color: UIColor {
+            switch self {
+            case .energy: return AppColors.feelingEnergy
+            case .hard:   return AppColors.feelingHard
+            case .boring: return AppColors.feelingBoring
+            case .deep:   return AppColors.feelingDeep
+            }
+        }
+
+        static var allCases: [FeelingType] {
+            return [.energy, .hard, .boring, .deep]
+        }
+    }
+
+    // MARK: - Block Type
+    enum BlockType: String {
+        case morning = "morning"
+        case noon    = "noon"
+        case evening = "evening"
+        case custom  = "custom"
+    }
+    
+    var feelingType: FeelingType? {
+        guard let f = feeling else { return nil }
+        return FeelingType(rawValue: f)
+    }
+
+    var feelingColor: UIColor {
+        return feelingType?.color ?? AppColors.tertiary
+    }
+
+    var blockTypeEnum: BlockType? {
+        guard let b = blockType else { return nil }
+        return BlockType(rawValue: b)
     }
 }

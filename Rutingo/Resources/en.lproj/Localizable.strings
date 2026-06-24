@@ -7,7 +7,10 @@
 */
 
 /* Tab Bar */
-"tab_today" = "Today";
+"tab_today" = "Focus";
+"tab_blocks" = "Blocks";
+"tab_week" = "Week";
+"tab_tasks" = "Tasks";
 "tab_routines" = "Routines";
 "tab_statistics" = "Statistics";
 
@@ -19,6 +22,55 @@
 "no_routines_today" = "No routines scheduled for today";
 "daily_focus" = "Your daily focus";
 "completed" = "Completed";
+"skipped" = "Skipped";
+"complete" = "Complete";
+"uncomplete" = "Uncomplete";
+"view_detail" = "View Detail";
+"unskip" = "Unskip";
+
+/* Blocks Screen */
+"blocks_count" = "blocks";
+"morning_block" = "Morning routine";
+"deep_work_block" = "Deep work";
+"afternoon_block" = "Afternoon";
+"evening_block" = "Evening routine";
+"no_blocks" = "No blocks yet";
+"add_block" = "Add Block";
+"block_title_placeholder" = "Block title...";
+"block_title" = "Block Title";
+"block_start_time" = "Start Time";
+"block_end_time" = "End Time";
+"block_end_after_start" = "End time must be after start time.";
+"block_routines" = "Routines";
+"block_no_routines" = "No routines added to this block yet";
+"delete_block" = "Delete Block";
+"delete_block_message" = "Are you sure you want to delete this block?";
+"edit_block" = "Edit Block";
+"go_to_routine" = "Go to Routine";
+"weekday_mon" = "Mo";
+"weekday_tue" = "Tu";
+"weekday_wed" = "We";
+"weekday_thu" = "Th";
+"weekday_fri" = "Fr";
+"weekday_sat" = "Sa";
+"weekday_sun" = "Su";
+"skip_routine_confirm_message" = "Do you want to skip this routine for now?";
+"skip" = "Skip";
+"this_block_created_from_routine" = "This block was created from a routine.";
+"link_routine" = "Link Routine";
+"link_routine_placeholder" = "Select a routine...";
+"unlink_routine" = "Remove Link";
+"linked_routine" = "Linked Routine";
+"no_routines_yet" = "You haven't created any routines yet";
+"hour" = "hour";
+"minute" = "min";
+
+/* Tasks Screen */
+"tasks_title" = "Tasks";
+"tasks_add_placeholder" = "+ Add a task";
+"tasks_empty_title" = "No tasks yet";
+"tasks_empty_message" = "Add something you want to get done today.";
+"tasks_completed" = "Completed";
 
 /* Routines Screen */
 "routines" = "Routines";
@@ -41,6 +93,10 @@
 "validation_name_empty" = "Please enter a routine name.";
 "validation_select_day" = "Please select at least one day.";
 "error" = "Error";
+"time_range" = "Time range";
+"start_time" = "Start";
+"end_time" = "End";
+"validation_end_after_start" = "End time must be after start time.";
 
 /* Calendar Screen */
 "calendar" = "Calendar";
@@ -78,12 +134,17 @@
 "current_streak" = "Current Streak";
 "no_streak" = "No streak";
 "best" = "Best";
+"streak" = "Streak";
+"completion" = "Completion";
 "overall_completion" = "Overall Completion";
 "total_completions" = "total completions";
 "completed_days_this_week" = "Completed days this week";
 "every_day" = "Every day";
 "edit" = "Edit";
 "days_suffix" = "days";
+"legend_done" = "Done";
+"legend_skipped" = "Skipped";
+"legend_missed" = "Missed";
 
 /* Short day names */
 "day_mon" = "Mon";
@@ -115,3 +176,14 @@
 
 /* Format */
 "percent_format" = "%d%%";
+
+/* Feeling and Motivation */
+"motivation" = "Motivation";
+"feeling" = "Feeling";
+"feeling_energy" = "Gives me energy";
+"feeling_hard" = "Hard but important";
+"feeling_boring" = "Boring but necessary";
+"feeling_deep" = "Deep focus";
+"feeling_question" = "How does this routine make you feel?";
+"motivation_question" = "Why are you creating this?";
+"motivation_placeholder" = "e.g. I want to boost my morning energy and start the day strong.";

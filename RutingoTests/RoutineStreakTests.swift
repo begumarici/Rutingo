@@ -138,6 +138,175 @@ final class RoutineStreakTests: XCTestCase {
         XCTAssertEqual(routine.currentStreak, 2, "Valid past gaps (rest days) should be preserved.")
     }
 
+    // MARK: - isCompletedToday / isScheduledToday
+    func testIsCompletedToday_NoCompletion_ReturnsFalse() {
+        XCTAssertFalse(routine.isCompletedToday)
+    }
+
+    func testIsCompletedToday_HasCompletionToday_ReturnsTrue() {
+        addCompletion(daysAgo: 0)
+        XCTAssertTrue(routine.isCompletedToday)
+    }
+
+    func testIsScheduledToday_Daily_ReturnsTrue() {
+        routine.frequency = .daily
+        XCTAssertTrue(routine.isScheduledToday)
+    }
+
+    func testIsScheduledToday_SpecificDaysNotIncludingToday_ReturnsFalse() {
+        let todayWeekday = Calendar.current.component(.weekday, from: Date())
+        let otherDay = todayWeekday == 1 ? 2 : 1
+        routine.frequency = .specificDays([otherDay])
+        XCTAssertFalse(routine.isScheduledToday)
+    }
+
+    // MARK: - wasScheduled
+    func testWasScheduled_DailyFrequency_TrueForAnyDay() {
+        routine.frequency = .daily
+        let someDate = Calendar.current.date(byAdding: .day, value: -10, to: Date())!
+        XCTAssertTrue(routine.wasScheduled(on: someDate))
+    }
+
+    func testWasScheduled_SpecificDays_FalseOnNonMatchingDay() {
+        let twoDaysAgo = Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+        let weekday = Calendar.current.component(.weekday, from: twoDaysAgo)
+        let nonMatchingDay = weekday == 1 ? 2 : 1
+        routine.frequency = .specificDays([nonMatchingDay])
+        XCTAssertFalse(routine.wasScheduled(on: twoDaysAgo))
+    }
+
+    func testWasScheduled_UsesCompletionSnapshot_WhenCompletionExistsForDate() {
+        // Rule today is "daily", but the completion 2 days ago was snapshotted under a
+        // restrictive rule that didn't include that weekday — snapshot should win.
+        let twoDaysAgo = Calendar.current.date(byAdding: .day, value: -2, to: Date())!
+        let weekday = Calendar.current.component(.weekday, from: twoDaysAgo)
+        let otherDay = weekday == 1 ? 2 : 1
+
+        addCompletion(daysAgo: 2, withSnapshot: .specificDays([otherDay]))
+        routine.frequency = .daily
+
+        XCTAssertFalse(routine.wasScheduled(on: twoDaysAgo), "Completion's frequency snapshot should determine scheduling for that day.")
+    }
+
+    // MARK: - bestStreak
+    func testBestStreak_NoCompletions_ReturnsZero() {
+        XCTAssertEqual(routine.bestStreak, 0)
+    }
+
+    func testBestStreak_ConsecutiveCompletions_ReturnsFullLength() {
+        routine.createdAt = Calendar.current.date(byAdding: .day, value: -2, to: Date())
+        addCompletion(daysAgo: 0)
+        addCompletion(daysAgo: 1)
+        addCompletion(daysAgo: 2)
+        XCTAssertEqual(routine.bestStreak, 3)
+    }
+
+    func testBestStreak_BrokenInMiddle_ReturnsLongestRun() {
+        routine.createdAt = Calendar.current.date(byAdding: .day, value: -4, to: Date())
+        // completed days 4,3 ago, missed day 2 ago, completed days 1,0 ago
+        addCompletion(daysAgo: 4)
+        addCompletion(daysAgo: 3)
+        addCompletion(daysAgo: 1)
+        addCompletion(daysAgo: 0)
+        XCTAssertEqual(routine.bestStreak, 2)
+    }
+
+    func testBestStreak_SkippedDayDoesNotBreakStreak() {
+        routine.createdAt = Calendar.current.date(byAdding: .day, value: -2, to: Date())
+        addCompletion(daysAgo: 2)
+        // day 1 ago is skipped (no completion, not asserted here since isSkipped reads
+        // from the real CoreDataManager singleton; this case only verifies a plain gap
+        // without a skip log breaks the run instead of being preserved).
+        addCompletion(daysAgo: 0)
+        XCTAssertEqual(routine.bestStreak, 1, "Without an actual skip log, a missed day breaks the run.")
+    }
+
+    func testBestStreak_NonScheduledDaysAreIgnored() {
+        let today = Date()
+        let twoDaysAgo = Calendar.current.date(byAdding: .day, value: -2, to: today)!
+        let todayWeekday = Calendar.current.component(.weekday, from: today)
+        let twoDaysAgoWeekday = Calendar.current.component(.weekday, from: twoDaysAgo)
+
+        routine.createdAt = twoDaysAgo
+        routine.frequency = .specificDays([todayWeekday, twoDaysAgoWeekday])
+        addCompletion(daysAgo: 0)
+        addCompletion(daysAgo: 2)
+
+        XCTAssertEqual(routine.bestStreak, 2, "Rest days shouldn't break the best streak run.")
+    }
+
+    // MARK: - completionRate
+    func testCompletionRate_NoScheduledDays_ReturnsZero() {
+        let today = Calendar.current.component(.weekday, from: Date())
+        let other = today == 1 ? 2 : 1
+        routine.createdAt = Date()
+        routine.frequency = .specificDays([other])
+        XCTAssertEqual(routine.completionRate, 0)
+    }
+
+    func testCompletionRate_AllScheduledDaysCompleted_Returns100() {
+        routine.createdAt = Calendar.current.date(byAdding: .day, value: -2, to: Date())
+        routine.frequency = .daily
+        addCompletion(daysAgo: 0)
+        addCompletion(daysAgo: 1)
+        addCompletion(daysAgo: 2)
+        XCTAssertEqual(routine.completionRate, 100)
+    }
+
+    func testCompletionRate_PartialCompletion_ReturnsProportionalRate() {
+        routine.createdAt = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+        routine.frequency = .daily
+        addCompletion(daysAgo: 0)
+        addCompletion(daysAgo: 1)
+        // 2 of 4 scheduled days completed -> 50%
+        XCTAssertEqual(routine.completionRate, 50)
+    }
+
+    // MARK: - missedScheduledDay
+    func testMissedScheduledDay_AllDaysCompleted_ReturnsFalse() {
+        routine.createdAt = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+        routine.frequency = .daily
+        addCompletion(daysAgo: 0)
+        addCompletion(daysAgo: 1)
+        addCompletion(daysAgo: 2)
+        addCompletion(daysAgo: 3)
+
+        let start = Calendar.current.date(byAdding: .day, value: -3, to: Date())!
+        let end = Date()
+        XCTAssertFalse(routine.missedScheduledDay(between: start, and: end))
+    }
+
+    func testMissedScheduledDay_GapInBetween_ReturnsTrue() {
+        routine.createdAt = Calendar.current.date(byAdding: .day, value: -3, to: Date())
+        routine.frequency = .daily
+        addCompletion(daysAgo: 0)
+        addCompletion(daysAgo: 3)
+        // day -1 and -2 are missed
+
+        let start = Calendar.current.date(byAdding: .day, value: -3, to: Date())!
+        let end = Date()
+        XCTAssertTrue(routine.missedScheduledDay(between: start, and: end))
+    }
+
+    // MARK: - frequency get/set roundtrip
+    func testFrequency_DefaultsToDailyWhenNoData() {
+        routine.frequencyData = nil
+        if case .daily = routine.frequency {
+            // expected
+        } else {
+            XCTFail("Expected daily frequency as default")
+        }
+    }
+
+    func testFrequency_RoundTripsSpecificDays() {
+        routine.frequency = .specificDays([2, 4, 6])
+        if case .specificDays(let days) = routine.frequency {
+            XCTAssertEqual(days, [2, 4, 6])
+        } else {
+            XCTFail("Expected specificDays frequency")
+        }
+    }
+
     override func tearDownWithError() throws {
         context = nil
         routine = nil

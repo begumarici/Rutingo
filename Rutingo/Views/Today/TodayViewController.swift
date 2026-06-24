@@ -44,6 +44,15 @@ class TodayViewController: UIViewController {
         return label
     }()
     
+    private let addButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .medium)
+        button.setImage(UIImage(systemName: "plus.circle.fill", withConfiguration: config), for: .normal)
+        button.tintColor = AppColors.accentPurple
+        return button
+    }()
+    
     private let tableView: UITableView = {
         let table = UITableView()
         table.translatesAutoresizingMaskIntoConstraints = false
@@ -101,9 +110,32 @@ class TodayViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = false
     }
     
+    // MARK: - Setup
+    private func setupUI() {
+        view.backgroundColor = AppColors.background
+        addSubviews()
+        setupConstraints()
+        setupSwipeGestures()
+        addButton.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
+    }
+    
     private func setupWeekCalendar() {
         weekCalendarView.onDateSelected = { [weak self] date in
             self?.handleDateSelection(date)
+        }
+        
+        weekCalendarView.onSwipeLeft = { [weak self] in
+            self?.animateTransition(direction: .left, includeWeek: true)
+            self?.viewModel.goToNextWeek { [weak self] in
+                self?.updateUIWithViewModel()
+            }
+        }
+
+        weekCalendarView.onSwipeRight = { [weak self] in
+            self?.animateTransition(direction: .right, includeWeek: true)
+            self?.viewModel.goToPreviousWeek { [weak self] in
+                self?.updateUIWithViewModel()
+            }
         }
     }
     
@@ -130,19 +162,12 @@ class TodayViewController: UIViewController {
         NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK: - Setup
-    private func setupUI() {
-        view.backgroundColor = AppColors.background
-        
-        addSubviews()
-        setupConstraints()
-    }
-    
     private func addSubviews() {
         view.addSubview(greetingLabel)
         view.addSubview(dateLabel)
         view.addSubview(weekCalendarView)
         view.addSubview(focusLabel)
+        view.addSubview(addButton)
         view.addSubview(tableView)
         view.addSubview(emptyStateStackView)
         
@@ -152,7 +177,7 @@ class TodayViewController: UIViewController {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            greetingLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
+            greetingLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             greetingLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
             greetingLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
             
@@ -166,7 +191,13 @@ class TodayViewController: UIViewController {
             
             focusLabel.topAnchor.constraint(equalTo: weekCalendarView.bottomAnchor, constant: Layout.smallPadding),
             focusLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Layout.padding),
-            focusLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            focusLabel.trailingAnchor.constraint(lessThanOrEqualTo: addButton.leadingAnchor, constant: -8),
+            focusLabel.centerYAnchor.constraint(equalTo: addButton.centerYAnchor),
+            
+            addButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Layout.padding),
+            addButton.centerYAnchor.constraint(equalTo: focusLabel.centerYAnchor),
+            addButton.widthAnchor.constraint(equalToConstant: 32),
+            addButton.heightAnchor.constraint(equalToConstant: 32),
             
             tableView.topAnchor.constraint(equalTo: focusLabel.bottomAnchor, constant: Layout.smallPadding),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -184,6 +215,57 @@ class TodayViewController: UIViewController {
     private func setupTableView() {
         tableView.dataSource = self
         tableView.delegate = self
+    }
+    
+    private func setupSwipeGestures() {
+        let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(tableSwipedLeft))
+        swipeLeft.direction = .left
+        view.addGestureRecognizer(swipeLeft)
+
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(tableSwipedRight))
+        swipeRight.direction = .right
+        view.addGestureRecognizer(swipeRight)
+    }
+    
+    // MARK: - Actions
+    @objc private func addButtonTapped() {
+        let addRoutineVC = AddRoutineViewController()
+        let routinesViewModel = RoutinesViewModel()
+        addRoutineVC.onSave = { name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute in
+            routinesViewModel.addRoutine(name: name, frequency: frequency, feeling: feeling,
+                                         motivation: motivation, blockType: blockType,
+                                         hasReminder: hasReminder, reminderTime: reminderTime,
+                                         startHour: startHour, startMinute: startMinute,
+                                         endHour: endHour, endMinute: endMinute) {
+                NotificationCenter.default.post(name: NSNotification.Name("RoutineAdded"), object: nil)
+            }
+        }
+        let navVC = UINavigationController(rootViewController: addRoutineVC)
+        present(navVC, animated: true)
+    }
+    
+    @objc private func tableSwipedLeft() {
+        let weekBefore = Calendar.current.component(.weekOfYear, from: viewModel.selectedDate)
+        animateTransition(direction: .left, includeWeek: false)
+        viewModel.goToNextDay { [weak self] in
+            guard let self else { return }
+            if Calendar.current.component(.weekOfYear, from: self.viewModel.selectedDate) != weekBefore {
+                self.animateTransition(direction: .left, includeWeek: true)
+            }
+            self.updateUIWithViewModel()
+        }
+    }
+    
+    @objc private func tableSwipedRight() {
+        let weekBefore = Calendar.current.component(.weekOfYear, from: viewModel.selectedDate)
+        animateTransition(direction: .right, includeWeek: false)
+        viewModel.goToPreviousDay { [weak self] in
+            guard let self else { return }
+            if Calendar.current.component(.weekOfYear, from: self.viewModel.selectedDate) != weekBefore {
+                self.animateTransition(direction: .right, includeWeek: true)
+            }
+            self.updateUIWithViewModel()
+        }
     }
     
     // MARK: - Data Loading
@@ -204,91 +286,134 @@ class TodayViewController: UIViewController {
         weekCalendarView.configure(with: weekDates, progressMap: progressMap, selectedDate: viewModel.selectedDate)
         
         // Empty State
-        let isEmpty = viewModel.notCompletedRoutines.isEmpty && viewModel.completedRoutines.isEmpty
+        let isEmpty = viewModel.notCompletedRoutines.isEmpty && viewModel.completedRoutines.isEmpty && viewModel.skippedRoutines.isEmpty
         tableView.isHidden = isEmpty
         emptyStateStackView.isHidden = !isEmpty
         tableView.reloadData()
     }
     
+    // MARK: - Navigation
+    private func openDetail(for routine: Routine) {
+        let detailVC = RoutineDetailViewController(routine: routine)
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+    
+    private func openEdit(for routine: Routine) {
+        let addVC = AddRoutineViewController()
+        addVC.mode = .edit(routine)
+        let routinesViewModel = RoutinesViewModel()
+        addVC.onUpdate = { [weak self] routine, name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute in
+            routinesViewModel.updateRoutine(routine: routine, name: name, frequency: frequency,
+                                            feeling: feeling, motivation: motivation, blockType: blockType,
+                                            hasReminder: hasReminder, reminderTime: reminderTime,
+                                            startHour: startHour, startMinute: startMinute,
+                                            endHour: endHour, endMinute: endMinute) { [weak self] in
+                self?.loadData()
+            }
+        }
+        let navVC = UINavigationController(rootViewController: addVC)
+        present(navVC, animated: true)
+    }
+    
     // MARK: - Helpers
     private func isCompletedSectionHeader(at indexPath: IndexPath) -> Bool {
-        return indexPath.section == 1 && indexPath.row == 0
+        indexPath.section == 1 && indexPath.row == 0
+    }
+    
+    private func isSkippedSectionHeader(at indexPath: IndexPath) -> Bool {
+        indexPath.section == 2 && indexPath.row == 0
     }
     
     private func routine(at indexPath: IndexPath) -> Routine? {
-        if indexPath.section == 0 {
-            return viewModel.notCompletedRoutines[indexPath.row]
-        } else if indexPath.row == 0 {
-            return nil // header cell
-        } else {
-            return viewModel.completedRoutines[indexPath.row - 1]
+        switch indexPath.section {
+        case 0: return viewModel.notCompletedRoutines[indexPath.row]
+        case 1: return indexPath.row == 0 ? nil : viewModel.completedRoutines[indexPath.row - 1]
+        case 2: return indexPath.row == 0 ? nil : viewModel.skippedRoutines[indexPath.row - 1]
+        default: return nil
         }
     }
     
     private func isPastOrFutureDay() -> Bool {
-        let today = DateHelper.shared.startOfDay()
-        return viewModel.selectedDate != today
+        viewModel.selectedDate != DateHelper.shared.startOfDay()
     }
     
     private func triggerHaptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
-        let generator = UIImpactFeedbackGenerator(style: style)
-        generator.impactOccurred()
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
     }
     
     private func triggerWarningHaptic() {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.warning)
+        UINotificationFeedbackGenerator().notificationOccurred(.warning)
+    }
+    
+    private func animateTransition(direction: UIRectEdge, includeWeek: Bool = false) {
+        let transition = CATransition()
+        transition.duration = 0.25
+        transition.type = .push
+        transition.subtype = direction == .right ? .fromLeft : .fromRight
+        transition.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+        tableView.layer.add(transition, forKey: nil)
+        if includeWeek {
+            weekCalendarView.layer.add(transition, forKey: nil)
+        }
     }
 }
 
 // MARK: - UITableViewDataSource
 extension TodayViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return isPastOrFutureDay() ? 1 : 2
+        isPastOrFutureDay() ? 1 : 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch section {
-        case 0:
-            return viewModel.notCompletedRoutines.count
-        case 1:
-            if viewModel.isCompletedSectionExpanded {
-                return 1 + viewModel.completedRoutines.count
-            } else {
-                return 1
-            }
-        default:
-            return 0
+        case 0: return viewModel.notCompletedRoutines.count
+        case 1: return viewModel.isCompletedSectionExpanded ? 1 + viewModel.completedRoutines.count : 1
+        case 2: return viewModel.isSkippedSectionExpanded  ? 1 + viewModel.skippedRoutines.count  : 1
+        default: return 0
         }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // completed section header
         if isCompletedSectionHeader(at: indexPath) {
-            guard let headerCell = tableView.dequeueReusableCell(
-                withIdentifier: CompletedSectionHeaderCell.identifier,
-                for: indexPath
-            ) as? CompletedSectionHeaderCell else {
-                return UITableViewCell()
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: CompletedSectionHeaderCell.identifier,
+                                                           for: indexPath) as? CompletedSectionHeaderCell else { return UITableViewCell() }
+            cell.configure(count: viewModel.completedRoutines.count, isExpanded: viewModel.isCompletedSectionExpanded)
+            return cell
+        }
+        
+        if isSkippedSectionHeader(at: indexPath) {
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: CompletedSectionHeaderCell.identifier,
+                                                           for: indexPath) as? CompletedSectionHeaderCell else { return UITableViewCell() }
+            cell.configure(count: viewModel.skippedRoutines.count, isExpanded: viewModel.isSkippedSectionExpanded,
+                           title: "skipped".localized)
+            return cell
+        }
+        
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: TodayRoutineCell.identifier,
+                                                       for: indexPath) as? TodayRoutineCell,
+              let routine = routine(at: indexPath) else { return UITableViewCell() }
+        
+        cell.configure(with: routine, isNotToday: isPastOrFutureDay(), isSkipped: indexPath.section == 2)
+        
+        cell.onCheckmarkTapped = { [weak self] in
+            guard let self, !self.isPastOrFutureDay() else {
+                self?.triggerWarningHaptic()
+                return
             }
             
-            headerCell.configure(
-                count: viewModel.completedRoutines.count,
-                isExpanded: viewModel.isCompletedSectionExpanded
-            )
-            return headerCell
+            if indexPath.section == 2 {
+                self.triggerHaptic(.light)
+                self.viewModel.unskipRoutine(routine) { [weak self] in
+                    self?.updateUIWithViewModel()
+                }
+            } else {
+                self.triggerHaptic(.medium)
+                self.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel()
+                }
+            }
         }
         
-        // routine cell (not completed or completed)
-        guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: TodayRoutineCell.identifier,
-            for: indexPath
-        ) as? TodayRoutineCell,
-              let routine = routine(at: indexPath) else {
-            return UITableViewCell()
-        }
-        
-        cell.configure(with: routine, isNotToday: isPastOrFutureDay())
         return cell
     }
 }
@@ -296,6 +421,7 @@ extension TodayViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension TodayViewController: UITableViewDelegate {
     
+    // MARK: Row tap → Detail
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -308,77 +434,201 @@ extension TodayViewController: UITableViewDelegate {
             return
         }
         
-        // past or future day - show warning and don't allow toggle
-        guard !isPastOrFutureDay() else {
-            triggerWarningHaptic()
+        if isSkippedSectionHeader(at: indexPath) {
+            triggerHaptic(.light)
+            viewModel.isSkippedSectionExpanded.toggle()
+            tableView.reloadSections(IndexSet(integer: 2), with: .automatic)
             return
         }
         
         // toggle routine completion
         guard let routine = routine(at: indexPath) else { return }
+        openDetail(for: routine)
+    }
+    
+    // MARK: Long press → Context menu (peek preview + actions)
+    func tableView(_ tableView: UITableView,
+                   contextMenuConfigurationForRowAt indexPath: IndexPath,
+                   point: CGPoint) -> UIContextMenuConfiguration? {
+   
+        guard !isCompletedSectionHeader(at: indexPath),
+              !isSkippedSectionHeader(at: indexPath),
+              let routine = routine(at: indexPath) else { return nil }
         
-        triggerHaptic(.medium)
-        
-        viewModel.toggleRoutine(routine) { [weak self] in
-            self?.updateUIWithViewModel()
+        return UIContextMenuConfiguration(
+            identifier: indexPath as NSCopying,
+            previewProvider: {
+                RoutineDetailViewController(routine: routine)
+            },
+            actionProvider: { [weak self] _ in
+                guard let self else { return nil }
+                return self.makeContextMenu(for: routine, at: indexPath)
+            }
+        )
+    }
+    
+    /// tap to peek -> push to detail
+    func tableView(_ tableView: UITableView,
+                   willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration,
+                   animator: UIContextMenuInteractionCommitAnimating) {
+        guard let indexPath = configuration.identifier as? IndexPath,
+              let routine = routine(at: indexPath) else { return }
+        animator.addCompletion { [weak self] in
+            self?.openDetail(for: routine)
         }
     }
     
-    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // no swipe on completed section header
+    // MARK: Swipe actions
+    func tableView(_ tableView: UITableView,
+                   leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard !isCompletedSectionHeader(at: indexPath),
-              let routine = routine(at: indexPath) else {
-            return nil
+              !isSkippedSectionHeader(at: indexPath),
+              !isPastOrFutureDay(),
+              let routine = routine(at: indexPath) else { return nil }
+        
+        if indexPath.section == 2 {
+            let unskip = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
+                self?.triggerHaptic(.light)
+                self?.viewModel.unskipRoutine(routine) { [weak self] in
+                    self?.updateUIWithViewModel(); done(true)
+                }
+            }
+            unskip.image = UIImage(systemName: "arrow.uturn.backward")?
+                .withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+            unskip.backgroundColor = AppColors.secondary
+            return UISwipeActionsConfiguration(actions: [unskip])
         }
         
-        let viewAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
-            self?.triggerHaptic(.light)
-            
-            let detailVC = RoutineDetailViewController(routine: routine)
-            self?.navigationController?.pushViewController(detailVC, animated: true)
-            completionHandler(true)
+        let skip = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
+            self?.triggerHaptic(.medium)
+            self?.viewModel.skipRoutine(routine) { [weak self] in
+                self?.updateUIWithViewModel(); done(true)
+            }
         }
+        skip.image = UIImage(systemName: "forward.fill")?
+            .withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+        skip.backgroundColor = AppColors.accentOrange
         
-        viewAction.image = UIImage(systemName: "info.circle")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
-        viewAction.backgroundColor = AppColors.secondary
-        
-        let configuration = UISwipeActionsConfiguration(actions: [viewAction])
-        configuration.performsFirstActionWithFullSwipe = true
-        
-        return configuration
+        let config = UISwipeActionsConfiguration(actions: [skip])
+        config.performsFirstActionWithFullSwipe = true
+        return config
     }
 
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        
-        // only allow swipe on current day, not on header
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard !isPastOrFutureDay(),
               !isCompletedSectionHeader(at: indexPath),
+              !isSkippedSectionHeader(at: indexPath),
               let routine = routine(at: indexPath) else {
             return nil
         }
         
-        let isCompleted = routine.isCompletedToday
+        // skipped
+        if indexPath.section == 2 {
+            let complete = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
+                self?.triggerHaptic(.medium)
+                self?.viewModel.toggleRoutine(routine) { [weak self] in
+                    self?.updateUIWithViewModel()
+                    done(true)
+                }
+            }
+            
+            complete.image = UIImage(systemName: "checkmark")?
+
+                .withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+
+            complete.backgroundColor = AppColors.accentGreen
+
+            let config = UISwipeActionsConfiguration(actions: [complete])
+
+            config.performsFirstActionWithFullSwipe = true
+
+            return config
+        }
         
-        let toggleAction = UIContextualAction(style: .normal, title: nil) { [weak self] (action, view, completionHandler) in
+        // normal
+        let isCompleted = routine.isCompletedToday
+        let toggle = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
             self?.triggerHaptic(.medium)
             
             self?.viewModel.toggleRoutine(routine) { [weak self] in
-                self?.updateUIWithViewModel()
-                completionHandler(true)
+                self?.updateUIWithViewModel(); done(true)
             }
         }
+        toggle.image = UIImage(systemName: isCompleted ? "arrow.uturn.backward" : "checkmark")?
+            .withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+        toggle.backgroundColor = isCompleted ? AppColors.secondary : AppColors.accentGreen
         
-        if isCompleted {
-            toggleAction.image = UIImage(systemName: "arrow.uturn.backward")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
-            toggleAction.backgroundColor = AppColors.secondary
-        } else {
-            toggleAction.image = UIImage(systemName: "checkmark")?.withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
-            toggleAction.backgroundColor = AppColors.primary
+        let config = UISwipeActionsConfiguration(actions: [toggle])
+        config.performsFirstActionWithFullSwipe = true
+        return config
+    }
+}
+
+// MARK: - Context Menu Builder
+private extension TodayViewController {
+    
+    func makeContextMenu(for routine: Routine, at indexPath: IndexPath) -> UIMenu {
+        let isCompleted = routine.isCompletedToday
+        let isSkipped   = indexPath.section == 2
+        let isToday     = !isPastOrFutureDay()
+        let menuTitle   = routine.name ?? ""
+        
+        // Edit
+        let edit = UIAction(
+            title: "edit".localized,
+            image: UIImage(systemName: "pencil")
+        ) { [weak self] _ in
+            self?.openEdit(for: routine)
+        }
+        
+        // View Detail
+        let detail = UIAction(
+            title: "view_detail".localized,
+            image: UIImage(systemName: "info.circle")
+        ) { [weak self] _ in
+            self?.openDetail(for: routine)
         }
 
-        let configuration = UISwipeActionsConfiguration(actions: [toggleAction])
-        configuration.performsFirstActionWithFullSwipe = true
+        guard isToday else {
+            return UIMenu(title: menuTitle, children: [detail, edit])
+        }
 
-        return configuration
+        if isSkipped {
+            let complete = UIAction(
+                title: "complete".localized,
+                image: UIImage(systemName: "checkmark.circle")
+            ) { [weak self] _ in
+                self?.triggerHaptic(.medium)
+                self?.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+            }
+            let unskip = UIAction(
+                title: "unskip".localized,
+                image: UIImage(systemName: "arrow.uturn.backward")
+            ) { [weak self] _ in
+                self?.triggerHaptic(.light)
+                self?.viewModel.unskipRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+            }
+            return UIMenu(title: menuTitle, children: [complete, unskip, edit, detail])
+        }
+
+        let toggleTitle = isCompleted ? "uncomplete".localized : "complete".localized
+        let toggleIcon  = isCompleted ? "arrow.uturn.backward" : "checkmark.circle"
+        let toggle = UIAction(
+            title: toggleTitle,
+            image: UIImage(systemName: toggleIcon)
+        ) { [weak self] _ in
+            self?.triggerHaptic(.medium)
+            self?.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+        }
+        let skip = UIAction(
+            title: "skip".localized,
+            image: UIImage(systemName: "forward.circle")
+        ) { [weak self] _ in
+            self?.triggerHaptic(.medium)
+            self?.viewModel.skipRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+        }
+
+        return UIMenu(title: menuTitle, children: [toggle, skip, edit, detail])
     }
 }

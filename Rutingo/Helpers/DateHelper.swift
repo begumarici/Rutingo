@@ -55,7 +55,22 @@ class DateHelper {
         let formatter = DateFormatter()
         formatter.calendar = calendar
         formatter.locale = .current
-        formatter.dateFormat = "EEEE, MMMM d"
+        
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "en"
+        if languageCode == "tr" {
+            formatter.dateFormat = "d MMMM EEEE"
+        } else {
+            formatter.dateFormat = "EEEE, MMMM d"
+        }
+        
+        return formatter.string(from: date)
+    }
+    
+    func formattedDayName(_ date: Date = Date()) -> String {
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = .current
+        formatter.dateFormat = "EEEE"
         return formatter.string(from: date)
     }
     
@@ -88,6 +103,24 @@ class DateHelper {
         
         return (0..<7).compactMap { offset in
             calendar.date(byAdding: .day, value: offset, to: thisMonday)
+        }
+    }
+    
+    func weekDays(for weekOffset: Int) -> [Date] {
+        let today = startOfDay()
+        guard let currentWeekInterval = calendar.dateInterval(of: .weekOfYear, for: today) else { return [] }
+        let thisMonday = currentWeekInterval.start
+        guard let targetMonday = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: thisMonday) else { return [] }
+        return (0..<7).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: targetMonday)
+        }
+    }
+    
+    func weekDays(for date: Date) -> [Date] {
+        let day = startOfDay(date)
+        guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: day) else { return [] }
+        return (0..<7).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: weekInterval.start)
         }
     }
     

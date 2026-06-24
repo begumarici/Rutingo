@@ -15,13 +15,8 @@ class DayRoutineCell: UITableViewCell {
     private let containerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = AppColors.secondaryCardBackground
-        view.layer.cornerRadius = 16
-        
-        view.layer.shadowColor = UIColor.black.cgColor
-        view.layer.shadowOpacity = 0.1
-        view.layer.shadowOffset = CGSize(width: 0, height: 2)
-        view.layer.shadowRadius = 8
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = Layout.cardCornerRadius
         view.layer.masksToBounds = false
         
         return view
@@ -79,14 +74,25 @@ class DayRoutineCell: UITableViewCell {
     }
     
     // MARK: - Configuration
-    func configure(routine: Routine, date: Date) {
-        nameLabel.text = routine.name
-        
-        let isCompleted = routine.isCompleted(on: date)
-        
-        if isCompleted {
+    func configure(with item: RoutineWithStatus) {
+        nameLabel.text = item.routine.name
+        containerView.alpha = 1.0
+        nameLabel.textColor = AppColors.primary
+
+        if item.isSkipped {
+            containerView.alpha = 0.7
+            nameLabel.textColor = AppColors.secondary
+            statusIcon.image = UIImage(systemName: "forward.circle.fill")
+            statusIcon.tintColor = AppColors.accentOrange
+        } else if item.isCompleted {
             statusIcon.image = UIImage(systemName: "checkmark.circle.fill")
-            statusIcon.tintColor = AppColors.primary
+            statusIcon.tintColor = AppColors.accentGreen
+        } else if item.isMissed {
+            let missedColor = UIColor.dynamic(light: "D93025", dark: "FF3B30")
+            statusIcon.image = UIImage(systemName: "xmark.circle.fill")
+            statusIcon.tintColor = missedColor
+            nameLabel.textColor = AppColors.secondary
+            containerView.alpha = 0.8
         } else {
             statusIcon.image = UIImage(systemName: "circle")
             statusIcon.tintColor = AppColors.secondary

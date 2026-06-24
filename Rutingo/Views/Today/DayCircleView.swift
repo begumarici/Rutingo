@@ -9,12 +9,16 @@ import UIKit
 
 class DayCircleView: UIView {
     
+    // MARK: - Properties
+    private var isCurrentlyToday: Bool = false
+    private var isCurrentlySelected: Bool = false
+    
     // MARK: - UI Components
     private let dayLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.regular(14)
-        label.textColor = UIColor.black
+        label.textColor = AppColors.secondary
         label.textAlignment = .center
         return label
     }()
@@ -23,7 +27,7 @@ class DayCircleView: UIView {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = AppFonts.semibold(20)
-        label.textColor = UIColor.black
+        label.textColor = AppColors.secondary
         label.textAlignment = .center
         return label
     }()
@@ -33,8 +37,7 @@ class DayCircleView: UIView {
         super.init(frame: frame)
         setupUI()
         
-        // ios 17+ trait observation
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, _: UITraitCollection) in
             self.updateBorderColor()
         }
     }
@@ -69,6 +72,8 @@ class DayCircleView: UIView {
     
     // MARK: - Configuration
     func configure(with date: Date, progress: Double, isToday: Bool, isSelected: Bool = false) {
+        isCurrentlyToday = isToday
+        isCurrentlySelected = isSelected
         setDateLabels(for: date)
         setAppearance(progress: progress, isToday: isToday, isSelected: isSelected)
     }
@@ -81,17 +86,17 @@ class DayCircleView: UIView {
     
     private func setAppearance(progress: Double, isToday: Bool, isSelected: Bool) {
         if isToday {
-            backgroundColor = AppColors.primary
-            dayLabel.textColor = AppColors.background
-            dateLabel.textColor = AppColors.background
-            layer.borderWidth = 2
-            layer.borderColor = AppColors.primary.cgColor
+            backgroundColor = AppColors.accentPurple
+            dayLabel.textColor = AppColors.onAccent
+            dateLabel.textColor = AppColors.onAccent
+            layer.borderWidth = 0
+            layer.borderColor = UIColor.clear.cgColor
         } else if isSelected {
-            backgroundColor = AppColors.secondary.withAlphaComponent(0.2)
-            dayLabel.textColor = AppColors.primary
-            dateLabel.textColor = AppColors.primary
-            layer.borderWidth = 2
-            layer.borderColor = AppColors.primary.cgColor
+            backgroundColor = AppColors.accentPurple.withAlphaComponent(0.15)
+            dayLabel.textColor = AppColors.accentPurple
+            dateLabel.textColor = AppColors.accentPurple
+            layer.borderWidth = 1.5
+            layer.borderColor = AppColors.accentPurple.cgColor
         } else {
             backgroundColor = .clear
             dayLabel.textColor = AppColors.secondary
@@ -102,10 +107,10 @@ class DayCircleView: UIView {
     }
 
     private func updateBorderColor() {
-        if backgroundColor == AppColors.primary {
-            layer.borderColor = AppColors.primary.cgColor
-        } else if backgroundColor != .clear {
-            layer.borderColor = AppColors.primary.cgColor
+        if isCurrentlyToday {
+            layer.borderColor = UIColor.clear.cgColor
+        } else if isCurrentlySelected {
+            layer.borderColor = AppColors.accentPurple.cgColor
         } else {
             layer.borderColor = AppColors.secondary.withAlphaComponent(0.3).cgColor
         }

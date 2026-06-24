@@ -7,143 +7,79 @@
 
 import UIKit
 
-class MainTabBarController: UIViewController {
-    
-    // MARK: - Properties
-    private var viewControllers: [UIViewController] = []
-    private var selectedIndex: Int = 0
-    
-    private let containerView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    private lazy var customTabBar: CustomTabBarView = {
-        let items: [String] = [
-            "calendar.badge.clock",
-            "list.bullet",
-            "calendar",
-            "chart.line.uptrend.xyaxis"
-        ]
-        let tabBar = CustomTabBarView(items: items)
-        tabBar.delegate = self
-        return tabBar
-    }()
+class MainTabBarController: UITabBarController {
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = AppColors.background
+        setupAppearance()
         setupViewControllers()
-        setupUI()
-        showViewController(at: 0)
     }
     
-    // MARK: - Setup
+    // MARK: - Appearance
+    private func setupAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = AppColors.cardBackground
+
+        appearance.stackedLayoutAppearance.selected.iconColor   = AppColors.accentPurple
+        appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
+            .foregroundColor: AppColors.accentPurple,
+            .font: AppFonts.medium(10)
+        ]
+
+        appearance.stackedLayoutAppearance.normal.iconColor   = AppColors.secondary
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
+            .foregroundColor: AppColors.secondary,
+            .font: AppFonts.medium(10)
+        ]
+
+        appearance.shadowColor = AppColors.border
+
+        tabBar.standardAppearance   = appearance
+        tabBar.scrollEdgeAppearance = appearance
+    }
+
+    // MARK: - View Controllers
     private func setupViewControllers() {
-        let todayVC = createTodayTab()
-        let routinesVC = createRoutinesTab()
-        let calendarVC = createCalendarTab()
-        let statisticsVC = createStatisticsTab()
-        
-        viewControllers = [todayVC, routinesVC, calendarVC, statisticsVC]
-    }
-    
-    private func createTodayTab() -> UINavigationController {
-        let todayVC = TodayViewController()
-        return UINavigationController(rootViewController: todayVC)
-    }
-    
-    private func createRoutinesTab() -> UINavigationController {
-        let routinesVC = RoutinesViewController()
-        return UINavigationController(rootViewController: routinesVC)
-    }
-    
-    private func createCalendarTab() -> UINavigationController {
-        let calendarVC = CalendarViewController()
-        return UINavigationController(rootViewController: calendarVC)
-    }
-    
-    private func createStatisticsTab() -> UINavigationController {
-        let statisticsVC = StatisticsViewController()
-        return UINavigationController(rootViewController: statisticsVC)
-    }
-    
-    private func setupUI() {
-        view.addSubview(containerView)
-        view.addSubview(customTabBar)
-        
-        let tabBarHeight: CGFloat = view.frame.height < 800 ? 65 : 90
-        
-        NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: view.topAnchor),
-            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            containerView.bottomAnchor.constraint(equalTo: customTabBar.topAnchor),
-            
-            customTabBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            customTabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            customTabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            customTabBar.heightAnchor.constraint(equalToConstant: tabBarHeight)
-        ])
-    }
+        let todayVC    = makeNav(root: TodayViewController(),
+                                 title: "tab_today".localized,
+                                 icon:  "house",
+                                 selectedIcon: "house.fill")
 
-    private func showViewController(at index: Int) {
-        if selectedIndex < viewControllers.count {
-            let oldVC = viewControllers[selectedIndex]
-            oldVC.view.removeFromSuperview()
-            oldVC.removeFromParent()
-        }
-        
-        selectedIndex = index
-        let newVC = viewControllers[index]
-        
-        if let navVC = newVC as? UINavigationController {
-            navVC.popToRootViewController(animated: false)
-        }
-        
-        addChild(newVC)
-        newVC.view.frame = containerView.bounds
-        newVC.view.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(newVC.view)
-        
-        NSLayoutConstraint.activate([
-            newVC.view.topAnchor.constraint(equalTo: containerView.topAnchor),
-            newVC.view.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            newVC.view.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
-            newVC.view.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
-        ])
-        
-        newVC.didMove(toParent: self)
-    }
-}
+        let blocksVC   = makeNav(root: BlocksViewController(),
+                                 title: "tab_blocks".localized,
+                                 icon:  "rectangle.stack",
+                                 selectedIcon: "rectangle.stack.fill")
 
-// MARK: - CustomTabBarDelegate
-extension MainTabBarController: CustomTabBarDelegate {
-    func didSelectTab(at index: Int) {
-        showViewController(at: index)
+        let tasksVC    = makeNav(root: TasksViewController(),
+                                 title: "tab_tasks".localized,
+                                 icon:  "list.clipboard",
+                                 selectedIcon: "list.clipboard.fill")
+
+        let routinesVC = makeNav(root: RoutinesViewController(),
+                                 title: "tab_routines".localized,
+                                 icon:  "checklist.unchecked",
+                                 selectedIcon: "checklist.checked")
+        
+        let statsVC = makeNav(root: StatisticsViewController(),
+                                 title: "calendar".localized,
+                                 icon: "calendar",
+                                 selectedIcon: "calendar.badge")
+
+        viewControllers = [todayVC, routinesVC, blocksVC, tasksVC, statsVC]
     }
     
-    func didTapAddButton() {
-        let addRoutineVC = AddRoutineViewController()
-        let routinesViewModel = RoutinesViewModel()
-        
-        addRoutineVC.onSave = { name, frequency, hasReminder, reminderTime in
-            routinesViewModel.addRoutine(
-                name: name,
-                frequency: frequency,
-                hasReminder: hasReminder,
-                reminderTime: reminderTime
-            ) {
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("RoutineAdded"),
-                    object: nil
-                )
-            }
-        }
-        
-        let navVC = UINavigationController(rootViewController: addRoutineVC)
-        present(navVC, animated: true)
+    // MARK: - Helpers
+    private func makeNav(root: UIViewController,
+                         title: String,
+                         icon: String,
+                         selectedIcon: String) -> UINavigationController {
+        root.tabBarItem = UITabBarItem(
+            title: title,
+            image: UIImage(systemName: icon),
+            selectedImage: UIImage(systemName: selectedIcon)
+        )
+        return UINavigationController(rootViewController: root)
     }
 }

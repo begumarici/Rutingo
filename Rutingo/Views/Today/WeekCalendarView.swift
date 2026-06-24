@@ -14,6 +14,8 @@ class WeekCalendarView: UIView {
     private var progressMap: [Date: Double] = [:]
     private var selectedDate: Date = DateHelper.shared.startOfDay()
     var onDateSelected: ((Date) -> Void)?
+    var onSwipeLeft: (() -> Void)?
+    var onSwipeRight: (() -> Void)?
     
     // MARK: - UI Components
     private let stackView: UIStackView = {
@@ -49,7 +51,19 @@ class WeekCalendarView: UIView {
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -Layout.smallPadding),
             stackView.heightAnchor.constraint(equalToConstant: 70)
         ])
+        
+        let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(swipedLeft))
+        swipeLeft.direction = .left
+        addGestureRecognizer(swipeLeft)
+
+        let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(swipedRight))
+        swipeRight.direction = .right
+        addGestureRecognizer(swipeRight)
     }
+    
+    @objc private func swipedLeft() { onSwipeLeft?() }
+    @objc private func swipedRight() { onSwipeRight?() }
+    
     
     // MARK: - Configuration
     func configure(with dates: [Date], progressMap: [Date: Double], selectedDate: Date? = nil) {
