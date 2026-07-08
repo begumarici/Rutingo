@@ -10,8 +10,8 @@ import UIKit
 class AddRoutineViewController: UIViewController {
     
     // MARK: - Properties
-    var onSave: ((String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16, Int16, Int16) -> Void)?
-    var onUpdate: ((Routine, String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16, Int16, Int16) -> Void)?
+    var onSave: ((String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16, Int16, Int16, Bool, Int16) -> Void)?
+    var onUpdate: ((Routine, String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16, Int16, Int16, Bool, Int16) -> Void)?
     var onDelete: (() -> Void)?
     
     enum Mode {
@@ -32,6 +32,8 @@ class AddRoutineViewController: UIViewController {
     private var hasTimeRange: Bool = false
     private var startTime: Date = Date()
     private var endTime: Date = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
+    private var isCountBased: Bool = false
+    private var targetCount: Int16 = 4
     
     // MARK: - UI Containers
     private let nameContainer: UIView = {
@@ -130,6 +132,84 @@ class AddRoutineViewController: UIViewController {
         return tv
     }()
     
+    // Count-based
+    private let countContainer: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = AppColors.cardBackground
+        view.layer.cornerRadius = 16
+        return view
+    }()
+
+    private let countStackView: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 12
+        return stack
+    }()
+
+    private let countHeaderView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private let countLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "count_based".localized
+        label.font = AppFonts.semibold(16)
+        label.textColor = AppColors.primary
+        return label
+    }()
+
+    private let countSwitch: UISwitch = {
+        let toggle = UISwitch()
+        toggle.translatesAutoresizingMaskIntoConstraints = false
+        toggle.onTintColor = AppColors.secondary
+        toggle.isOn = false
+        return toggle
+    }()
+
+    private let countStepperRow: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .horizontal
+        stack.spacing = 12
+        stack.isHidden = true
+        stack.alpha = 0
+        return stack
+    }()
+
+    private let countStepperLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "target_count".localized
+        label.font = AppFonts.regular(15)
+        label.textColor = AppColors.secondary
+        return label
+    }()
+
+    private let countValueLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = AppFonts.semibold(15)
+        label.textColor = AppColors.primary
+        label.text = "4"
+        return label
+    }()
+
+    private let countStepper: UIStepper = {
+        let stepper = UIStepper()
+        stepper.translatesAutoresizingMaskIntoConstraints = false
+        stepper.minimumValue = 2
+        stepper.maximumValue = 20
+        stepper.value = 4
+        stepper.tintColor = AppColors.primary
+        return stepper
+    }()
+
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
         let scroll = UIScrollView()
@@ -478,6 +558,16 @@ class AddRoutineViewController: UIViewController {
         contentView.addSubview(feelingContainer)
         contentView.addSubview(motivationContainer)
         contentView.addSubview(timeRangeContainer)
+        contentView.addSubview(countContainer)
+
+        countContainer.addSubview(countStackView)
+        countHeaderView.addSubview(countLabel)
+        countHeaderView.addSubview(countSwitch)
+        countStackView.addArrangedSubview(countHeaderView)
+        countStackView.addArrangedSubview(countStepperRow)
+        countStepperRow.addArrangedSubview(countStepperLabel)
+        countStepperRow.addArrangedSubview(countValueLabel)
+        countStepperRow.addArrangedSubview(countStepper)
 
         // iç yapı
         timeRangeContainer.addSubview(timeRangeStackView)
@@ -640,8 +730,24 @@ class AddRoutineViewController: UIViewController {
             endTimeValueLabel.leadingAnchor.constraint(equalTo: endTimeValueContainer.leadingAnchor, constant: 12),
             endTimeValueLabel.trailingAnchor.constraint(equalTo: endTimeValueContainer.trailingAnchor, constant: -12),
             
+            // count-based container
+            countContainer.topAnchor.constraint(equalTo: timeRangeContainer.bottomAnchor, constant: padding),
+            countContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
+            countContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
+
+            countStackView.topAnchor.constraint(equalTo: countContainer.topAnchor, constant: cardPadding),
+            countStackView.leadingAnchor.constraint(equalTo: countContainer.leadingAnchor, constant: cardPadding),
+            countStackView.trailingAnchor.constraint(equalTo: countContainer.trailingAnchor, constant: -cardPadding),
+            countStackView.bottomAnchor.constraint(equalTo: countContainer.bottomAnchor, constant: -cardPadding),
+            countHeaderView.heightAnchor.constraint(equalToConstant: 31),
+
+            countLabel.centerYAnchor.constraint(equalTo: countHeaderView.centerYAnchor),
+            countLabel.leadingAnchor.constraint(equalTo: countHeaderView.leadingAnchor),
+            countSwitch.centerYAnchor.constraint(equalTo: countHeaderView.centerYAnchor),
+            countSwitch.trailingAnchor.constraint(equalTo: countHeaderView.trailingAnchor),
+
             // feeling container
-            feelingContainer.topAnchor.constraint(equalTo: timeRangeContainer.bottomAnchor, constant: padding),
+            feelingContainer.topAnchor.constraint(equalTo: countContainer.bottomAnchor, constant: padding),
             feelingContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
             feelingContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -padding),
 
@@ -770,6 +876,8 @@ class AddRoutineViewController: UIViewController {
         frequencyControl.addTarget(self, action: #selector(frequencyChanged), for: .valueChanged)
         reminderSwitch.addTarget(self, action: #selector(reminderSwitchChanged), for: .valueChanged)
         timeRangeSwitch.addTarget(self, action: #selector(timeRangeSwitchChanged), for: .valueChanged)
+        countSwitch.addTarget(self, action: #selector(countSwitchChanged), for: .valueChanged)
+        countStepper.addTarget(self, action: #selector(countStepperChanged), for: .valueChanged)
         saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
 
@@ -873,6 +981,20 @@ class AddRoutineViewController: UIViewController {
         }
     }
     
+    @objc private func countSwitchChanged() {
+        isCountBased = countSwitch.isOn
+        UIView.animate(withDuration: 0.3) {
+            self.countStepperRow.isHidden = !self.countSwitch.isOn
+            self.countStepperRow.alpha = self.countSwitch.isOn ? 1.0 : 0.0
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc private func countStepperChanged() {
+        targetCount = Int16(countStepper.value)
+        countValueLabel.text = "\(targetCount)"
+    }
+
     @objc private func startTimeValueTapped() {
         let willShow = startTimePicker.isHidden
         if willShow {
@@ -968,9 +1090,9 @@ class AddRoutineViewController: UIViewController {
         
         switch mode {
         case .add:
-            onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, startMinute, endHour, endMinute)
+            onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, startMinute, endHour, endMinute, isCountBased, targetCount)
         case .edit(let routine):
-            onUpdate?(routine, name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, startMinute, endHour, endMinute)
+            onUpdate?(routine, name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, startMinute, endHour, endMinute, isCountBased, targetCount)
         }
         
         dismiss(animated: true)
@@ -1075,6 +1197,14 @@ class AddRoutineViewController: UIViewController {
         }
         
         timePicker.isHidden = !routine.hasReminder
+
+        isCountBased = routine.isCountBased
+        targetCount = max(routine.targetCount, 2)
+        countSwitch.isOn = isCountBased
+        countStepper.value = Double(targetCount)
+        countValueLabel.text = "\(targetCount)"
+        countStepperRow.isHidden = !isCountBased
+        countStepperRow.alpha = isCountBased ? 1.0 : 0.0
     }
     
     private func validate() -> Bool {

@@ -560,7 +560,7 @@ class RoutineDetailViewController: UIViewController {
         let addVC = AddRoutineViewController()
         addVC.mode = .edit(routine)
         
-        addVC.onUpdate = { [weak self] routine, name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute in
+        addVC.onUpdate = { [weak self] routine, name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute, isCountBased, targetCount in
             guard let self = self else { return }
             
             self.viewModel.updateRoutine(routine: routine,
@@ -574,7 +574,9 @@ class RoutineDetailViewController: UIViewController {
                                          startHour: startHour,
                                          startMinute: startMinute,
                                          endHour: endHour,
-                                         endMinute: endMinute
+                                         endMinute: endMinute,
+                                         isCountBased: isCountBased,
+                                         targetCount: targetCount
             ) {
                 
                 self.routine = routine

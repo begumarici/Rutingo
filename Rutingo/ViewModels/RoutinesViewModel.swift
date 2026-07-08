@@ -36,6 +36,8 @@ class RoutinesViewModel {
         startMinute: Int16,
         endHour: Int16,
         endMinute: Int16,
+        isCountBased: Bool = false,
+        targetCount: Int16 = 1,
         completion: () -> Void
     ) {
         let newRoutine = dataManager.saveRoutine(
@@ -49,7 +51,9 @@ class RoutinesViewModel {
             startHour: startHour,
             startMinute: startMinute,
             endHour: endHour,
-            endMinute: endMinute
+            endMinute: endMinute,
+            isCountBased: isCountBased,
+            targetCount: targetCount
         )
         NotificationManager.shared.scheduleNotification(for: newRoutine)
         dataManager.syncGeneratedBlocks(for: newRoutine)
@@ -78,6 +82,8 @@ class RoutinesViewModel {
         startMinute: Int16,
         endHour: Int16,
         endMinute: Int16,
+        isCountBased: Bool = false,
+        targetCount: Int16 = 1,
         completion: () -> Void
     ) {
         dataManager.updateRoutine(
@@ -92,7 +98,9 @@ class RoutinesViewModel {
             startHour: startHour,
             startMinute: startMinute,
             endHour: endHour,
-            endMinute: endMinute
+            endMinute: endMinute,
+            isCountBased: isCountBased,
+            targetCount: targetCount
         )
         NotificationManager.shared.scheduleNotification(for: routine)
         dataManager.syncGeneratedBlocks(for: routine)

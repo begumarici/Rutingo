@@ -38,6 +38,13 @@ class TodayRoutineCell: UITableViewCell {
         return imageView
     }()
     
+    private let ringView: CountProgressRingView = {
+        let view = CountProgressRingView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -96,6 +103,7 @@ class TodayRoutineCell: UITableViewCell {
         contentView.addSubview(cardView)
         cardView.addSubview(checkmarkButton)
         checkmarkButton.addSubview(checkmarkView)
+        checkmarkButton.addSubview(ringView)
         cardView.addSubview(nameLabel)
         cardView.addSubview(streakLabel)
         cardView.addSubview(frequencyLabel)
@@ -118,6 +126,11 @@ class TodayRoutineCell: UITableViewCell {
             checkmarkView.centerYAnchor.constraint(equalTo: checkmarkButton.centerYAnchor),
             checkmarkView.widthAnchor.constraint(equalToConstant: 28),
             checkmarkView.heightAnchor.constraint(equalToConstant: 28),
+
+            ringView.centerXAnchor.constraint(equalTo: checkmarkButton.centerXAnchor),
+            ringView.centerYAnchor.constraint(equalTo: checkmarkButton.centerYAnchor),
+            ringView.widthAnchor.constraint(equalToConstant: 40),
+            ringView.heightAnchor.constraint(equalToConstant: 40),
 
             nameLabel.leadingAnchor.constraint(equalTo: checkmarkButton.trailingAnchor, constant: 4),
             nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
@@ -146,6 +159,8 @@ class TodayRoutineCell: UITableViewCell {
         streakLabel.isHidden = false
         checkmarkButton.isHidden = false
         checkmarkButton.isUserInteractionEnabled = true
+        checkmarkView.isHidden = false
+        ringView.isHidden = true
         cardView.alpha = 1.0
 
         nameLabel.text = routine.name
@@ -172,21 +187,46 @@ class TodayRoutineCell: UITableViewCell {
             frequencyLabel.textColor = AppColors.secondary
 
         } else {
-            updateCompletionState(isCompleted: routine.isCompletedToday)
+            updateCompletionState(for: routine)
             streakLabel.attributedText = createStreakText(routine.currentStreak)
         }
     }
-    
+
     // MARK: - Helpers
-    private func updateCompletionState(isCompleted: Bool) {
-        if isCompleted {
+    private func updateCompletionState(for routine: Routine) {
+        let isCompleted = routine.isCompletedToday
+
+        if routine.isCountBased {
+            checkmarkView.isHidden = true
+            ringView.isHidden = false
+            ringView.configure(
+                current: routine.todayCount,
+                target: routine.targetCount,
+                progressColor: isCompleted ? AppColors.accentGreen : AppColors.accentPurple,
+                trackColor: AppColors.secondaryCardBackground,
+                textColor: isCompleted ? AppColors.accentGreen : AppColors.primary
+            )
+
+            if isCompleted {
+                cardView.alpha = 0.75
+                nameLabel.textColor = AppColors.secondary
+                frequencyLabel.textColor = AppColors.tertiary
+            } else {
+                cardView.alpha = 1.0
+                nameLabel.textColor = AppColors.primary
+                frequencyLabel.textColor = AppColors.secondary
+            }
+
+        } else if isCompleted {
             cardView.alpha = 0.75
+            checkmarkView.isHidden = false
             checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")
             checkmarkView.tintColor = AppColors.accentGreen
             nameLabel.textColor = AppColors.secondary
             frequencyLabel.textColor = AppColors.tertiary
         } else {
             cardView.alpha = 1.0
+            checkmarkView.isHidden = false
             checkmarkView.image = UIImage(systemName: "circle")
             checkmarkView.tintColor = AppColors.tertiary
             nameLabel.textColor = AppColors.primary

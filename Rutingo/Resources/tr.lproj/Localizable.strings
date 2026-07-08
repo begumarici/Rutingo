@@ -98,6 +98,8 @@
 "start_time" = "Başlangıç";
 "end_time" = "Bitiş";
 "validation_end_after_start" = "Bitiş saati başlangıç saatinden sonra olmalı.";
+"count_based" = "Adet ile takip et";
+"target_count" = "Hedef adet";
 
 /* Calendar Screen */
 "calendar" = "Takvim";

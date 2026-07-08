@@ -231,12 +231,13 @@ class TodayViewController: UIViewController {
     @objc private func addButtonTapped() {
         let addRoutineVC = AddRoutineViewController()
         let routinesViewModel = RoutinesViewModel()
-        addRoutineVC.onSave = { name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute in
+        addRoutineVC.onSave = { name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute, isCountBased, targetCount in
             routinesViewModel.addRoutine(name: name, frequency: frequency, feeling: feeling,
                                          motivation: motivation, blockType: blockType,
                                          hasReminder: hasReminder, reminderTime: reminderTime,
                                          startHour: startHour, startMinute: startMinute,
-                                         endHour: endHour, endMinute: endMinute) {
+                                         endHour: endHour, endMinute: endMinute,
+                                         isCountBased: isCountBased, targetCount: targetCount) {
                 NotificationCenter.default.post(name: NSNotification.Name("RoutineAdded"), object: nil)
             }
         }
@@ -302,12 +303,13 @@ class TodayViewController: UIViewController {
         let addVC = AddRoutineViewController()
         addVC.mode = .edit(routine)
         let routinesViewModel = RoutinesViewModel()
-        addVC.onUpdate = { [weak self] routine, name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute in
+        addVC.onUpdate = { [weak self] routine, name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute, isCountBased, targetCount in
             routinesViewModel.updateRoutine(routine: routine, name: name, frequency: frequency,
                                             feeling: feeling, motivation: motivation, blockType: blockType,
                                             hasReminder: hasReminder, reminderTime: reminderTime,
                                             startHour: startHour, startMinute: startMinute,
-                                            endHour: endHour, endMinute: endMinute) { [weak self] in
+                                            endHour: endHour, endMinute: endMinute,
+                                            isCountBased: isCountBased, targetCount: targetCount) { [weak self] in
                 self?.loadData()
             }
         }
@@ -547,6 +549,24 @@ extension TodayViewController: UITableViewDelegate {
         }
         
         // normal
+        if routine.isCountBased {
+            guard routine.todayCount > 0 else { return nil }
+
+            let undo = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
+                self?.triggerHaptic(.light)
+                self?.viewModel.decrementRoutine(routine) { [weak self] in
+                    self?.updateUIWithViewModel(); done(true)
+                }
+            }
+            undo.image = UIImage(systemName: "arrow.uturn.backward")?
+                .withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
+            undo.backgroundColor = AppColors.secondary
+
+            let config = UISwipeActionsConfiguration(actions: [undo])
+            config.performsFirstActionWithFullSwipe = true
+            return config
+        }
+
         let isCompleted = routine.isCompletedToday
         let toggle = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
             self?.triggerHaptic(.medium)
@@ -612,6 +632,42 @@ private extension TodayViewController {
             return UIMenu(title: menuTitle, children: [complete, unskip, edit, detail])
         }
 
+        let skip = UIAction(
+            title: "skip".localized,
+            image: UIImage(systemName: "forward.circle")
+        ) { [weak self] _ in
+            self?.triggerHaptic(.medium)
+            self?.viewModel.skipRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+        }
+
+        if routine.isCountBased {
+            var countActions: [UIAction] = []
+
+            if !isCompleted {
+                let complete = UIAction(
+                    title: "complete".localized,
+                    image: UIImage(systemName: "checkmark.circle")
+                ) { [weak self] _ in
+                    self?.triggerHaptic(.medium)
+                    self?.viewModel.completeRoutineCount(routine) { [weak self] in self?.updateUIWithViewModel() }
+                }
+                countActions.append(complete)
+            }
+
+            if routine.todayCount > 0 {
+                let undo = UIAction(
+                    title: "uncomplete".localized,
+                    image: UIImage(systemName: "arrow.uturn.backward")
+                ) { [weak self] _ in
+                    self?.triggerHaptic(.light)
+                    self?.viewModel.decrementRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+                }
+                countActions.append(undo)
+            }
+
+            return UIMenu(title: menuTitle, children: countActions + [skip, edit, detail])
+        }
+
         let toggleTitle = isCompleted ? "uncomplete".localized : "complete".localized
         let toggleIcon  = isCompleted ? "arrow.uturn.backward" : "checkmark.circle"
         let toggle = UIAction(
@@ -620,13 +676,6 @@ private extension TodayViewController {
         ) { [weak self] _ in
             self?.triggerHaptic(.medium)
             self?.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
-        }
-        let skip = UIAction(
-            title: "skip".localized,
-            image: UIImage(systemName: "forward.circle")
-        ) { [weak self] _ in
-            self?.triggerHaptic(.medium)
-            self?.viewModel.skipRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
         }
 
         return UIMenu(title: menuTitle, children: [toggle, skip, edit, detail])

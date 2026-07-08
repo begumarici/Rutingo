@@ -97,6 +97,8 @@
 "start_time" = "Start";
 "end_time" = "End";
 "validation_end_after_start" = "End time must be after start time.";
+"count_based" = "Track by count";
+"target_count" = "Target count";
 
 /* Calendar Screen */
 "calendar" = "Calendar";
