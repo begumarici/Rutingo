@@ -43,6 +43,9 @@
 "block_end_after_start" = "End time must be after start time.";
 "block_routines" = "Routines";
 "block_no_routines" = "No routines added to this block yet";
+"block_status_completed" = "Completed";
+"block_status_skipped" = "Skipped";
+"block_status_missed" = "Missed";
 "delete_block" = "Delete Block";
 "delete_block_message" = "Are you sure you want to delete this block?";
 "edit_block" = "Edit Block";
@@ -97,6 +100,8 @@
 "start_time" = "Start";
 "end_time" = "End";
 "validation_end_after_start" = "End time must be after start time.";
+"count_based" = "Track by count";
+"target_count" = "Target count";
 
 /* Calendar Screen */
 "calendar" = "Calendar";

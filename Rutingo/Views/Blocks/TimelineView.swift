@@ -224,6 +224,30 @@ class TimelineView: UIView {
         container.layer.masksToBounds = true
         
         let hasRoutine = !block.linkedRoutines.isEmpty
+        let routineStatus = block.routineStatus
+        let missedColor = UIColor.dynamic(light: "D93025", dark: "FF3B30")
+
+        // "repeat" just marks this block as tied to a routine; once there's a real status, show that instead.
+        let statusIconName: String
+        let statusIconColor: UIColor
+        switch routineStatus {
+        case .completed:
+            statusIconName = "checkmark.circle.fill"
+            statusIconColor = AppColors.accentGreen
+        case .skipped:
+            statusIconName = "forward.circle.fill"
+            statusIconColor = AppColors.accentOrange
+        case .missed:
+            statusIconName = "xmark.circle.fill"
+            statusIconColor = missedColor
+        case .pending, .none:
+            statusIconName = "repeat"
+            statusIconColor = isActive ? AppColors.accent : AppColors.primary
+        }
+
+        if routineStatus == .completed || routineStatus == .skipped {
+            container.alpha = 0.7
+        }
 
         let bar = UIView()
         bar.translatesAutoresizingMaskIntoConstraints = false
@@ -249,9 +273,9 @@ class TimelineView: UIView {
 
         if displayHeight < 44 {
             let titleStr = NSMutableAttributedString()
-            if hasRoutine, let icon = UIImage(systemName: "repeat")?
+            if hasRoutine, let icon = UIImage(systemName: statusIconName)?
                 .withConfiguration(UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold))
-                .withTintColor(isActive ? AppColors.accent : AppColors.primary, renderingMode: .alwaysOriginal) {
+                .withTintColor(statusIconColor, renderingMode: .alwaysOriginal) {
                 let attachment = NSTextAttachment()
                 attachment.image = icon
                 attachment.bounds = CGRect(x: 0, y: -1.5, width: 11, height: 11)
@@ -271,9 +295,9 @@ class TimelineView: UIView {
             titleLabel.attributedText = titleStr
             timeLabel.isHidden = true
         } else {
-            if hasRoutine, let icon = UIImage(systemName: "repeat")?
+            if hasRoutine, let icon = UIImage(systemName: statusIconName)?
                 .withConfiguration(UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold))
-                .withTintColor(isActive ? AppColors.accent : AppColors.primary, renderingMode: .alwaysOriginal) {
+                .withTintColor(statusIconColor, renderingMode: .alwaysOriginal) {
                 let str = NSMutableAttributedString()
                 let attachment = NSTextAttachment()
                 attachment.image = icon

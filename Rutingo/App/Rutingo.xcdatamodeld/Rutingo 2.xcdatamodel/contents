@@ -23,16 +23,19 @@
         <attribute name="frequencyData" optional="YES" attributeType="Binary"/>
         <attribute name="hasReminder" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isCountBased" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="lastFrequencyChangeDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="motivation" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="reminderTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="startHour" optional="YES" attributeType="Integer 16" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="startMinute" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="targetCount" optional="YES" attributeType="Integer 16" defaultValueString="1" usesScalarValueType="YES"/>
         <relationship name="completions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RoutineCompletion" inverseName="routine" inverseEntity="RoutineCompletion"/>
         <relationship name="timeBlocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TimeBlock" inverseName="routines" inverseEntity="TimeBlock"/>
     </entity>
     <entity name="RoutineCompletion" representedClassName="RoutineCompletion" syncable="YES" codeGenerationType="class">
+        <attribute name="currentCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="frequencySnapshot" optional="YES" attributeType="Binary"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>

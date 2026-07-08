@@ -30,7 +30,13 @@ extension Routine {
     }
     
     var completionDates: [Date] {
-        return completionArray.compactMap { $0.date }
+        return completionArray.filter { isFullyCompleted($0) }.compactMap { $0.date }
+    }
+
+    /// A completion record only counts as "done" once its count reaches the routine's target (always true for binary routines).
+    private func isFullyCompleted(_ completion: RoutineCompletion) -> Bool {
+        guard isCountBased else { return true }
+        return completion.currentCount >= max(targetCount, 1)
     }
     
     var isScheduledToday: Bool {
@@ -38,11 +44,17 @@ extension Routine {
     }
     
     var isCompletedToday: Bool {
+        return isCompleted(on: DateHelper.shared.startOfDay())
+    }
+
+    /// Today's progress count for a count-based routine (e.g. 2 of 4 glasses of water). Always 0/1 for binary routines.
+    var todayCount: Int16 {
         let today = DateHelper.shared.startOfDay()
-        return completionArray.contains {
+        guard let completion = completionArray.first(where: {
             guard let date = $0.date else { return false }
             return Calendar.current.isDate(date, inSameDayAs: today)
-        }
+        }) else { return 0 }
+        return completion.currentCount
     }
     
     var currentStreak: Int {
@@ -187,7 +199,7 @@ extension Routine {
     func isCompleted(on date: Date) -> Bool {
         return completionArray.contains { completion in
             guard let completionDate = completion.date else { return false }
-            return Calendar.current.isDate(completionDate, inSameDayAs: date)
+            return Calendar.current.isDate(completionDate, inSameDayAs: date) && isFullyCompleted(completion)
         }
     }
     

@@ -117,6 +117,28 @@ class BlocksDetailViewController: UIViewController {
         l.textColor = AppColors.accentPurple
         return l
     }()
+
+    private let statusPill: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.layer.cornerRadius = 14
+        v.isHidden = true
+        return v
+    }()
+
+    private let statusPillIcon: UIImageView = {
+        let iv = UIImageView()
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        iv.contentMode = .scaleAspectFit
+        return iv
+    }()
+
+    private let statusPillLabel: UILabel = {
+        let l = UILabel()
+        l.translatesAutoresizingMaskIntoConstraints = false
+        l.font = AppFonts.medium(13)
+        return l
+    }()
     
     // Stat cards
     private let statRow: UIView = {
@@ -155,6 +177,8 @@ class BlocksDetailViewController: UIViewController {
         l.translatesAutoresizingMaskIntoConstraints = false
         l.font = AppFonts.regular(12)
         l.textColor = AppColors.secondary
+        l.adjustsFontSizeToFitWidth = true
+        l.minimumScaleFactor = 0.7
         return l
     }()
     
@@ -188,6 +212,8 @@ class BlocksDetailViewController: UIViewController {
         l.translatesAutoresizingMaskIntoConstraints = false
         l.font = AppFonts.regular(12)
         l.textColor = AppColors.secondary
+        l.adjustsFontSizeToFitWidth = true
+        l.minimumScaleFactor = 0.7
         return l
     }()
     
@@ -321,6 +347,9 @@ class BlocksDetailViewController: UIViewController {
         headerCard.addSubview(routinePill)
         routinePill.addSubview(routinePillIcon)
         routinePill.addSubview(routinePillLabel)
+        headerCard.addSubview(statusPill)
+        statusPill.addSubview(statusPillIcon)
+        statusPill.addSubview(statusPillLabel)
         
         // Stat row
         contentView.addSubview(statRow)
@@ -410,7 +439,20 @@ class BlocksDetailViewController: UIViewController {
             routinePillLabel.leadingAnchor.constraint(equalTo: routinePillIcon.trailingAnchor, constant: 5),
             routinePillLabel.trailingAnchor.constraint(equalTo: routinePill.trailingAnchor, constant: -8),
             routinePillLabel.centerYAnchor.constraint(equalTo: routinePill.centerYAnchor),
-            
+
+            statusPill.leadingAnchor.constraint(equalTo: routinePill.trailingAnchor, constant: 8),
+            statusPill.centerYAnchor.constraint(equalTo: routinePill.centerYAnchor),
+            statusPill.heightAnchor.constraint(equalToConstant: 28),
+
+            statusPillIcon.leadingAnchor.constraint(equalTo: statusPill.leadingAnchor, constant: 8),
+            statusPillIcon.centerYAnchor.constraint(equalTo: statusPill.centerYAnchor),
+            statusPillIcon.widthAnchor.constraint(equalToConstant: 14),
+            statusPillIcon.heightAnchor.constraint(equalToConstant: 14),
+
+            statusPillLabel.leadingAnchor.constraint(equalTo: statusPillIcon.trailingAnchor, constant: 5),
+            statusPillLabel.trailingAnchor.constraint(equalTo: statusPill.trailingAnchor, constant: -8),
+            statusPillLabel.centerYAnchor.constraint(equalTo: statusPill.centerYAnchor),
+
             // Stat row
             statRow.topAnchor.constraint(equalTo: headerCard.bottomAnchor, constant: 12),
             statRow.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: p),
@@ -498,7 +540,7 @@ class BlocksDetailViewController: UIViewController {
         // Duration
         durationLabel.text = viewModel.duration(for: block)
 
-        let dayName = DateHelper.shared.formattedDayName(viewModel.selectedDate)
+        let dayName = DateHelper.shared.formattedDateShort(viewModel.selectedDate)
 
         // Stat cards
         startCardValue.text = String(format: "%02d:%02d", block.startHour, block.startMinute)
@@ -530,6 +572,35 @@ class BlocksDetailViewController: UIViewController {
         
         routinePill.layoutIfNeeded()
         routinePill.layer.cornerRadius = routinePill.bounds.height / 2
+
+        switch block.routineStatus {
+        case .completed:
+            statusPill.isHidden = false
+            statusPill.backgroundColor = AppColors.tagGreenBackground
+            statusPillIcon.image = UIImage(systemName: "checkmark.circle.fill")
+            statusPillIcon.tintColor = AppColors.tagGreenText
+            statusPillLabel.textColor = AppColors.tagGreenText
+            statusPillLabel.text = "block_status_completed".localized
+        case .skipped:
+            statusPill.isHidden = false
+            statusPill.backgroundColor = AppColors.tagOrangeBackground
+            statusPillIcon.image = UIImage(systemName: "forward.circle.fill")
+            statusPillIcon.tintColor = AppColors.tagOrangeText
+            statusPillLabel.textColor = AppColors.tagOrangeText
+            statusPillLabel.text = "block_status_skipped".localized
+        case .missed:
+            statusPill.isHidden = false
+            statusPill.backgroundColor = AppColors.tagRedBackground
+            statusPillIcon.image = UIImage(systemName: "xmark.circle.fill")
+            statusPillIcon.tintColor = AppColors.tagRedText
+            statusPillLabel.textColor = AppColors.tagRedText
+            statusPillLabel.text = "block_status_missed".localized
+        case .pending, .none:
+            statusPill.isHidden = true
+        }
+
+        statusPill.layoutIfNeeded()
+        statusPill.layer.cornerRadius = statusPill.bounds.height / 2
 
         deleteLabel.text = block.isGeneratedFromRoutine ? "skip".localized : "delete_block".localized
     }
