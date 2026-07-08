@@ -43,6 +43,9 @@
 "block_end_after_start" = "Bitiş saati başlangıçtan sonra olmalı.";
 "block_routines" = "Rutinler";
 "block_no_routines" = "Bu bloğa henüz rutin eklenmedi";
+"block_status_completed" = "Tamamlandı";
+"block_status_skipped" = "Atlandı";
+"block_status_missed" = "Kaçırıldı";
 "delete_block" = "Bloğu Sil";
 "delete_block_message" = "Bu bloğu silmek istediğine emin misin?";
 "edit_block" = "Bloğu Düzenle";

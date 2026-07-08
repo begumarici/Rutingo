@@ -43,6 +43,9 @@ enum AppColors {
     static let tagGreenBackground  = UIColor.dynamic(light: "DCF5EA", dark: "1F4734")
     static let tagGreenText        = UIColor.dynamic(light: "1E8F5E", dark: "8DEFC0")
 
+    static let tagRedBackground    = UIColor.dynamic(light: "FBE2E1", dark: "4A2323")
+    static let tagRedText          = UIColor.dynamic(light: "C23B34", dark: "FF8A80")
+
     static let tagNeutralBackground = secondaryCardBackground
     static let tagNeutralText       = primary
 
