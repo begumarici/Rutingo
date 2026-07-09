@@ -100,8 +100,24 @@
 "start_time" = "Start";
 "end_time" = "End";
 "validation_end_after_start" = "End time must be after start time.";
-"count_based" = "Track by count";
-"target_count" = "Target count";
+"count_based" = "Track by goal";
+"target_count" = "Target value";
+"unit_count" = "Count";
+"unit_steps" = "Steps";
+"unit_meters" = "Meters";
+"unit_kilometers" = "Kilometers";
+"unit_seconds" = "Seconds";
+"unit_minutes" = "Minutes";
+"unit_kcal" = "Calories";
+"unit_kilograms" = "Kilograms";
+"unit_steps_short" = "steps";
+"unit_seconds_short" = "sec";
+"unit_minutes_short" = "min";
+"today_progress" = "Today's progress";
+"reset" = "Reset";
+"reset_progress_title" = "Reset today's progress?";
+"reset_progress_message" = "This will set today's progress back to 0. This can't be undone.";
+"enter_value_title" = "Enter value";
 
 /* Calendar Screen */
 "calendar" = "Calendar";

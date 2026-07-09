@@ -38,13 +38,6 @@ class TodayRoutineCell: UITableViewCell {
         return imageView
     }()
     
-    private let ringView: CountProgressRingView = {
-        let view = CountProgressRingView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.isHidden = true
-        return view
-    }()
-
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -103,7 +96,6 @@ class TodayRoutineCell: UITableViewCell {
         contentView.addSubview(cardView)
         cardView.addSubview(checkmarkButton)
         checkmarkButton.addSubview(checkmarkView)
-        checkmarkButton.addSubview(ringView)
         cardView.addSubview(nameLabel)
         cardView.addSubview(streakLabel)
         cardView.addSubview(frequencyLabel)
@@ -126,11 +118,6 @@ class TodayRoutineCell: UITableViewCell {
             checkmarkView.centerYAnchor.constraint(equalTo: checkmarkButton.centerYAnchor),
             checkmarkView.widthAnchor.constraint(equalToConstant: 28),
             checkmarkView.heightAnchor.constraint(equalToConstant: 28),
-
-            ringView.centerXAnchor.constraint(equalTo: checkmarkButton.centerXAnchor),
-            ringView.centerYAnchor.constraint(equalTo: checkmarkButton.centerYAnchor),
-            ringView.widthAnchor.constraint(equalToConstant: 40),
-            ringView.heightAnchor.constraint(equalToConstant: 40),
 
             nameLabel.leadingAnchor.constraint(equalTo: checkmarkButton.trailingAnchor, constant: 4),
             nameLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
@@ -160,11 +147,12 @@ class TodayRoutineCell: UITableViewCell {
         checkmarkButton.isHidden = false
         checkmarkButton.isUserInteractionEnabled = true
         checkmarkView.isHidden = false
-        ringView.isHidden = true
         cardView.alpha = 1.0
 
         nameLabel.text = routine.name
-        frequencyLabel.text = routine.frequency.displayText
+        frequencyLabel.text = routine.isCountBased
+            ? "\(routine.frequency.displayText) · \(goalText(for: routine))"
+            : routine.frequency.displayText
 
         if isSkipped {
             cardView.alpha = 0.7
@@ -193,31 +181,19 @@ class TodayRoutineCell: UITableViewCell {
     }
 
     // MARK: - Helpers
+    private func goalText(for routine: Routine) -> String {
+        "\(Routine.formattedGoalValue(routine.todayValue))/\(Routine.formattedGoalValue(routine.targetValue))\(routine.routineUnit.shortSuffix)"
+    }
+
     private func updateCompletionState(for routine: Routine) {
         let isCompleted = routine.isCompletedToday
 
-        if routine.isCountBased {
-            checkmarkView.isHidden = true
-            ringView.isHidden = false
-            ringView.configure(
-                current: routine.todayCount,
-                target: routine.targetCount,
-                progressColor: isCompleted ? AppColors.accentGreen : AppColors.accentPurple,
-                trackColor: AppColors.secondaryCardBackground,
-                textColor: isCompleted ? AppColors.accentGreen : AppColors.primary
-            )
+        // Every routine can be completed by tapping the checkmark, regardless of unit. Goal-based routines
+        // just can't be un-completed this way once done (handled in the tap handler), to avoid wiping out
+        // progress a stray extra tap.
+        checkmarkButton.isUserInteractionEnabled = true
 
-            if isCompleted {
-                cardView.alpha = 0.75
-                nameLabel.textColor = AppColors.secondary
-                frequencyLabel.textColor = AppColors.tertiary
-            } else {
-                cardView.alpha = 1.0
-                nameLabel.textColor = AppColors.primary
-                frequencyLabel.textColor = AppColors.secondary
-            }
-
-        } else if isCompleted {
+        if isCompleted {
             cardView.alpha = 0.75
             checkmarkView.isHidden = false
             checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")

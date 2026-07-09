@@ -66,7 +66,8 @@ class CoreDataManager: DataManager {
         endHour: Int16,
         endMinute: Int16,
         isCountBased: Bool = false,
-        targetCount: Int16 = 1
+        targetValue: Double = 1,
+        unit: RoutineUnit = .count
     ) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()
@@ -86,7 +87,8 @@ class CoreDataManager: DataManager {
         routine.endHour = endHour
         routine.endMinute = endMinute
         routine.isCountBased = isCountBased
-        routine.targetCount = max(targetCount, 1)
+        routine.targetValue = max(targetValue, 0.01)
+        routine.routineUnit = unit
         save()
         return routine
     }
@@ -105,7 +107,8 @@ class CoreDataManager: DataManager {
         endHour: Int16,
         endMinute: Int16,
         isCountBased: Bool = false,
-        targetCount: Int16 = 1
+        targetValue: Double = 1,
+        unit: RoutineUnit = .count
     ) {
         
         if let oldData = routine.frequencyData {
@@ -128,7 +131,8 @@ class CoreDataManager: DataManager {
         routine.endHour = endHour
         routine.endMinute = endMinute
         routine.isCountBased = isCountBased
-        routine.targetCount = max(targetCount, 1)
+        routine.targetValue = max(targetValue, 0.01)
+        routine.routineUnit = unit
         save()
     }
     
@@ -150,80 +154,108 @@ class CoreDataManager: DataManager {
             // delete related skip log if there is a skip log for that day
             deleteSkipLog(routineId: routineId, date: today)
 
-            let completion = RoutineCompletion(context: viewContext)
-            completion.id = UUID()
-            completion.date = today
-            completion.routine = routine
-            completion.frequencySnapshot = routine.frequencyData
-            completion.currentCount = routine.isCountBased ? 1 : 0
+            let completion = makeCompletion(for: routine, date: today)
+            completion.currentValue = routine.isCountBased ? 1 : 0
         }
         save()
     }
 
-    /// Increments today's progress count for a count-based routine (e.g. 4 glasses of water), capped at the target.
+    /// Standard step size for +/- controls: whole units for everything (1 count, 1 km, 1 min, ...) — finer values go through `setCompletionValue`.
+    private static let goalStep: Double = 1
+
+    private func existingCompletion(for routine: Routine, on date: Date) -> RoutineCompletion? {
+        routine.completionArray.first {
+            guard let d = $0.date else { return false }
+            return Calendar.current.isDate(d, inSameDayAs: date)
+        }
+    }
+
+    /// Creates a new completion record, snapshotting the routine's current frequency and goal-tracking mode/target
+    /// so later edits to the routine don't retroactively change how this day is judged.
+    private func makeCompletion(for routine: Routine, date: Date) -> RoutineCompletion {
+        let completion = RoutineCompletion(context: viewContext)
+        completion.id = UUID()
+        completion.date = date
+        completion.routine = routine
+        completion.frequencySnapshot = routine.frequencyData
+        completion.wasCountBased = routine.isCountBased
+        completion.targetSnapshot = routine.targetValue
+        return completion
+    }
+
+    /// Increments today's progress value for a goal-based routine (e.g. 4 glasses of water), capped at the target.
     func incrementCompletionCount(_ routine: Routine) {
         let today = DateHelper.shared.startOfDay()
         guard let routineId = routine.id else { return }
-        let target = max(routine.targetCount, 1)
+        let target = max(routine.targetValue, 0.01)
 
-        if let existing = routine.completionArray.first(where: {
-            guard let date = $0.date else { return false }
-            return Calendar.current.isDate(date, inSameDayAs: today)
-        }) {
-            if existing.currentCount < target {
-                existing.currentCount += 1
-            }
+        if let existing = existingCompletion(for: routine, on: today) {
+            existing.currentValue = min(existing.currentValue + Self.goalStep, target)
         } else {
             deleteSkipLog(routineId: routineId, date: today)
-
-            let completion = RoutineCompletion(context: viewContext)
-            completion.id = UUID()
-            completion.date = today
-            completion.routine = routine
-            completion.frequencySnapshot = routine.frequencyData
-            completion.currentCount = 1
+            makeCompletion(for: routine, date: today).currentValue = min(Self.goalStep, target)
         }
         save()
     }
 
-    /// Jumps today's progress straight to the target for a count-based routine (e.g. "complete" from the context menu).
+    /// Jumps today's progress straight to the target for a goal-based routine (e.g. "complete" from the context menu).
     func completeCompletionCount(_ routine: Routine) {
         let today = DateHelper.shared.startOfDay()
         guard let routineId = routine.id else { return }
-        let target = max(routine.targetCount, 1)
+        let target = max(routine.targetValue, 0.01)
 
-        if let existing = routine.completionArray.first(where: {
-            guard let date = $0.date else { return false }
-            return Calendar.current.isDate(date, inSameDayAs: today)
-        }) {
-            existing.currentCount = target
+        if let existing = existingCompletion(for: routine, on: today) {
+            existing.currentValue = target
         } else {
             deleteSkipLog(routineId: routineId, date: today)
-
-            let completion = RoutineCompletion(context: viewContext)
-            completion.id = UUID()
-            completion.date = today
-            completion.routine = routine
-            completion.frequencySnapshot = routine.frequencyData
-            completion.currentCount = target
+            makeCompletion(for: routine, date: today).currentValue = target
         }
         save()
     }
 
-    /// Decrements today's progress count for a count-based routine, deleting the completion record once it reaches 0.
+    /// Decrements today's progress value for a goal-based routine, deleting the completion record once it reaches 0.
     func decrementCompletionCount(_ routine: Routine) {
         let today = DateHelper.shared.startOfDay()
 
-        guard let existing = routine.completionArray.first(where: {
-            guard let date = $0.date else { return false }
-            return Calendar.current.isDate(date, inSameDayAs: today)
-        }) else { return }
+        guard let existing = existingCompletion(for: routine, on: today) else { return }
 
-        if existing.currentCount <= 1 {
+        if existing.currentValue <= Self.goalStep {
             viewContext.delete(existing)
         } else {
-            existing.currentCount -= 1
+            existing.currentValue -= Self.goalStep
         }
+        save()
+    }
+
+    /// Sets today's progress to an exact value typed in by the user (e.g. "5.5" km).
+    func setCompletionValue(_ routine: Routine, value: Double) {
+        let today = DateHelper.shared.startOfDay()
+        guard let routineId = routine.id else { return }
+        let target = max(routine.targetValue, 0.01)
+        let clampedValue = min(max(value, 0), target)
+
+        if clampedValue <= 0 {
+            if let existing = existingCompletion(for: routine, on: today) {
+                viewContext.delete(existing)
+            }
+            save()
+            return
+        }
+
+        if let existing = existingCompletion(for: routine, on: today) {
+            existing.currentValue = clampedValue
+        } else {
+            deleteSkipLog(routineId: routineId, date: today)
+            makeCompletion(for: routine, date: today).currentValue = clampedValue
+        }
+        save()
+    }
+
+    /// Resets today's progress back to 0 for a goal-based routine.
+    func resetCompletionCount(_ routine: Routine) {
+        let today = DateHelper.shared.startOfDay()
+        guard let existing = existingCompletion(for: routine, on: today) else { return }
+        viewContext.delete(existing)
         save()
     }
     

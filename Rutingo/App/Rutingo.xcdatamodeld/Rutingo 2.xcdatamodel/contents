@@ -30,15 +30,18 @@
         <attribute name="reminderTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="startHour" optional="YES" attributeType="Integer 16" defaultValueString="-1" usesScalarValueType="YES"/>
         <attribute name="startMinute" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="targetCount" optional="YES" attributeType="Integer 16" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="targetValue" optional="YES" attributeType="Double" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="unit" optional="YES" attributeType="String"/>
         <relationship name="completions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="RoutineCompletion" inverseName="routine" inverseEntity="RoutineCompletion"/>
         <relationship name="timeBlocks" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TimeBlock" inverseName="routines" inverseEntity="TimeBlock"/>
     </entity>
     <entity name="RoutineCompletion" representedClassName="RoutineCompletion" syncable="YES" codeGenerationType="class">
-        <attribute name="currentCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="currentValue" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="frequencySnapshot" optional="YES" attributeType="Binary"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="targetSnapshot" optional="YES" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="wasCountBased" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="routine" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Routine" inverseName="completions" inverseEntity="Routine"/>
     </entity>
     <entity name="Task" representedClassName="Task" syncable="YES" codeGenerationType="class">

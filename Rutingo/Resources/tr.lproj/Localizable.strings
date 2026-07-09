@@ -101,8 +101,24 @@
 "start_time" = "Başlangıç";
 "end_time" = "Bitiş";
 "validation_end_after_start" = "Bitiş saati başlangıç saatinden sonra olmalı.";
-"count_based" = "Adet ile takip et";
-"target_count" = "Hedef adet";
+"count_based" = "Hedef ile takip et";
+"target_count" = "Hedef değer";
+"unit_count" = "Adet";
+"unit_steps" = "Adım";
+"unit_meters" = "Metre";
+"unit_kilometers" = "Kilometre";
+"unit_seconds" = "Saniye";
+"unit_minutes" = "Dakika";
+"unit_kcal" = "Kalori";
+"unit_kilograms" = "Kilogram";
+"unit_steps_short" = "adım";
+"unit_seconds_short" = "sn";
+"unit_minutes_short" = "dk";
+"today_progress" = "Bugünkü ilerleme";
+"reset" = "Sıfırla";
+"reset_progress_title" = "Bugünkü ilerleme sıfırlansın mı?";
+"reset_progress_message" = "Bu, bugünkü ilerlemeyi 0'a döndürür. Bu işlem geri alınamaz.";
+"enter_value_title" = "Değer gir";
 
 /* Calendar Screen */
 "calendar" = "Takvim";

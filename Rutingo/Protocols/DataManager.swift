@@ -23,7 +23,8 @@ protocol DataManager {
         endHour: Int16,
         endMinute: Int16,
         isCountBased: Bool,
-        targetCount: Int16
+        targetValue: Double,
+        unit: RoutineUnit
     ) -> Routine
     func deleteRoutine(_ routine: Routine)
     func updateRoutine(
@@ -40,12 +41,15 @@ protocol DataManager {
         endHour: Int16,
         endMinute: Int16,
         isCountBased: Bool,
-        targetCount: Int16
+        targetValue: Double,
+        unit: RoutineUnit
     )
     func toggleCompletion(_ routine: Routine)
     func incrementCompletionCount(_ routine: Routine)
     func decrementCompletionCount(_ routine: Routine)
     func completeCompletionCount(_ routine: Routine)
+    func setCompletionValue(_ routine: Routine, value: Double)
+    func resetCompletionCount(_ routine: Routine)
     func save()
     func clearAllData()
     

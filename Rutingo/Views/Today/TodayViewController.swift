@@ -231,13 +231,8 @@ class TodayViewController: UIViewController {
     @objc private func addButtonTapped() {
         let addRoutineVC = AddRoutineViewController()
         let routinesViewModel = RoutinesViewModel()
-        addRoutineVC.onSave = { name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute, isCountBased, targetCount in
-            routinesViewModel.addRoutine(name: name, frequency: frequency, feeling: feeling,
-                                         motivation: motivation, blockType: blockType,
-                                         hasReminder: hasReminder, reminderTime: reminderTime,
-                                         startHour: startHour, startMinute: startMinute,
-                                         endHour: endHour, endMinute: endMinute,
-                                         isCountBased: isCountBased, targetCount: targetCount) {
+        addRoutineVC.onSave = { form in
+            routinesViewModel.addRoutine(form) {
                 NotificationCenter.default.post(name: NSNotification.Name("RoutineAdded"), object: nil)
             }
         }
@@ -303,13 +298,8 @@ class TodayViewController: UIViewController {
         let addVC = AddRoutineViewController()
         addVC.mode = .edit(routine)
         let routinesViewModel = RoutinesViewModel()
-        addVC.onUpdate = { [weak self] routine, name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute, isCountBased, targetCount in
-            routinesViewModel.updateRoutine(routine: routine, name: name, frequency: frequency,
-                                            feeling: feeling, motivation: motivation, blockType: blockType,
-                                            hasReminder: hasReminder, reminderTime: reminderTime,
-                                            startHour: startHour, startMinute: startMinute,
-                                            endHour: endHour, endMinute: endMinute,
-                                            isCountBased: isCountBased, targetCount: targetCount) { [weak self] in
+        addVC.onUpdate = { [weak self] routine, form in
+            routinesViewModel.updateRoutine(routine: routine, form: form) { [weak self] in
                 self?.loadData()
             }
         }
@@ -550,19 +540,21 @@ extension TodayViewController: UITableViewDelegate {
         
         // normal
         if routine.isCountBased {
-            guard routine.todayCount > 0 else { return nil }
+            // Goal-based routines (any unit) can only be completed here — undoing goal progress is only
+            // possible from the routine detail screen, so once it's done there's nothing left to swipe for.
+            guard !routine.isCompletedToday else { return nil }
 
-            let undo = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
-                self?.triggerHaptic(.light)
-                self?.viewModel.decrementRoutine(routine) { [weak self] in
+            let complete = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
+                self?.triggerHaptic(.medium)
+                self?.viewModel.toggleRoutine(routine) { [weak self] in
                     self?.updateUIWithViewModel(); done(true)
                 }
             }
-            undo.image = UIImage(systemName: "arrow.uturn.backward")?
+            complete.image = UIImage(systemName: "checkmark")?
                 .withTintColor(AppColors.background, renderingMode: .alwaysOriginal)
-            undo.backgroundColor = AppColors.secondary
+            complete.backgroundColor = AppColors.accentGreen
 
-            let config = UISwipeActionsConfiguration(actions: [undo])
+            let config = UISwipeActionsConfiguration(actions: [complete])
             config.performsFirstActionWithFullSwipe = true
             return config
         }
@@ -615,19 +607,20 @@ private extension TodayViewController {
         }
 
         if isSkipped {
-            let complete = UIAction(
-                title: "complete".localized,
-                image: UIImage(systemName: "checkmark.circle")
-            ) { [weak self] _ in
-                self?.triggerHaptic(.medium)
-                self?.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
-            }
             let unskip = UIAction(
                 title: "unskip".localized,
                 image: UIImage(systemName: "arrow.uturn.backward")
             ) { [weak self] _ in
                 self?.triggerHaptic(.light)
                 self?.viewModel.unskipRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
+            }
+
+            let complete = UIAction(
+                title: "complete".localized,
+                image: UIImage(systemName: "checkmark.circle")
+            ) { [weak self] _ in
+                self?.triggerHaptic(.medium)
+                self?.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
             }
             return UIMenu(title: menuTitle, children: [complete, unskip, edit, detail])
         }
@@ -641,31 +634,19 @@ private extension TodayViewController {
         }
 
         if routine.isCountBased {
-            var countActions: [UIAction] = []
-
-            if !isCompleted {
-                let complete = UIAction(
-                    title: "complete".localized,
-                    image: UIImage(systemName: "checkmark.circle")
-                ) { [weak self] _ in
-                    self?.triggerHaptic(.medium)
-                    self?.viewModel.completeRoutineCount(routine) { [weak self] in self?.updateUIWithViewModel() }
-                }
-                countActions.append(complete)
+            // Goal-based routines (any unit) can only be completed here — undoing goal progress is only
+            // possible from the routine detail screen.
+            guard !isCompleted else {
+                return UIMenu(title: menuTitle, children: [skip, edit, detail])
             }
-
-            if routine.todayCount > 0 {
-                let undo = UIAction(
-                    title: "uncomplete".localized,
-                    image: UIImage(systemName: "arrow.uturn.backward")
-                ) { [weak self] _ in
-                    self?.triggerHaptic(.light)
-                    self?.viewModel.decrementRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
-                }
-                countActions.append(undo)
+            let complete = UIAction(
+                title: "complete".localized,
+                image: UIImage(systemName: "checkmark.circle")
+            ) { [weak self] _ in
+                self?.triggerHaptic(.medium)
+                self?.viewModel.toggleRoutine(routine) { [weak self] in self?.updateUIWithViewModel() }
             }
-
-            return UIMenu(title: menuTitle, children: countActions + [skip, edit, detail])
+            return UIMenu(title: menuTitle, children: [complete, skip, edit, detail])
         }
 
         let toggleTitle = isCompleted ? "uncomplete".localized : "complete".localized
