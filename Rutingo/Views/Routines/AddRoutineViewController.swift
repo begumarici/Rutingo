@@ -10,8 +10,8 @@ import UIKit
 class AddRoutineViewController: UIViewController {
     
     // MARK: - Properties
-    var onSave: ((String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16, Int16, Int16, Bool, Int16) -> Void)?
-    var onUpdate: ((Routine, String, Frequency, String?, String?, String?, Bool, Date?, Int16, Int16, Int16, Int16, Bool, Int16) -> Void)?
+    var onSave: ((RoutineFormData) -> Void)?
+    var onUpdate: ((Routine, RoutineFormData) -> Void)?
     var onDelete: (() -> Void)?
     
     enum Mode {
@@ -33,7 +33,8 @@ class AddRoutineViewController: UIViewController {
     private var startTime: Date = Date()
     private var endTime: Date = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
     private var isCountBased: Bool = false
-    private var targetCount: Int16 = 4
+    private var targetValue: Double = 4
+    private var selectedUnit: RoutineUnit = .count
     
     // MARK: - UI Containers
     private let nameContainer: UIView = {
@@ -191,23 +192,33 @@ class AddRoutineViewController: UIViewController {
         return label
     }()
 
-    private let countValueLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = AppFonts.semibold(15)
-        label.textColor = AppColors.primary
-        label.text = "4"
-        return label
+    private let targetValueField: UITextField = {
+        let field = UITextField()
+        field.translatesAutoresizingMaskIntoConstraints = false
+        field.font = AppFonts.semibold(15)
+        field.textColor = AppColors.primary
+        field.textAlignment = .center
+        field.keyboardType = .decimalPad
+        field.backgroundColor = AppColors.secondaryCardBackground
+        field.layer.cornerRadius = 8
+        field.text = "4"
+        return field
     }()
 
-    private let countStepper: UIStepper = {
-        let stepper = UIStepper()
-        stepper.translatesAutoresizingMaskIntoConstraints = false
-        stepper.minimumValue = 2
-        stepper.maximumValue = 20
-        stepper.value = 4
-        stepper.tintColor = AppColors.primary
-        return stepper
+    private lazy var unitButton: UIButton = {
+        var config = UIButton.Configuration.plain()
+        config.baseForegroundColor = AppColors.primary
+        config.image = UIImage(systemName: "chevron.down")
+        config.imagePlacement = .trailing
+        config.imagePadding = 4
+        config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+        let button = UIButton(configuration: config)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.backgroundColor = AppColors.secondaryCardBackground
+        button.layer.cornerRadius = 8
+        button.titleLabel?.font = AppFonts.semibold(15)
+        button.showsMenuAsPrimaryAction = true
+        return button
     }()
 
     // MARK: - UI Components
@@ -566,8 +577,8 @@ class AddRoutineViewController: UIViewController {
         countStackView.addArrangedSubview(countHeaderView)
         countStackView.addArrangedSubview(countStepperRow)
         countStepperRow.addArrangedSubview(countStepperLabel)
-        countStepperRow.addArrangedSubview(countValueLabel)
-        countStepperRow.addArrangedSubview(countStepper)
+        countStepperRow.addArrangedSubview(targetValueField)
+        countStepperRow.addArrangedSubview(unitButton)
 
         // iç yapı
         timeRangeContainer.addSubview(timeRangeStackView)
@@ -746,6 +757,11 @@ class AddRoutineViewController: UIViewController {
             countSwitch.centerYAnchor.constraint(equalTo: countHeaderView.centerYAnchor),
             countSwitch.trailingAnchor.constraint(equalTo: countHeaderView.trailingAnchor),
 
+            countStepperRow.heightAnchor.constraint(equalToConstant: 36),
+            targetValueField.widthAnchor.constraint(equalToConstant: 60),
+            targetValueField.heightAnchor.constraint(equalToConstant: 36),
+            unitButton.heightAnchor.constraint(equalToConstant: 36),
+
             // feeling container
             feelingContainer.topAnchor.constraint(equalTo: countContainer.bottomAnchor, constant: padding),
             feelingContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: padding),
@@ -877,7 +893,8 @@ class AddRoutineViewController: UIViewController {
         reminderSwitch.addTarget(self, action: #selector(reminderSwitchChanged), for: .valueChanged)
         timeRangeSwitch.addTarget(self, action: #selector(timeRangeSwitchChanged), for: .valueChanged)
         countSwitch.addTarget(self, action: #selector(countSwitchChanged), for: .valueChanged)
-        countStepper.addTarget(self, action: #selector(countStepperChanged), for: .valueChanged)
+        targetValueField.addTarget(self, action: #selector(targetValueFieldChanged), for: .editingChanged)
+        setupUnitMenu()
         saveButton.addTarget(self, action: #selector(saveButtonTapped), for: .touchUpInside)
         deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
 
@@ -990,9 +1007,22 @@ class AddRoutineViewController: UIViewController {
         }
     }
 
-    @objc private func countStepperChanged() {
-        targetCount = Int16(countStepper.value)
-        countValueLabel.text = "\(targetCount)"
+    @objc private func targetValueFieldChanged() {
+        let normalized = (targetValueField.text ?? "").replacingOccurrences(of: ",", with: ".")
+        // Double("nan"/"inf") parses successfully but isn't a usable target — ignore those, keep the last good value.
+        guard let parsed = Double(normalized), parsed.isFinite else { return }
+        targetValue = parsed
+    }
+
+    private func setupUnitMenu() {
+        let actions = RoutineUnit.allCases.map { unit in
+            UIAction(title: unit.displayText) { [weak self] _ in
+                self?.selectedUnit = unit
+                self?.unitButton.configuration?.title = unit.displayText
+            }
+        }
+        unitButton.menu = UIMenu(children: actions)
+        unitButton.configuration?.title = selectedUnit.displayText
     }
 
     @objc private func startTimeValueTapped() {
@@ -1088,11 +1118,28 @@ class AddRoutineViewController: UIViewController {
         let endHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: endTimePicker.date)) : -1
         let endMinute: Int16 = hasTimeRange ? Int16(Calendar.current.component(.minute, from: endTimePicker.date)) : 0
         
+        let form = RoutineFormData(
+            name: name,
+            frequency: selectedFrequency,
+            feeling: selectedFeeling,
+            motivation: motivationText,
+            blockType: selectedBlockType,
+            hasReminder: reminderEnabled,
+            reminderTime: reminderDate,
+            startHour: startHour,
+            startMinute: startMinute,
+            endHour: endHour,
+            endMinute: endMinute,
+            isCountBased: isCountBased,
+            targetValue: targetValue,
+            unit: selectedUnit
+        )
+
         switch mode {
         case .add:
-            onSave?(name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, startMinute, endHour, endMinute, isCountBased, targetCount)
+            onSave?(form)
         case .edit(let routine):
-            onUpdate?(routine, name, selectedFrequency, selectedFeeling, motivationText, selectedBlockType, reminderEnabled, reminderDate, startHour, startMinute, endHour, endMinute, isCountBased, targetCount)
+            onUpdate?(routine, form)
         }
         
         dismiss(animated: true)
@@ -1199,10 +1246,11 @@ class AddRoutineViewController: UIViewController {
         timePicker.isHidden = !routine.hasReminder
 
         isCountBased = routine.isCountBased
-        targetCount = max(routine.targetCount, 2)
+        targetValue = max(routine.targetValue, 0.01)
+        selectedUnit = routine.routineUnit
         countSwitch.isOn = isCountBased
-        countStepper.value = Double(targetCount)
-        countValueLabel.text = "\(targetCount)"
+        targetValueField.text = Routine.formattedGoalValue(targetValue)
+        unitButton.configuration?.title = selectedUnit.displayText
         countStepperRow.isHidden = !isCountBased
         countStepperRow.alpha = isCountBased ? 1.0 : 0.0
     }
@@ -1217,7 +1265,12 @@ class AddRoutineViewController: UIViewController {
             showAlert(message: "validation_select_day".localized)
             return false
         }
-        
+
+        if isCountBased && (!targetValue.isFinite || targetValue <= 0) {
+            showAlert(message: "validation_target_value".localized)
+            return false
+        }
+
         return true
     }
     

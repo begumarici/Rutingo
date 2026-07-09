@@ -24,36 +24,22 @@ class RoutinesViewModel {
         completion()
     }
     
-    func addRoutine(
-        name: String,
-        frequency: Frequency,
-        feeling: String?,
-        motivation: String?,
-        blockType: String?,
-        hasReminder: Bool,
-        reminderTime: Date?,
-        startHour: Int16,
-        startMinute: Int16,
-        endHour: Int16,
-        endMinute: Int16,
-        isCountBased: Bool = false,
-        targetCount: Int16 = 1,
-        completion: () -> Void
-    ) {
+    func addRoutine(_ form: RoutineFormData, completion: () -> Void) {
         let newRoutine = dataManager.saveRoutine(
-            name: name,
-            frequency: frequency,
-            feeling: feeling,
-            motivation: motivation,
-            blockType: blockType,
-            hasReminder: hasReminder,
-            reminderTime: reminderTime,
-            startHour: startHour,
-            startMinute: startMinute,
-            endHour: endHour,
-            endMinute: endMinute,
-            isCountBased: isCountBased,
-            targetCount: targetCount
+            name: form.name,
+            frequency: form.frequency,
+            feeling: form.feeling,
+            motivation: form.motivation,
+            blockType: form.blockType,
+            hasReminder: form.hasReminder,
+            reminderTime: form.reminderTime,
+            startHour: form.startHour,
+            startMinute: form.startMinute,
+            endHour: form.endHour,
+            endMinute: form.endMinute,
+            isCountBased: form.isCountBased,
+            targetValue: form.targetValue,
+            unit: form.unit
         )
         NotificationManager.shared.scheduleNotification(for: newRoutine)
         dataManager.syncGeneratedBlocks(for: newRoutine)
@@ -69,41 +55,53 @@ class RoutinesViewModel {
         loadData(completion: completion)
     }
     
-    func updateRoutine(
-        routine: Routine,
-        name: String,
-        frequency: Frequency,
-        feeling: String?,
-        motivation: String?,
-        blockType: String?,
-        hasReminder: Bool,
-        reminderTime: Date? = nil,
-        startHour: Int16,
-        startMinute: Int16,
-        endHour: Int16,
-        endMinute: Int16,
-        isCountBased: Bool = false,
-        targetCount: Int16 = 1,
-        completion: () -> Void
-    ) {
+    func updateRoutine(routine: Routine, form: RoutineFormData, completion: () -> Void) {
         dataManager.updateRoutine(
             routine: routine,
-            name: name,
-            frequency: frequency,
-            feeling: feeling,
-            motivation: motivation,
-            blockType: blockType,
-            hasReminder: hasReminder,
-            reminderTime: reminderTime,
-            startHour: startHour,
-            startMinute: startMinute,
-            endHour: endHour,
-            endMinute: endMinute,
-            isCountBased: isCountBased,
-            targetCount: targetCount
+            name: form.name,
+            frequency: form.frequency,
+            feeling: form.feeling,
+            motivation: form.motivation,
+            blockType: form.blockType,
+            hasReminder: form.hasReminder,
+            reminderTime: form.reminderTime,
+            startHour: form.startHour,
+            startMinute: form.startMinute,
+            endHour: form.endHour,
+            endMinute: form.endMinute,
+            isCountBased: form.isCountBased,
+            targetValue: form.targetValue,
+            unit: form.unit
         )
         NotificationManager.shared.scheduleNotification(for: routine)
         dataManager.syncGeneratedBlocks(for: routine)
+        loadData(completion: completion)
+    }
+
+    // MARK: - Completion (binary routines)
+    func toggleCompletion(_ routine: Routine, completion: () -> Void) {
+        dataManager.toggleCompletion(routine)
+        loadData(completion: completion)
+    }
+
+    // MARK: - Goal Progress
+    func incrementGoal(_ routine: Routine, completion: () -> Void) {
+        dataManager.incrementCompletionCount(routine)
+        loadData(completion: completion)
+    }
+
+    func decrementGoal(_ routine: Routine, completion: () -> Void) {
+        dataManager.decrementCompletionCount(routine)
+        loadData(completion: completion)
+    }
+
+    func setGoalValue(_ routine: Routine, value: Double, completion: () -> Void) {
+        dataManager.setCompletionValue(routine, value: value)
+        loadData(completion: completion)
+    }
+
+    func resetGoal(_ routine: Routine, completion: () -> Void) {
+        dataManager.resetCompletionCount(routine)
         loadData(completion: completion)
     }
 

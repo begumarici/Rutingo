@@ -61,32 +61,14 @@ class TodayViewModel {
         }
         
         if routine.isCountBased {
-            dataManager.incrementCompletionCount(routine)
+            guard routine.canQuickComplete else {
+                completion()
+                return
+            }
+            dataManager.completeCompletionCount(routine)
         } else {
             dataManager.toggleCompletion(routine)
         }
-        loadData(completion: completion)
-    }
-
-    func decrementRoutine(_ routine: Routine, completion: () -> Void) {
-        let today = DateHelper.shared.startOfDay()
-        guard selectedDate == today else {
-            completion()
-            return
-        }
-
-        dataManager.decrementCompletionCount(routine)
-        loadData(completion: completion)
-    }
-
-    func completeRoutineCount(_ routine: Routine, completion: () -> Void) {
-        let today = DateHelper.shared.startOfDay()
-        guard selectedDate == today else {
-            completion()
-            return
-        }
-
-        dataManager.completeCompletionCount(routine)
         loadData(completion: completion)
     }
     

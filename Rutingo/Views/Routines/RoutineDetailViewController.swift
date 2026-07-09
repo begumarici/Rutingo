@@ -353,6 +353,12 @@ class RoutineDetailViewController: UIViewController {
             self?.calendarCollectionView.reloadData()
         }
 
+        // completion / goal progress
+        let progressCard = routine.isCountBased ? makeGoalCard() : makeCompletionCard()
+        dynamicCards.append(progressCard)
+        let insertIndex = mainStackView.arrangedSubviews.firstIndex(of: calendarCard) ?? mainStackView.arrangedSubviews.count
+        mainStackView.insertArrangedSubview(progressCard, at: insertIndex)
+
         // time info
         var scheduleItems: [(icon: String, iconColor: UIColor, iconBg: UIColor,
                              title: String, value: String, multiline: Bool)] = []
@@ -429,6 +435,159 @@ class RoutineDetailViewController: UIViewController {
             dynamicCards.append(personalCard)
             mainStackView.addArrangedSubview(personalCard)
         }
+    }
+
+    // MARK: - Completion Card (binary routines)
+    private func makeCompletionCard() -> UIView {
+        let card = Self.makeCard()
+
+        let isCompleted = routine.isCompletedToday
+
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        var config = UIButton.Configuration.filled()
+        config.title = isCompleted ? "uncomplete".localized : "complete".localized
+        config.image = UIImage(systemName: isCompleted ? "arrow.uturn.backward" : "checkmark.circle.fill")
+        config.imagePadding = 8
+        config.baseBackgroundColor = isCompleted ? AppColors.secondaryCardBackground : AppColors.accentGreen
+        config.baseForegroundColor = isCompleted ? AppColors.primary : AppColors.onAccent
+        button.configuration = config
+        button.addTarget(self, action: #selector(completionToggleTapped), for: .touchUpInside)
+
+        card.addSubview(button)
+        NSLayoutConstraint.activate([
+            button.topAnchor.constraint(equalTo: card.topAnchor, constant: 16),
+            button.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            button.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+            button.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16),
+            button.heightAnchor.constraint(equalToConstant: 48),
+        ])
+
+        return card
+    }
+
+    @objc private func completionToggleTapped() {
+        viewModel.toggleCompletion(routine) { [weak self] in
+            self?.configureWithRoutine()
+        }
+    }
+
+    // MARK: - Goal Card
+    private func makeGoalCard() -> UIView {
+        let card = Self.makeCard()
+
+        let titleLabel = UILabel()
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.font = AppFonts.semibold(16)
+        titleLabel.textColor = AppColors.primary
+        titleLabel.text = "today_progress".localized
+
+        let minusButton = UIButton(type: .system)
+        minusButton.translatesAutoresizingMaskIntoConstraints = false
+        minusButton.setImage(UIImage(systemName: "minus.circle.fill"), for: .normal)
+        minusButton.tintColor = routine.todayValue > 0 ? AppColors.tertiary : AppColors.tertiary.withAlphaComponent(0.4)
+        minusButton.isEnabled = routine.todayValue > 0
+        minusButton.addTarget(self, action: #selector(goalDecrementTapped), for: .touchUpInside)
+
+        let plusButton = UIButton(type: .system)
+        plusButton.translatesAutoresizingMaskIntoConstraints = false
+        plusButton.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
+        plusButton.tintColor = AppColors.accentGreen
+        plusButton.addTarget(self, action: #selector(goalIncrementTapped), for: .touchUpInside)
+
+        let isCompleted = routine.isCompletedToday
+        let valueLabel = UILabel()
+        valueLabel.translatesAutoresizingMaskIntoConstraints = false
+        valueLabel.font = AppFonts.bold(24)
+        valueLabel.textColor = isCompleted ? AppColors.accentGreen : AppColors.primary
+        valueLabel.textAlignment = .center
+        valueLabel.text = "\(Routine.formattedGoalValue(routine.todayValue))/\(Routine.formattedGoalValue(routine.targetValue))\(routine.routineUnit.shortSuffix)"
+        valueLabel.isUserInteractionEnabled = true
+        valueLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(goalValueTapped)))
+
+        let resetButton = UIButton(type: .system)
+        resetButton.translatesAutoresizingMaskIntoConstraints = false
+        resetButton.setTitle("reset".localized, for: .normal)
+        resetButton.titleLabel?.font = AppFonts.medium(13)
+        resetButton.setTitleColor(AppColors.secondary, for: .normal)
+        resetButton.addTarget(self, action: #selector(goalResetTapped), for: .touchUpInside)
+
+        let controlsRow = UIStackView(arrangedSubviews: [minusButton, valueLabel, plusButton])
+        controlsRow.translatesAutoresizingMaskIntoConstraints = false
+        controlsRow.axis = .horizontal
+        controlsRow.alignment = .center
+        controlsRow.distribution = .equalSpacing
+
+        let mainStack = UIStackView(arrangedSubviews: [titleLabel, controlsRow, resetButton])
+        mainStack.translatesAutoresizingMaskIntoConstraints = false
+        mainStack.axis = .vertical
+        mainStack.spacing = 14
+        mainStack.alignment = .center
+
+        card.addSubview(mainStack)
+        NSLayoutConstraint.activate([
+            mainStack.topAnchor.constraint(equalTo: card.topAnchor, constant: 20),
+            mainStack.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 20),
+            mainStack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20),
+            mainStack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -20),
+
+            controlsRow.leadingAnchor.constraint(equalTo: mainStack.leadingAnchor),
+            controlsRow.trailingAnchor.constraint(equalTo: mainStack.trailingAnchor),
+
+            minusButton.widthAnchor.constraint(equalToConstant: 36),
+            minusButton.heightAnchor.constraint(equalToConstant: 36),
+            plusButton.widthAnchor.constraint(equalToConstant: 36),
+            plusButton.heightAnchor.constraint(equalToConstant: 36),
+        ])
+
+        return card
+    }
+
+    @objc private func goalIncrementTapped() {
+        viewModel.incrementGoal(routine) { [weak self] in
+            self?.configureWithRoutine()
+        }
+    }
+
+    @objc private func goalDecrementTapped() {
+        viewModel.decrementGoal(routine) { [weak self] in
+            self?.configureWithRoutine()
+        }
+    }
+
+    @objc private func goalResetTapped() {
+        let alert = UIAlertController(
+            title: "reset_progress_title".localized,
+            message: "reset_progress_message".localized,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+        alert.addAction(UIAlertAction(title: "reset".localized, style: .destructive) { [weak self] _ in
+            guard let self else { return }
+            self.viewModel.resetGoal(self.routine) { [weak self] in
+                self?.configureWithRoutine()
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    @objc private func goalValueTapped() {
+        let alert = UIAlertController(title: "enter_value_title".localized, message: nil, preferredStyle: .alert)
+        alert.addTextField { [weak self] field in
+            field.keyboardType = .decimalPad
+            field.text = self.map { Routine.formattedGoalValue($0.routine.todayValue) }
+        }
+        alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+        alert.addAction(UIAlertAction(title: "save".localized, style: .default) { [weak self, weak alert] _ in
+            guard let self, let text = alert?.textFields?.first?.text else { return }
+            let normalized = text.replacingOccurrences(of: ",", with: ".")
+            // Double("nan"/"inf") parses successfully but isn't a usable progress value — reject those.
+            guard let value = Double(normalized), value.isFinite else { return }
+            self.viewModel.setGoalValue(self.routine, value: value) { [weak self] in
+                self?.configureWithRoutine()
+            }
+        })
+        present(alert, animated: true)
     }
 
     // MARK: - Grouped card builder
@@ -560,25 +719,10 @@ class RoutineDetailViewController: UIViewController {
         let addVC = AddRoutineViewController()
         addVC.mode = .edit(routine)
         
-        addVC.onUpdate = { [weak self] routine, name, frequency, feeling, motivation, blockType, hasReminder, reminderTime, startHour, startMinute, endHour, endMinute, isCountBased, targetCount in
+        addVC.onUpdate = { [weak self] routine, form in
             guard let self = self else { return }
-            
-            self.viewModel.updateRoutine(routine: routine,
-                                         name: name,
-                                         frequency: frequency,
-                                         feeling: feeling,
-                                         motivation: motivation,
-                                         blockType: blockType,
-                                         hasReminder: hasReminder,
-                                         reminderTime: reminderTime,
-                                         startHour: startHour,
-                                         startMinute: startMinute,
-                                         endHour: endHour,
-                                         endMinute: endMinute,
-                                         isCountBased: isCountBased,
-                                         targetCount: targetCount
-            ) {
-                
+
+            self.viewModel.updateRoutine(routine: routine, form: form) {
                 self.routine = routine
                 self.configureWithRoutine()
             }

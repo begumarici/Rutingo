@@ -33,10 +33,12 @@ extension Routine {
         return completionArray.filter { isFullyCompleted($0) }.compactMap { $0.date }
     }
 
-    /// A completion record only counts as "done" once its count reaches the routine's target (always true for binary routines).
+    /// Whether a completion record counts as "done", based on the tracking mode/target that were in effect
+    /// on the day it was created — not the routine's current settings. Without this, switching a routine
+    /// between binary and goal-based (or changing its target) would retroactively break past streaks.
     private func isFullyCompleted(_ completion: RoutineCompletion) -> Bool {
-        guard isCountBased else { return true }
-        return completion.currentCount >= max(targetCount, 1)
+        guard completion.wasCountBased else { return true }
+        return completion.currentValue >= max(completion.targetSnapshot, 0.01)
     }
     
     var isScheduledToday: Bool {
@@ -47,14 +49,35 @@ extension Routine {
         return isCompleted(on: DateHelper.shared.startOfDay())
     }
 
-    /// Today's progress count for a count-based routine (e.g. 2 of 4 glasses of water). Always 0/1 for binary routines.
-    var todayCount: Int16 {
+    /// Whether a checkmark tap, swipe, or long-press action would complete this routine right now.
+    /// For goal-based routines this is also the *only* direction those quick actions ever go — once
+    /// complete, there's deliberately no quick "undo" (only the routine detail screen's +/-, typed value,
+    /// or reset), so a stray extra tap/swipe can't silently wipe out progress tracked manually there.
+    var canQuickComplete: Bool {
+        !isCompletedToday
+    }
+
+    /// Today's progress value for a goal-based routine (e.g. 2 of 4 glasses of water, or 3.5 of 5 km). Always 0/1 for binary routines.
+    var todayValue: Double {
         let today = DateHelper.shared.startOfDay()
         guard let completion = completionArray.first(where: {
             guard let date = $0.date else { return false }
             return Calendar.current.isDate(date, inSameDayAs: today)
         }) else { return 0 }
-        return completion.currentCount
+        return completion.currentValue
+    }
+    
+    var routineUnit: RoutineUnit {
+        get { unit.flatMap { RoutineUnit(rawValue: $0) } ?? .count }
+        set { unit = newValue == .count ? nil : newValue.rawValue }
+    }
+    
+    /// Formats a goal value for display: whole numbers show without a decimal ("2"), fractional values show one decimal ("3.5").
+    static func formattedGoalValue(_ value: Double) -> String {
+        if value.truncatingRemainder(dividingBy: 1) == 0 {
+            return String(format: "%.0f", value)
+        }
+        return String(format: "%.1f", value)
     }
     
     var currentStreak: Int {
@@ -272,5 +295,48 @@ extension Routine {
     var blockTypeEnum: BlockType? {
         guard let b = blockType else { return nil }
         return BlockType(rawValue: b)
+    }
+}
+
+// MARK: - Goal Unit
+enum RoutineUnit: String, CaseIterable {
+    case count
+    case steps
+    case meters
+    case kilometers
+    case seconds
+    case minutes
+    case kcal
+    case kilograms
+
+    var displayText: String {
+        switch self {
+        case .count:      return "unit_count".localized
+        case .steps:      return "unit_steps".localized
+        case .meters:     return "unit_meters".localized
+        case .kilometers: return "unit_kilometers".localized
+        case .seconds:    return "unit_seconds".localized
+        case .minutes:    return "unit_minutes".localized
+        case .kcal:       return "unit_kcal".localized
+        case .kilograms:  return "unit_kilograms".localized
+        }
+    }
+
+    /// Short suffix appended after the number (e.g. "3 km"). Count has none — it just reads "3".
+    var shortSuffix: String {
+        switch self {
+        case .count:      return ""
+        case .steps:      return " " + "unit_steps_short".localized
+        case .meters:     return " m"
+        case .kilometers: return " km"
+        case .seconds:    return " " + "unit_seconds_short".localized
+        case .minutes:    return " " + "unit_minutes_short".localized
+        case .kcal:       return " kcal"
+        case .kilograms:  return " kg"
+        }
+    }
+
+    var isTimeBased: Bool {
+        self == .seconds || self == .minutes
     }
 }
