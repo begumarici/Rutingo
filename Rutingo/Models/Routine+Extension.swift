@@ -49,6 +49,14 @@ extension Routine {
         return isCompleted(on: DateHelper.shared.startOfDay())
     }
 
+    /// Whether a checkmark tap, swipe, or long-press action would complete this routine right now.
+    /// For goal-based routines this is also the *only* direction those quick actions ever go — once
+    /// complete, there's deliberately no quick "undo" (only the routine detail screen's +/-, typed value,
+    /// or reset), so a stray extra tap/swipe can't silently wipe out progress tracked manually there.
+    var canQuickComplete: Bool {
+        !isCompletedToday
+    }
+
     /// Today's progress value for a goal-based routine (e.g. 2 of 4 glasses of water, or 3.5 of 5 km). Always 0/1 for binary routines.
     var todayValue: Double {
         let today = DateHelper.shared.startOfDay()

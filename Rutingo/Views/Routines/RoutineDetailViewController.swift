@@ -437,13 +437,9 @@ class RoutineDetailViewController: UIViewController {
         }
     }
 
-    // MARK: - Goal Card
     // MARK: - Completion Card (binary routines)
     private func makeCompletionCard() -> UIView {
-        let card = UIView()
-        card.translatesAutoresizingMaskIntoConstraints = false
-        card.backgroundColor = AppColors.cardBackground
-        card.layer.cornerRadius = Layout.cardCornerRadius
+        let card = Self.makeCard()
 
         let isCompleted = routine.isCompletedToday
 
@@ -478,10 +474,7 @@ class RoutineDetailViewController: UIViewController {
 
     // MARK: - Goal Card
     private func makeGoalCard() -> UIView {
-        let card = UIView()
-        card.translatesAutoresizingMaskIntoConstraints = false
-        card.backgroundColor = AppColors.cardBackground
-        card.layer.cornerRadius = Layout.cardCornerRadius
+        let card = Self.makeCard()
 
         let titleLabel = UILabel()
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -588,7 +581,8 @@ class RoutineDetailViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "save".localized, style: .default) { [weak self, weak alert] _ in
             guard let self, let text = alert?.textFields?.first?.text else { return }
             let normalized = text.replacingOccurrences(of: ",", with: ".")
-            guard let value = Double(normalized) else { return }
+            // Double("nan"/"inf") parses successfully but isn't a usable progress value — reject those.
+            guard let value = Double(normalized), value.isFinite else { return }
             self.viewModel.setGoalValue(self.routine, value: value) { [weak self] in
                 self?.configureWithRoutine()
             }

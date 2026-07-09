@@ -540,9 +540,7 @@ extension TodayViewController: UITableViewDelegate {
         
         // normal
         if routine.isCountBased {
-            // Goal-based routines (any unit) can only be completed here — undoing goal progress is only
-            // possible from the routine detail screen, so once it's done there's nothing left to swipe for.
-            guard !routine.isCompletedToday else { return nil }
+            guard routine.canQuickComplete else { return nil }
 
             let complete = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
                 self?.triggerHaptic(.medium)
@@ -634,9 +632,7 @@ private extension TodayViewController {
         }
 
         if routine.isCountBased {
-            // Goal-based routines (any unit) can only be completed here — undoing goal progress is only
-            // possible from the routine detail screen.
-            guard !isCompleted else {
+            guard routine.canQuickComplete else {
                 return UIMenu(title: menuTitle, children: [skip, edit, detail])
             }
             let complete = UIAction(

@@ -61,10 +61,7 @@ class TodayViewModel {
         }
         
         if routine.isCountBased {
-            // Goal-based routines (any unit) can only be completed this way, never un-completed — a stray
-            // extra tap shouldn't wipe out progress the user built up manually (detail-page +/-, typed value).
-            // Undoing goal progress is only possible from the routine detail screen.
-            guard !routine.isCompletedToday else {
+            guard routine.canQuickComplete else {
                 completion()
                 return
             }

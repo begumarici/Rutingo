@@ -1009,7 +1009,9 @@ class AddRoutineViewController: UIViewController {
 
     @objc private func targetValueFieldChanged() {
         let normalized = (targetValueField.text ?? "").replacingOccurrences(of: ",", with: ".")
-        targetValue = Double(normalized) ?? targetValue
+        // Double("nan"/"inf") parses successfully but isn't a usable target — ignore those, keep the last good value.
+        guard let parsed = Double(normalized), parsed.isFinite else { return }
+        targetValue = parsed
     }
 
     private func setupUnitMenu() {
@@ -1263,7 +1265,12 @@ class AddRoutineViewController: UIViewController {
             showAlert(message: "validation_select_day".localized)
             return false
         }
-        
+
+        if isCountBased && (!targetValue.isFinite || targetValue <= 0) {
+            showAlert(message: "validation_target_value".localized)
+            return false
+        }
+
         return true
     }
     

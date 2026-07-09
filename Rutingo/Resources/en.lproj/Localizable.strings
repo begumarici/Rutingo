@@ -95,6 +95,7 @@
 "update" = "Update";
 "validation_name_empty" = "Please enter a routine name.";
 "validation_select_day" = "Please select at least one day.";
+"validation_target_value" = "Please enter a target value greater than 0.";
 "error" = "Error";
 "time_range" = "Time range";
 "start_time" = "Start";

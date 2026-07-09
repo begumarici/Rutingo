@@ -96,6 +96,7 @@
 "delete" = "Sil";
 "validation_name_empty" = "Lütfen rutin adını gir.";
 "validation_select_day" = "Lütfen en az bir gün seç.";
+"validation_target_value" = "Lütfen 0'dan büyük bir hedef değer gir.";
 "error" = "Hata";
 "time_range" = "Saat aralığı";
 "start_time" = "Başlangıç";
