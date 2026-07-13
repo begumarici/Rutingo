@@ -52,7 +52,7 @@ class CalendarViewModel {
     init(dataManager: DataManager = CoreDataManager.shared) {
         self.dataManager = dataManager
         self.currentMonth = Date()
-        self.selectedDate = Date()
+        self.selectedDate = DateHelper.shared.startOfDay()
     }
     
     // MARK: - Public Methods
@@ -69,12 +69,20 @@ class CalendarViewModel {
         completion()
     }
     
+    /// Selects an arbitrary date directly (e.g. tapping a day in the detail calendar, or jumping back to today).
+    /// Normalized to the start of day so future/past comparisons elsewhere stay accurate.
+    func selectDate(_ date: Date, completion: () -> Void) {
+        self.selectedDate = DateHelper.shared.startOfDay(date)
+        generateGrid()
+        completion()
+    }
+
     func changeMonth(by value: Int, completion: () -> Void) {
         guard let newDate = Calendar.current.date(byAdding: .month, value: value, to: currentMonth) else { return }
         currentMonth = newDate
     
         if Calendar.current.isDate(newDate, equalTo: Date(), toGranularity: .month) {
-            selectedDate = Date()
+            selectedDate = DateHelper.shared.startOfDay()
         } else {
             let components = Calendar.current.dateComponents([.year, .month], from: newDate)
             if let startOfMonth = Calendar.current.date(from: components) {

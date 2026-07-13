@@ -437,11 +437,51 @@ class RoutineDetailViewController: UIViewController {
         }
     }
 
+    // MARK: - Selected Day Header (shared by completion/goal cards)
+    /// Shows which day the progress card below is acting on — "Today" or a formatted past date,
+    /// with a quick way back once a past day has been selected via the calendar.
+    private func makeSelectedDayHeader() -> UIView {
+        let date = calendarViewModel.selectedDate
+        let isToday = Calendar.current.isDateInToday(date)
+
+        let dayLabel = UILabel()
+        dayLabel.translatesAutoresizingMaskIntoConstraints = false
+        dayLabel.font = AppFonts.semibold(15)
+        dayLabel.textColor = AppColors.secondary
+        dayLabel.text = isToday ? "today".localized : DateHelper.shared.formattedDateShort(date)
+
+        let row = UIStackView(arrangedSubviews: [dayLabel])
+        row.translatesAutoresizingMaskIntoConstraints = false
+        row.axis = .horizontal
+        row.alignment = .center
+        row.distribution = .equalSpacing
+
+        if !isToday {
+            let backButton = UIButton(type: .system)
+            backButton.translatesAutoresizingMaskIntoConstraints = false
+            backButton.setTitle("back_to_today".localized, for: .normal)
+            backButton.titleLabel?.font = AppFonts.medium(13)
+            backButton.addTarget(self, action: #selector(backToTodayTapped), for: .touchUpInside)
+            row.addArrangedSubview(backButton)
+        }
+
+        return row
+    }
+
+    @objc private func backToTodayTapped() {
+        calendarViewModel.selectDate(Date()) { [weak self] in
+            self?.configureWithRoutine()
+        }
+    }
+
     // MARK: - Completion Card (binary routines)
     private func makeCompletionCard() -> UIView {
         let card = Self.makeCard()
+        let date = calendarViewModel.selectedDate
+        let isFuture = date > DateHelper.shared.startOfDay()
+        let isCompleted = routine.isCompleted(on: date)
 
-        let isCompleted = routine.isCompletedToday
+        let header = makeSelectedDayHeader()
 
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -452,14 +492,21 @@ class RoutineDetailViewController: UIViewController {
         config.baseBackgroundColor = isCompleted ? AppColors.secondaryCardBackground : AppColors.accentGreen
         config.baseForegroundColor = isCompleted ? AppColors.primary : AppColors.onAccent
         button.configuration = config
+        button.isEnabled = !isFuture
+        button.alpha = isFuture ? 0.5 : 1.0
         button.addTarget(self, action: #selector(completionToggleTapped), for: .touchUpInside)
 
-        card.addSubview(button)
+        let stack = UIStackView(arrangedSubviews: [header, button])
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 12
+
+        card.addSubview(stack)
         NSLayoutConstraint.activate([
-            button.topAnchor.constraint(equalTo: card.topAnchor, constant: 16),
-            button.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
-            button.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
-            button.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16),
+            stack.topAnchor.constraint(equalTo: card.topAnchor, constant: 16),
+            stack.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -16),
+            stack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -16),
             button.heightAnchor.constraint(equalToConstant: 48),
         ])
 
@@ -467,7 +514,8 @@ class RoutineDetailViewController: UIViewController {
     }
 
     @objc private func completionToggleTapped() {
-        viewModel.toggleCompletion(routine) { [weak self] in
+        let date = calendarViewModel.selectedDate
+        viewModel.toggleCompletion(routine, on: date) { [weak self] in
             self?.configureWithRoutine()
         }
     }
@@ -475,34 +523,34 @@ class RoutineDetailViewController: UIViewController {
     // MARK: - Goal Card
     private func makeGoalCard() -> UIView {
         let card = Self.makeCard()
+        let date = calendarViewModel.selectedDate
+        let isFuture = date > DateHelper.shared.startOfDay()
+        let value = routine.value(on: date)
 
-        let titleLabel = UILabel()
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = AppFonts.semibold(16)
-        titleLabel.textColor = AppColors.primary
-        titleLabel.text = "today_progress".localized
+        let header = makeSelectedDayHeader()
 
         let minusButton = UIButton(type: .system)
         minusButton.translatesAutoresizingMaskIntoConstraints = false
         minusButton.setImage(UIImage(systemName: "minus.circle.fill"), for: .normal)
-        minusButton.tintColor = routine.todayValue > 0 ? AppColors.tertiary : AppColors.tertiary.withAlphaComponent(0.4)
-        minusButton.isEnabled = routine.todayValue > 0
+        minusButton.tintColor = value > 0 ? AppColors.tertiary : AppColors.tertiary.withAlphaComponent(0.4)
+        minusButton.isEnabled = value > 0 && !isFuture
         minusButton.addTarget(self, action: #selector(goalDecrementTapped), for: .touchUpInside)
 
         let plusButton = UIButton(type: .system)
         plusButton.translatesAutoresizingMaskIntoConstraints = false
         plusButton.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
-        plusButton.tintColor = AppColors.accentGreen
+        plusButton.tintColor = isFuture ? AppColors.accentGreen.withAlphaComponent(0.4) : AppColors.accentGreen
+        plusButton.isEnabled = !isFuture
         plusButton.addTarget(self, action: #selector(goalIncrementTapped), for: .touchUpInside)
 
-        let isCompleted = routine.isCompletedToday
+        let isCompleted = routine.isCompleted(on: date)
         let valueLabel = UILabel()
         valueLabel.translatesAutoresizingMaskIntoConstraints = false
         valueLabel.font = AppFonts.bold(24)
         valueLabel.textColor = isCompleted ? AppColors.accentGreen : AppColors.primary
         valueLabel.textAlignment = .center
-        valueLabel.text = "\(Routine.formattedGoalValue(routine.todayValue))/\(Routine.formattedGoalValue(routine.targetValue))\(routine.routineUnit.shortSuffix)"
-        valueLabel.isUserInteractionEnabled = true
+        valueLabel.text = "\(Routine.formattedGoalValue(value))/\(Routine.formattedGoalValue(routine.targetValue))\(routine.routineUnit.shortSuffix)"
+        valueLabel.isUserInteractionEnabled = !isFuture
         valueLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(goalValueTapped)))
 
         let resetButton = UIButton(type: .system)
@@ -510,6 +558,7 @@ class RoutineDetailViewController: UIViewController {
         resetButton.setTitle("reset".localized, for: .normal)
         resetButton.titleLabel?.font = AppFonts.medium(13)
         resetButton.setTitleColor(AppColors.secondary, for: .normal)
+        resetButton.isEnabled = !isFuture
         resetButton.addTarget(self, action: #selector(goalResetTapped), for: .touchUpInside)
 
         let controlsRow = UIStackView(arrangedSubviews: [minusButton, valueLabel, plusButton])
@@ -518,7 +567,7 @@ class RoutineDetailViewController: UIViewController {
         controlsRow.alignment = .center
         controlsRow.distribution = .equalSpacing
 
-        let mainStack = UIStackView(arrangedSubviews: [titleLabel, controlsRow, resetButton])
+        let mainStack = UIStackView(arrangedSubviews: [header, controlsRow, resetButton])
         mainStack.translatesAutoresizingMaskIntoConstraints = false
         mainStack.axis = .vertical
         mainStack.spacing = 14
@@ -530,6 +579,9 @@ class RoutineDetailViewController: UIViewController {
             mainStack.leadingAnchor.constraint(equalTo: card.leadingAnchor, constant: 20),
             mainStack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -20),
             mainStack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -20),
+
+            header.leadingAnchor.constraint(equalTo: mainStack.leadingAnchor),
+            header.trailingAnchor.constraint(equalTo: mainStack.trailingAnchor),
 
             controlsRow.leadingAnchor.constraint(equalTo: mainStack.leadingAnchor),
             controlsRow.trailingAnchor.constraint(equalTo: mainStack.trailingAnchor),
@@ -544,13 +596,15 @@ class RoutineDetailViewController: UIViewController {
     }
 
     @objc private func goalIncrementTapped() {
-        viewModel.incrementGoal(routine) { [weak self] in
+        let date = calendarViewModel.selectedDate
+        viewModel.incrementGoal(routine, on: date) { [weak self] in
             self?.configureWithRoutine()
         }
     }
 
     @objc private func goalDecrementTapped() {
-        viewModel.decrementGoal(routine) { [weak self] in
+        let date = calendarViewModel.selectedDate
+        viewModel.decrementGoal(routine, on: date) { [weak self] in
             self?.configureWithRoutine()
         }
     }
@@ -564,7 +618,8 @@ class RoutineDetailViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
         alert.addAction(UIAlertAction(title: "reset".localized, style: .destructive) { [weak self] _ in
             guard let self else { return }
-            self.viewModel.resetGoal(self.routine) { [weak self] in
+            let date = self.calendarViewModel.selectedDate
+            self.viewModel.resetGoal(self.routine, on: date) { [weak self] in
                 self?.configureWithRoutine()
             }
         })
@@ -572,10 +627,11 @@ class RoutineDetailViewController: UIViewController {
     }
 
     @objc private func goalValueTapped() {
+        let date = calendarViewModel.selectedDate
         let alert = UIAlertController(title: "enter_value_title".localized, message: nil, preferredStyle: .alert)
         alert.addTextField { [weak self] field in
             field.keyboardType = .decimalPad
-            field.text = self.map { Routine.formattedGoalValue($0.routine.todayValue) }
+            field.text = self.map { Routine.formattedGoalValue($0.routine.value(on: date)) }
         }
         alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
         alert.addAction(UIAlertAction(title: "save".localized, style: .default) { [weak self, weak alert] _ in
@@ -583,7 +639,7 @@ class RoutineDetailViewController: UIViewController {
             let normalized = text.replacingOccurrences(of: ",", with: ".")
             // Double("nan"/"inf") parses successfully but isn't a usable progress value — reject those.
             guard let value = Double(normalized), value.isFinite else { return }
-            self.viewModel.setGoalValue(self.routine, value: value) { [weak self] in
+            self.viewModel.setGoalValue(self.routine, value: value, on: date) { [weak self] in
                 self?.configureWithRoutine()
             }
         })
@@ -759,6 +815,23 @@ extension RoutineDetailViewController: UICollectionViewDataSource, UICollectionV
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = floor(collectionView.bounds.width / 7)
         return CGSize(width: width, height: 40)
+    }
+
+    /// Selecting a day here doesn't act on it directly — it drives the completion/goal card below,
+    /// which shows and edits that day's progress in place (see `makeSelectedDayHeader`).
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        let item = calendarViewModel.uiModels[indexPath.item]
+        guard let date = item.date else { return }
+
+        switch item.dayStatus {
+        case .empty, .future, .notScheduled:
+            return
+        case .completed, .skipped, .missed, .pending:
+            calendarViewModel.selectDate(date) { [weak self] in
+                self?.configureWithRoutine()
+            }
+        }
     }
 }
 

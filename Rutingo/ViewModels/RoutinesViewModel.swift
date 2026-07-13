@@ -79,29 +79,29 @@ class RoutinesViewModel {
     }
 
     // MARK: - Completion (binary routines)
-    func toggleCompletion(_ routine: Routine, completion: () -> Void) {
-        dataManager.toggleCompletion(routine)
+    func toggleCompletion(_ routine: Routine, on date: Date = Date(), completion: () -> Void) {
+        dataManager.toggleCompletion(routine, on: date)
         loadData(completion: completion)
     }
 
     // MARK: - Goal Progress
-    func incrementGoal(_ routine: Routine, completion: () -> Void) {
-        dataManager.incrementCompletionCount(routine)
+    func incrementGoal(_ routine: Routine, on date: Date = Date(), completion: () -> Void) {
+        dataManager.incrementCompletionCount(routine, on: date)
         loadData(completion: completion)
     }
 
-    func decrementGoal(_ routine: Routine, completion: () -> Void) {
-        dataManager.decrementCompletionCount(routine)
+    func decrementGoal(_ routine: Routine, on date: Date = Date(), completion: () -> Void) {
+        dataManager.decrementCompletionCount(routine, on: date)
         loadData(completion: completion)
     }
 
-    func setGoalValue(_ routine: Routine, value: Double, completion: () -> Void) {
-        dataManager.setCompletionValue(routine, value: value)
+    func setGoalValue(_ routine: Routine, value: Double, on date: Date = Date(), completion: () -> Void) {
+        dataManager.setCompletionValue(routine, value: value, on: date)
         loadData(completion: completion)
     }
 
-    func resetGoal(_ routine: Routine, completion: () -> Void) {
-        dataManager.resetCompletionCount(routine)
+    func resetGoal(_ routine: Routine, on date: Date = Date(), completion: () -> Void) {
+        dataManager.resetCompletionCount(routine, on: date)
         loadData(completion: completion)
     }
 

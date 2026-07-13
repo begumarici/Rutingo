@@ -115,11 +115,12 @@
 "unit_steps_short" = "adım";
 "unit_seconds_short" = "sn";
 "unit_minutes_short" = "dk";
-"today_progress" = "Bugünkü ilerleme";
 "reset" = "Sıfırla";
-"reset_progress_title" = "Bugünkü ilerleme sıfırlansın mı?";
-"reset_progress_message" = "Bu, bugünkü ilerlemeyi 0'a döndürür. Bu işlem geri alınamaz.";
+"reset_progress_title" = "İlerleme sıfırlansın mı?";
+"reset_progress_message" = "Bu, seçili günün ilerlemesini 0'a döndürür. Bu işlem geri alınamaz.";
 "enter_value_title" = "Değer gir";
+"today" = "Bugün";
+"back_to_today" = "Bugüne dön";
 
 /* Calendar Screen */
 "calendar" = "Takvim";

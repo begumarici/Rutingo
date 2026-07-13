@@ -114,11 +114,12 @@
 "unit_steps_short" = "steps";
 "unit_seconds_short" = "sec";
 "unit_minutes_short" = "min";
-"today_progress" = "Today's progress";
 "reset" = "Reset";
-"reset_progress_title" = "Reset today's progress?";
-"reset_progress_message" = "This will set today's progress back to 0. This can't be undone.";
+"reset_progress_title" = "Reset progress?";
+"reset_progress_message" = "This will set the selected day's progress back to 0. This can't be undone.";
 "enter_value_title" = "Enter value";
+"today" = "Today";
+"back_to_today" = "Back to today";
 
 /* Calendar Screen */
 "calendar" = "Calendar";

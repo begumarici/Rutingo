@@ -54,15 +54,24 @@ extension Routine {
     /// complete, there's deliberately no quick "undo" (only the routine detail screen's +/-, typed value,
     /// or reset), so a stray extra tap/swipe can't silently wipe out progress tracked manually there.
     var canQuickComplete: Bool {
-        !isCompletedToday
+        canQuickComplete(on: DateHelper.shared.startOfDay())
+    }
+
+    /// Same as `canQuickComplete`, but for an arbitrary day (e.g. logging a past day from Today or the routine calendar).
+    func canQuickComplete(on date: Date) -> Bool {
+        !isCompleted(on: date)
     }
 
     /// Today's progress value for a goal-based routine (e.g. 2 of 4 glasses of water, or 3.5 of 5 km). Always 0/1 for binary routines.
     var todayValue: Double {
-        let today = DateHelper.shared.startOfDay()
+        value(on: DateHelper.shared.startOfDay())
+    }
+
+    /// Progress value recorded for an arbitrary day (e.g. 2 of 4 glasses of water on a past date). Always 0/1 for binary routines.
+    func value(on date: Date) -> Double {
         guard let completion = completionArray.first(where: {
-            guard let date = $0.date else { return false }
-            return Calendar.current.isDate(date, inSameDayAs: today)
+            guard let d = $0.date else { return false }
+            return Calendar.current.isDate(d, inSameDayAs: date)
         }) else { return 0 }
         return completion.currentValue
     }

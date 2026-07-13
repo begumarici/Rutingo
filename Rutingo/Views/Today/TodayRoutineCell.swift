@@ -138,7 +138,7 @@ class TodayRoutineCell: UITableViewCell {
     }
 
     // MARK: - Configuration
-    func configure(with routine: Routine, isNotToday: Bool = false, isSkipped: Bool = false) {
+    func configure(with routine: Routine, date: Date, isFuture: Bool = false, isSkipped: Bool = false) {
         // reset
         nameLabel.attributedText = nil
         nameLabel.textColor = AppColors.primary
@@ -151,7 +151,7 @@ class TodayRoutineCell: UITableViewCell {
 
         nameLabel.text = routine.name
         frequencyLabel.text = routine.isCountBased
-            ? "\(routine.frequency.displayText) · \(goalText(for: routine))"
+            ? "\(routine.frequency.displayText) · \(goalText(for: routine, on: date))"
             : routine.frequency.displayText
 
         if isSkipped {
@@ -167,7 +167,7 @@ class TodayRoutineCell: UITableViewCell {
             frequencyLabel.textColor = AppColors.secondary.withAlphaComponent(0.6)
             streakLabel.attributedText = createStreakText(routine.currentStreak)
 
-        } else if isNotToday {
+        } else if isFuture {
             cardView.alpha = 0.7
             checkmarkButton.isHidden = true
             streakLabel.isHidden = true
@@ -175,18 +175,18 @@ class TodayRoutineCell: UITableViewCell {
             frequencyLabel.textColor = AppColors.secondary
 
         } else {
-            updateCompletionState(for: routine)
+            updateCompletionState(for: routine, on: date)
             streakLabel.attributedText = createStreakText(routine.currentStreak)
         }
     }
 
     // MARK: - Helpers
-    private func goalText(for routine: Routine) -> String {
-        "\(Routine.formattedGoalValue(routine.todayValue))/\(Routine.formattedGoalValue(routine.targetValue))\(routine.routineUnit.shortSuffix)"
+    private func goalText(for routine: Routine, on date: Date) -> String {
+        "\(Routine.formattedGoalValue(routine.value(on: date)))/\(Routine.formattedGoalValue(routine.targetValue))\(routine.routineUnit.shortSuffix)"
     }
 
-    private func updateCompletionState(for routine: Routine) {
-        let isCompleted = routine.isCompletedToday
+    private func updateCompletionState(for routine: Routine, on date: Date) {
+        let isCompleted = routine.isCompleted(on: date)
 
         // Every routine can be completed by tapping the checkmark, regardless of unit. Goal-based routines
         // just can't be un-completed this way once done (handled in the tap handler), to avoid wiping out
