@@ -55,19 +55,19 @@ class TodayViewModel {
     
     func toggleRoutine(_ routine: Routine, completion: () -> Void) {
         let today = DateHelper.shared.startOfDay()
-        guard selectedDate == today else {
+        guard selectedDate <= today else {
             completion()
             return
         }
         
         if routine.isCountBased {
-            guard routine.canQuickComplete else {
+            guard routine.canQuickComplete(on: selectedDate) else {
                 completion()
                 return
             }
-            dataManager.completeCompletionCount(routine)
+            dataManager.completeCompletionCount(routine, on: selectedDate)
         } else {
-            dataManager.toggleCompletion(routine)
+            dataManager.toggleCompletion(routine, on: selectedDate)
         }
         loadData(completion: completion)
     }
@@ -79,56 +79,49 @@ class TodayViewModel {
     
     private func sortRoutinesByCompletion() {
         todayRoutines.sort { routine1, routine2 in
-            if routine1.isCompletedToday == routine2.isCompletedToday {
+            let completed1 = routine1.isCompleted(on: selectedDate)
+            let completed2 = routine2.isCompleted(on: selectedDate)
+            if completed1 == completed2 {
                 return false
             }
-            return !routine1.isCompletedToday
+            return !completed1
         }
     }
     
     private func separateRoutinesByCompletion() {
-        let today = DateHelper.shared.startOfDay()
-        
-        // only show completed section on current day
-        if selectedDate == today {
-            notCompletedRoutines = todayRoutines.filter {
-                !$0.isCompletedToday && !dataManager.hasSkipLog(routineId: $0.id ?? UUID(), date: today)
-            }
-            completedRoutines = todayRoutines.filter { $0.isCompletedToday }
-            skippedRoutines = todayRoutines.filter {
-                dataManager.hasSkipLog(routineId: $0.id ?? UUID(), date: today)
-            }
-        } else {
-            notCompletedRoutines = todayRoutines
-            completedRoutines = []
-            skippedRoutines = []
+        notCompletedRoutines = todayRoutines.filter {
+            !$0.isCompleted(on: selectedDate) && !dataManager.hasSkipLog(routineId: $0.id ?? UUID(), date: selectedDate)
+        }
+        completedRoutines = todayRoutines.filter { $0.isCompleted(on: selectedDate) }
+        skippedRoutines = todayRoutines.filter {
+            dataManager.hasSkipLog(routineId: $0.id ?? UUID(), date: selectedDate)
         }
     }
     
     func skipRoutine(_ routine: Routine, completion: () -> Void) {
         let today = DateHelper.shared.startOfDay()
-        guard selectedDate == today else {
+        guard selectedDate <= today else {
             completion()
             return
         }
         
         if let id = routine.id {
-            dataManager.saveSkipLog(routineId: id, date: today, reason: "skipped_from_today")
+            dataManager.saveSkipLog(routineId: id, date: selectedDate, reason: "skipped_from_today")
         }
         
-        CoreDataManager.shared.deleteGeneratedBlockForDate(routineId: routine.id, date: today)
+        CoreDataManager.shared.deleteGeneratedBlockForDate(routineId: routine.id, date: selectedDate)
         loadData(completion: completion)
     }
     
     func unskipRoutine(_ routine: Routine, completion: () -> Void) {
         let today = DateHelper.shared.startOfDay()
-        guard selectedDate == today else {
+        guard selectedDate <= today else {
             completion()
             return
         }
         
         if let id = routine.id {
-            dataManager.deleteSkipLog(routineId: id, date: today)
+            dataManager.deleteSkipLog(routineId: id, date: selectedDate)
         }
         
         CoreDataManager.shared.syncGeneratedBlocks(for: routine)

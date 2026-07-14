@@ -325,8 +325,9 @@ class TodayViewController: UIViewController {
         }
     }
     
-    private func isPastOrFutureDay() -> Bool {
-        viewModel.selectedDate != DateHelper.shared.startOfDay()
+    /// Only future days are read-only now — past days can still be logged retroactively.
+    private func isFutureDay() -> Bool {
+        viewModel.selectedDate > DateHelper.shared.startOfDay()
     }
     
     private func triggerHaptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
@@ -353,7 +354,7 @@ class TodayViewController: UIViewController {
 // MARK: - UITableViewDataSource
 extension TodayViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        isPastOrFutureDay() ? 1 : 3
+        isFutureDay() ? 1 : 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -386,10 +387,10 @@ extension TodayViewController: UITableViewDataSource {
                                                        for: indexPath) as? TodayRoutineCell,
               let routine = routine(at: indexPath) else { return UITableViewCell() }
         
-        cell.configure(with: routine, isNotToday: isPastOrFutureDay(), isSkipped: indexPath.section == 2)
+        cell.configure(with: routine, date: viewModel.selectedDate, isFuture: isFutureDay(), isSkipped: indexPath.section == 2)
         
         cell.onCheckmarkTapped = { [weak self] in
-            guard let self, !self.isPastOrFutureDay() else {
+            guard let self, !self.isFutureDay() else {
                 self?.triggerWarningHaptic()
                 return
             }
@@ -475,7 +476,7 @@ extension TodayViewController: UITableViewDelegate {
                    leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         guard !isCompletedSectionHeader(at: indexPath),
               !isSkippedSectionHeader(at: indexPath),
-              !isPastOrFutureDay(),
+              !isFutureDay(),
               let routine = routine(at: indexPath) else { return nil }
         
         if indexPath.section == 2 {
@@ -508,7 +509,7 @@ extension TodayViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        guard !isPastOrFutureDay(),
+        guard !isFutureDay(),
               !isCompletedSectionHeader(at: indexPath),
               !isSkippedSectionHeader(at: indexPath),
               let routine = routine(at: indexPath) else {
@@ -540,7 +541,7 @@ extension TodayViewController: UITableViewDelegate {
         
         // normal
         if routine.isCountBased {
-            guard routine.canQuickComplete else { return nil }
+            guard routine.canQuickComplete(on: viewModel.selectedDate) else { return nil }
 
             let complete = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
                 self?.triggerHaptic(.medium)
@@ -557,7 +558,7 @@ extension TodayViewController: UITableViewDelegate {
             return config
         }
 
-        let isCompleted = routine.isCompletedToday
+        let isCompleted = routine.isCompleted(on: viewModel.selectedDate)
         let toggle = UIContextualAction(style: .normal, title: nil) { [weak self] _, _, done in
             self?.triggerHaptic(.medium)
             
@@ -579,9 +580,9 @@ extension TodayViewController: UITableViewDelegate {
 private extension TodayViewController {
     
     func makeContextMenu(for routine: Routine, at indexPath: IndexPath) -> UIMenu {
-        let isCompleted = routine.isCompletedToday
+        let isCompleted = routine.isCompleted(on: viewModel.selectedDate)
         let isSkipped   = indexPath.section == 2
-        let isToday     = !isPastOrFutureDay()
+        let isEditable  = !isFutureDay()
         let menuTitle   = routine.name ?? ""
         
         // Edit
@@ -600,7 +601,7 @@ private extension TodayViewController {
             self?.openDetail(for: routine)
         }
 
-        guard isToday else {
+        guard isEditable else {
             return UIMenu(title: menuTitle, children: [detail, edit])
         }
 
@@ -632,7 +633,7 @@ private extension TodayViewController {
         }
 
         if routine.isCountBased {
-            guard routine.canQuickComplete else {
+            guard routine.canQuickComplete(on: viewModel.selectedDate) else {
                 return UIMenu(title: menuTitle, children: [skip, edit, detail])
             }
             let complete = UIAction(

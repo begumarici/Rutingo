@@ -44,12 +44,12 @@ protocol DataManager {
         targetValue: Double,
         unit: RoutineUnit
     )
-    func toggleCompletion(_ routine: Routine)
-    func incrementCompletionCount(_ routine: Routine)
-    func decrementCompletionCount(_ routine: Routine)
-    func completeCompletionCount(_ routine: Routine)
-    func setCompletionValue(_ routine: Routine, value: Double)
-    func resetCompletionCount(_ routine: Routine)
+    func toggleCompletion(_ routine: Routine, on date: Date)
+    func incrementCompletionCount(_ routine: Routine, on date: Date)
+    func decrementCompletionCount(_ routine: Routine, on date: Date)
+    func completeCompletionCount(_ routine: Routine, on date: Date)
+    func setCompletionValue(_ routine: Routine, value: Double, on date: Date)
+    func resetCompletionCount(_ routine: Routine, on date: Date)
     func save()
     func clearAllData()
     

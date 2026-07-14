@@ -165,6 +165,9 @@ class CalendarDayCell: UICollectionViewCell {
             dayLabel.font = AppFonts.bold(16)
             contentView.layer.borderWidth = 1.5
             contentView.layer.borderColor = AppColors.accentPurple.cgColor
+        } else if item.isSelected {
+            contentView.layer.borderWidth = 1.5
+            contentView.layer.borderColor = AppColors.accentPurple.withAlphaComponent(0.5).cgColor
         } else {
             contentView.layer.borderWidth = 0
         }

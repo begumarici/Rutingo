@@ -147,17 +147,17 @@ class CoreDataManager: DataManager {
         save()
     }
     
-    func toggleCompletion(_ routine: Routine) {
-        let today = DateHelper.shared.startOfDay()
+    func toggleCompletion(_ routine: Routine, on date: Date) {
+        let day = DateHelper.shared.startOfDay(date)
         guard let routineId = routine.id else { return }
 
-        if let existing = existingCompletion(for: routine, on: today) {
+        if let existing = existingCompletion(for: routine, on: day) {
             viewContext.delete(existing)
         } else {
             // delete related skip log if there is a skip log for that day
-            deleteSkipLog(routineId: routineId, date: today)
+            deleteSkipLog(routineId: routineId, date: day)
 
-            let completion = makeCompletion(for: routine, date: today)
+            let completion = makeCompletion(for: routine, date: day)
             completion.currentValue = routine.isCountBased ? 1 : 0
         }
         save()
@@ -186,13 +186,13 @@ class CoreDataManager: DataManager {
         return completion
     }
 
-    /// Finds or creates today's completion record and sets its value, clamped to [0, target].
+    /// Finds or creates a completion record for the given day and sets its value, clamped to [0, target].
     /// A clamped value of 0 deletes the record instead — there's nothing to track for that day.
-    private func setTodayCompletionValue(_ routine: Routine, to newValue: Double) {
-        let today = DateHelper.shared.startOfDay()
+    private func setCompletionValue(_ routine: Routine, to newValue: Double, on date: Date) {
+        let day = DateHelper.shared.startOfDay(date)
         let target = max(routine.targetValue, 0.01)
         let clampedValue = min(max(newValue, 0), target)
-        let existing = existingCompletion(for: routine, on: today)
+        let existing = existingCompletion(for: routine, on: day)
 
         guard clampedValue > 0 else {
             if let existing { viewContext.delete(existing) }
@@ -203,39 +203,39 @@ class CoreDataManager: DataManager {
         if let existing {
             existing.currentValue = clampedValue
         } else if let routineId = routine.id {
-            deleteSkipLog(routineId: routineId, date: today)
-            makeCompletion(for: routine, date: today).currentValue = clampedValue
+            deleteSkipLog(routineId: routineId, date: day)
+            makeCompletion(for: routine, date: day).currentValue = clampedValue
         }
         save()
     }
 
-    /// Increments today's progress value for a goal-based routine (e.g. 4 glasses of water), capped at the target.
-    func incrementCompletionCount(_ routine: Routine) {
-        let current = existingCompletion(for: routine, on: DateHelper.shared.startOfDay())?.currentValue ?? 0
-        setTodayCompletionValue(routine, to: current + Self.goalStep)
+    /// Increments a day's progress value for a goal-based routine (e.g. 4 glasses of water), capped at the target.
+    func incrementCompletionCount(_ routine: Routine, on date: Date) {
+        let current = existingCompletion(for: routine, on: DateHelper.shared.startOfDay(date))?.currentValue ?? 0
+        setCompletionValue(routine, to: current + Self.goalStep, on: date)
     }
 
-    /// Jumps today's progress straight to the target for a goal-based routine (e.g. "complete" from the context menu).
-    func completeCompletionCount(_ routine: Routine) {
-        setTodayCompletionValue(routine, to: routine.targetValue)
+    /// Jumps a day's progress straight to the target for a goal-based routine (e.g. "complete" from the context menu).
+    func completeCompletionCount(_ routine: Routine, on date: Date) {
+        setCompletionValue(routine, to: routine.targetValue, on: date)
     }
 
-    /// Decrements today's progress value for a goal-based routine, deleting the completion record once it reaches 0.
-    func decrementCompletionCount(_ routine: Routine) {
-        let current = existingCompletion(for: routine, on: DateHelper.shared.startOfDay())?.currentValue ?? 0
+    /// Decrements a day's progress value for a goal-based routine, deleting the completion record once it reaches 0.
+    func decrementCompletionCount(_ routine: Routine, on date: Date) {
+        let current = existingCompletion(for: routine, on: DateHelper.shared.startOfDay(date))?.currentValue ?? 0
         guard current > 0 else { return }
-        setTodayCompletionValue(routine, to: current - Self.goalStep)
+        setCompletionValue(routine, to: current - Self.goalStep, on: date)
     }
 
-    /// Sets today's progress to an exact value typed in by the user (e.g. "5.5" km).
-    func setCompletionValue(_ routine: Routine, value: Double) {
+    /// Sets a day's progress to an exact value typed in by the user (e.g. "5.5" km).
+    func setCompletionValue(_ routine: Routine, value: Double, on date: Date) {
         guard value.isFinite else { return }
-        setTodayCompletionValue(routine, to: value)
+        setCompletionValue(routine, to: value, on: date)
     }
 
-    /// Resets today's progress back to 0 for a goal-based routine.
-    func resetCompletionCount(_ routine: Routine) {
-        setTodayCompletionValue(routine, to: 0)
+    /// Resets a day's progress back to 0 for a goal-based routine.
+    func resetCompletionCount(_ routine: Routine, on date: Date) {
+        setCompletionValue(routine, to: 0, on: date)
     }
     
     func save() {
