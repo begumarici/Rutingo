@@ -30,9 +30,9 @@ class AddRoutineViewController: UIViewController {
     private var currentStep: Int = 0
     private let totalSteps: Int = 6
     private var hasTimeRange: Bool = false
-    private var startTime: Date = Date()
-    private var endTime: Date = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date()
     private var isCountBased: Bool = false
+    /// Captured after the form is fully populated, to detect unsaved changes on cancel (edit mode only).
+    private var initialFormSnapshot: RoutineFormData?
     private var targetValue: Double = 4
     private var selectedUnit: RoutineUnit = .count
     
@@ -312,6 +312,43 @@ class AddRoutineViewController: UIViewController {
         stackView.isHidden = true
         return stackView
     }()
+
+    // Different time per day
+    private let differentTimesHeaderView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+
+    private let differentTimesLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "different_times_per_day".localized
+        label.font = AppFonts.regular(15)
+        label.textColor = AppColors.secondary
+        return label
+    }()
+
+    private let differentTimesSwitch: UISwitch = {
+        let toggle = UISwitch()
+        toggle.translatesAutoresizingMaskIntoConstraints = false
+        toggle.onTintColor = AppColors.secondary
+        toggle.isOn = false
+        return toggle
+    }()
+
+    private let perDayTimeStack: UIStackView = {
+        let stack = UIStackView()
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        stack.axis = .vertical
+        stack.spacing = 12
+        stack.isHidden = true
+        stack.alpha = 0
+        return stack
+    }()
+
+    private var dayTimeRows: [DayTimeRangeRow] = []
     
     // Reminder
     private let reminderStackView: UIStackView = {
@@ -542,6 +579,7 @@ class AddRoutineViewController: UIViewController {
         if case .edit(let routine) = mode {
             populateFields(with: routine)
         }
+        initialFormSnapshot = buildFormData()
     }
     
     // MARK: - Setup
@@ -585,7 +623,13 @@ class AddRoutineViewController: UIViewController {
         timeRangeHeaderView.addSubview(timeRangeLabel)
         timeRangeHeaderView.addSubview(timeRangeSwitch)
         timeRangeStackView.addArrangedSubview(timeRangeHeaderView)
+
+        differentTimesHeaderView.addSubview(differentTimesLabel)
+        differentTimesHeaderView.addSubview(differentTimesSwitch)
+        timeRangeStackView.addArrangedSubview(differentTimesHeaderView)
+
         timeRangeStackView.addArrangedSubview(timeRangePickersStack)
+        timeRangeStackView.addArrangedSubview(perDayTimeStack)
 
         // start row
         startHeaderRow.addSubview(startPickerLabel)
@@ -716,6 +760,12 @@ class AddRoutineViewController: UIViewController {
             timeRangeLabel.leadingAnchor.constraint(equalTo: timeRangeHeaderView.leadingAnchor),
             timeRangeSwitch.centerYAnchor.constraint(equalTo: timeRangeHeaderView.centerYAnchor),
             timeRangeSwitch.trailingAnchor.constraint(equalTo: timeRangeHeaderView.trailingAnchor),
+
+            differentTimesHeaderView.heightAnchor.constraint(equalToConstant: 31),
+            differentTimesLabel.centerYAnchor.constraint(equalTo: differentTimesHeaderView.centerYAnchor),
+            differentTimesLabel.leadingAnchor.constraint(equalTo: differentTimesHeaderView.leadingAnchor),
+            differentTimesSwitch.centerYAnchor.constraint(equalTo: differentTimesHeaderView.centerYAnchor),
+            differentTimesSwitch.trailingAnchor.constraint(equalTo: differentTimesHeaderView.trailingAnchor),
 
             // start row
             startHeaderRow.heightAnchor.constraint(equalToConstant: 32),
@@ -890,6 +940,7 @@ class AddRoutineViewController: UIViewController {
     
     private func setupActions() {
         frequencyControl.addTarget(self, action: #selector(frequencyChanged), for: .valueChanged)
+        differentTimesSwitch.addTarget(self, action: #selector(differentTimesSwitchChanged), for: .valueChanged)
         reminderSwitch.addTarget(self, action: #selector(reminderSwitchChanged), for: .valueChanged)
         timeRangeSwitch.addTarget(self, action: #selector(timeRangeSwitchChanged), for: .valueChanged)
         countSwitch.addTarget(self, action: #selector(countSwitchChanged), for: .valueChanged)
@@ -906,6 +957,8 @@ class AddRoutineViewController: UIViewController {
 
         let endTap = UITapGestureRecognizer(target: self, action: #selector(endTimeValueTapped))
         endTimeValueContainer.addGestureRecognizer(endTap)
+
+        endTimePicker.date = Calendar.current.date(byAdding: .hour, value: 1, to: startTimePicker.date) ?? startTimePicker.date
 
         startTimeValueLabel.text = formattedTime(from: startTimePicker.date)
         endTimeValueLabel.text = formattedTime(from: endTimePicker.date)
@@ -942,17 +995,88 @@ class AddRoutineViewController: UIViewController {
     }
     
     @objc private func cancelTapped() {
-        dismiss(animated: true)
+        if case .edit = mode, let initial = initialFormSnapshot, buildFormData() != initial {
+            let alert = UIAlertController(
+                title: "discard_changes_title".localized,
+                message: "discard_changes_message".localized,
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+            alert.addAction(UIAlertAction(title: "discard".localized, style: .destructive) { [weak self] _ in
+                self?.dismiss(animated: true)
+            })
+            present(alert, animated: true)
+        } else {
+            dismiss(animated: true)
+        }
+    }
+    
+    /// The weekdays "different time per day" applies to: the explicitly picked days for "Belirli günler",
+    /// or all 7 days when frequency is "Daily" (every day is scheduled, so every day can have its own time).
+    private var activeWeekdays: [Int] {
+        frequencyControl.selectedSegmentIndex == 1 ? selectedDays : DayOfWeek.allCases.map { $0.rawValue }
     }
     
     @objc private func frequencyChanged() {
+        let isSpecific = frequencyControl.selectedSegmentIndex == 1
+
+        if differentTimesSwitch.isOn {
+            rebuildPerDayTimeRows()
+        }
+
         UIView.animate(withDuration: 0.3) {
-            let isSpecific = self.frequencyControl.selectedSegmentIndex == 1
-            
             self.dayStackView.isHidden = !isSpecific
             self.dayStackView.alpha = isSpecific ? 1.0 : 0.0
-            
             self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc private func differentTimesSwitchChanged() {
+        rebuildPerDayTimeRows()
+        UIView.animate(withDuration: 0.3) {
+            let showSingle = !self.differentTimesSwitch.isOn
+            self.timeRangePickersStack.isHidden = !showSingle
+            self.timeRangePickersStack.alpha = showSingle ? 1.0 : 0.0
+
+            self.perDayTimeStack.isHidden = !self.differentTimesSwitch.isOn
+            self.perDayTimeStack.alpha = self.differentTimesSwitch.isOn ? 1.0 : 0.0
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    /// Keeps `perDayTimeStack`'s rows in sync with `activeWeekdays`, preserving any range a day already
+    /// has (so toggling the switch off/on or adding/removing a day doesn't discard other days' edits).
+    /// `seedRanges` (e.g. a routine's saved overrides) fills in days that don't have a live row yet.
+    private func rebuildPerDayTimeRows(seedRanges: [Int: DayTimeRange] = [:]) {
+        guard differentTimesSwitch.isOn else {
+            dayTimeRows.forEach { $0.removeFromSuperview() }
+            dayTimeRows.removeAll()
+            return
+        }
+
+        var existingRanges = seedRanges
+        for row in dayTimeRows { existingRanges[row.weekday] = row.range }
+        dayTimeRows.forEach { $0.removeFromSuperview() }
+        dayTimeRows.removeAll()
+
+        let fallbackRange = DayTimeRange(
+            startHour: Calendar.current.component(.hour, from: startTimePicker.date),
+            startMinute: Calendar.current.component(.minute, from: startTimePicker.date),
+            endHour: Calendar.current.component(.hour, from: endTimePicker.date),
+            endMinute: Calendar.current.component(.minute, from: endTimePicker.date)
+        )
+
+        let sortedDays = activeWeekdays.sorted { d1, d2 in
+            let p1 = d1 == 1 ? 8 : d1
+            let p2 = d2 == 1 ? 8 : d2
+            return p1 < p2
+        }
+
+        for day in sortedDays {
+            let row = DayTimeRangeRow(weekday: day, initialRange: existingRanges[day] ?? fallbackRange)
+            row.onExpandToggle = { [weak self] in self?.view.layoutIfNeeded() }
+            perDayTimeStack.addArrangedSubview(row)
+            dayTimeRows.append(row)
         }
     }
     
@@ -981,6 +1105,13 @@ class AddRoutineViewController: UIViewController {
             sender.backgroundColor = AppColors.primary
             sender.setTitleColor(AppColors.background, for: .normal)
         }
+        
+        if differentTimesSwitch.isOn {
+            UIView.animate(withDuration: 0.2) {
+                self.rebuildPerDayTimeRows()
+                self.view.layoutIfNeeded()
+            }
+        }
     }
     
     @objc private func timeRangeSwitchChanged() {
@@ -989,11 +1120,17 @@ class AddRoutineViewController: UIViewController {
         if !hasTimeRange {
             closeStartTimePicker()
             closeEndTimePicker()
+            differentTimesSwitch.isOn = false
+            rebuildPerDayTimeRows()
         }
 
         UIView.animate(withDuration: 0.3) {
-            self.timeRangePickersStack.isHidden = !self.timeRangeSwitch.isOn
-            self.timeRangePickersStack.alpha = self.timeRangeSwitch.isOn ? 1.0 : 0.0
+            self.differentTimesHeaderView.isHidden = !self.hasTimeRange
+            self.differentTimesHeaderView.alpha = self.hasTimeRange ? 1.0 : 0.0
+
+            let showSingle = self.hasTimeRange && !self.differentTimesSwitch.isOn
+            self.timeRangePickersStack.isHidden = !showSingle
+            self.timeRangePickersStack.alpha = showSingle ? 1.0 : 0.0
             self.view.layoutIfNeeded()
         }
     }
@@ -1095,7 +1232,9 @@ class AddRoutineViewController: UIViewController {
         }
     }
 
-    private func completeSaving() {
+    /// Gathers every field into a `RoutineFormData` snapshot, without any save/dismiss side effects —
+    /// used both to actually save and to detect unsaved changes (see `cancelTapped`).
+    private func buildFormData() -> RoutineFormData {
         let name = nameTextField.text ?? ""
         
         if frequencyControl.selectedSegmentIndex == 1 {
@@ -1118,7 +1257,11 @@ class AddRoutineViewController: UIViewController {
         let endHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: endTimePicker.date)) : -1
         let endMinute: Int16 = hasTimeRange ? Int16(Calendar.current.component(.minute, from: endTimePicker.date)) : 0
         
-        let form = RoutineFormData(
+        let dayTimeRanges: [Int: DayTimeRange] = differentTimesSwitch.isOn
+            ? Dictionary(uniqueKeysWithValues: dayTimeRows.map { ($0.weekday, $0.range) })
+            : [:]
+
+        return RoutineFormData(
             name: name,
             frequency: selectedFrequency,
             feeling: selectedFeeling,
@@ -1132,8 +1275,13 @@ class AddRoutineViewController: UIViewController {
             endMinute: endMinute,
             isCountBased: isCountBased,
             targetValue: targetValue,
-            unit: selectedUnit
+            unit: selectedUnit,
+            dayTimeRanges: dayTimeRanges
         )
+    }
+
+    private func completeSaving() {
+        let form = buildFormData()
 
         switch mode {
         case .add:
@@ -1188,7 +1336,7 @@ class AddRoutineViewController: UIViewController {
             selectedDays = days
             dayStackView.isHidden = false
             dayStackView.alpha = 1.0
-            
+
             for day in days {
                 for case let button as UIButton in dayStackView.arrangedSubviews {
                     if button.tag == day {
@@ -1202,8 +1350,8 @@ class AddRoutineViewController: UIViewController {
         if routine.startHour >= 0 {
             hasTimeRange = true
             timeRangeSwitch.isOn = true
-            timeRangePickersStack.isHidden = false
-            timeRangePickersStack.alpha = 1.0
+            differentTimesHeaderView.isHidden = false
+            differentTimesHeaderView.alpha = 1.0
 
             var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
             components.hour = Int(routine.startHour)
@@ -1218,6 +1366,17 @@ class AddRoutineViewController: UIViewController {
             if let date = Calendar.current.date(from: components) {
                 endTimePicker.date = date
                 endTimeValueLabel.text = formattedTime(from: date)
+            }
+
+            let overrides = routine.dayTimeRanges
+            if !overrides.isEmpty {
+                differentTimesSwitch.isOn = true
+                perDayTimeStack.isHidden = false
+                perDayTimeStack.alpha = 1.0
+                rebuildPerDayTimeRows(seedRanges: overrides)
+            } else {
+                timeRangePickersStack.isHidden = false
+                timeRangePickersStack.alpha = 1.0
             }
         }
         
@@ -1269,6 +1428,24 @@ class AddRoutineViewController: UIViewController {
         if isCountBased && (!targetValue.isFinite || targetValue <= 0) {
             showAlert(message: "validation_target_value".localized)
             return false
+        }
+
+        if hasTimeRange {
+            if differentTimesSwitch.isOn {
+                guard dayTimeRows.allSatisfy({ $0.range.isValid }) else {
+                    showAlert(message: "validation_end_before_start".localized)
+                    return false
+                }
+            } else {
+                let start = Calendar.current.component(.hour, from: startTimePicker.date) * 60
+                    + Calendar.current.component(.minute, from: startTimePicker.date)
+                let end = Calendar.current.component(.hour, from: endTimePicker.date) * 60
+                    + Calendar.current.component(.minute, from: endTimePicker.date)
+                guard end > start else {
+                    showAlert(message: "validation_end_before_start".localized)
+                    return false
+                }
+            }
         }
 
         return true

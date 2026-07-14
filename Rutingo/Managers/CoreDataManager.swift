@@ -73,7 +73,8 @@ class CoreDataManager: DataManager {
         endMinute: Int16,
         isCountBased: Bool = false,
         targetValue: Double = 1,
-        unit: RoutineUnit = .count
+        unit: RoutineUnit = .count,
+        dayTimeRanges: [Int: DayTimeRange] = [:]
     ) -> Routine {
         let routine = Routine(context: viewContext)
         routine.id = UUID()
@@ -95,6 +96,7 @@ class CoreDataManager: DataManager {
         routine.isCountBased = isCountBased
         routine.targetValue = Self.sanitizedTarget(targetValue)
         routine.routineUnit = unit
+        routine.dayTimeRanges = dayTimeRanges
         save()
         return routine
     }
@@ -114,7 +116,8 @@ class CoreDataManager: DataManager {
         endMinute: Int16,
         isCountBased: Bool = false,
         targetValue: Double = 1,
-        unit: RoutineUnit = .count
+        unit: RoutineUnit = .count,
+        dayTimeRanges: [Int: DayTimeRange] = [:]
     ) {
         
         if let oldData = routine.frequencyData {
@@ -139,6 +142,7 @@ class CoreDataManager: DataManager {
         routine.isCountBased = isCountBased
         routine.targetValue = Self.sanitizedTarget(targetValue)
         routine.routineUnit = unit
+        routine.dayTimeRanges = dayTimeRanges
         save()
     }
     
@@ -358,11 +362,13 @@ class CoreDataManager: DataManager {
     }
     
     func syncGeneratedBlocks(for routine: Routine) {
+        // A routine has a schedulable time either via its single default range, or via per-weekday
+        // overrides (which can be set even when the default range itself is off).
+        let hasTime = (routine.startHour >= 0 && routine.endHour >= 0) || !routine.dayTimeRanges.isEmpty
         guard
             let routineID = routine.id,
             let routineName = routine.name,
-            routine.startHour >= 0,
-            routine.endHour >= 0
+            hasTime
         else {
             deleteGeneratedBlocks(for: routine)
             return
@@ -372,15 +378,16 @@ class CoreDataManager: DataManager {
         let dates = scheduledDates(for: routine, daysAhead: 30)
         
         for date in dates {
+            let range = routine.timeRange(for: date)
             let block = TimeBlock(context: viewContext)
             block.id = UUID()
             block.title = routineName
             block.date = Calendar.current.startOfDay(for: date)
             block.createdAt = Date()
-            block.startHour = routine.startHour
-            block.startMinute = routine.startMinute
-            block.endHour = routine.endHour
-            block.endMinute = routine.endMinute
+            block.startHour = Int16(range.startHour)
+            block.startMinute = Int16(range.startMinute)
+            block.endHour = Int16(range.endHour)
+            block.endMinute = Int16(range.endMinute)
             block.isGeneratedFromRoutine = true
             block.sourceRoutineID = routineID
             

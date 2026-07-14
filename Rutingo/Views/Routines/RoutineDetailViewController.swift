@@ -372,7 +372,32 @@ class RoutineDetailViewController: UIViewController {
             multiline: false
         ))
         
-        if routine.startHour >= 0, routine.endHour >= 0 {
+        if !routine.dayTimeRanges.isEmpty, case .specificDays(let days) = routine.frequency {
+            let sortedDays = days.sorted { d1, d2 in
+                let p1 = d1 == 1 ? 8 : d1
+                let p2 = d2 == 1 ? 8 : d2
+                return p1 < p2
+            }
+            let defaultRange = DayTimeRange(
+                startHour: Int(routine.startHour),
+                startMinute: Int(routine.startMinute),
+                endHour: Int(routine.endHour),
+                endMinute: Int(routine.endMinute)
+            )
+            let lines = sortedDays.compactMap { day -> String? in
+                guard let dayName = DayOfWeek(rawValue: day)?.shortName else { return nil }
+                let range = routine.dayTimeRanges[day] ?? defaultRange
+                return "\(dayName) \(range.displayText)"
+            }
+            scheduleItems.append((
+                icon: "clock",
+                iconColor: AppColors.secondary,
+                iconBg: AppColors.secondaryCardBackground,
+                title: "time_range".localized,
+                value: lines.joined(separator: "\n"),
+                multiline: true
+            ))
+        } else if routine.startHour >= 0, routine.endHour >= 0 {
             let start = String(format: "%02d:%02d", routine.startHour, routine.startMinute)
             let end   = String(format: "%02d:%02d", routine.endHour, routine.endMinute)
             scheduleItems.append((

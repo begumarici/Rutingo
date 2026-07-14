@@ -39,7 +39,8 @@ class RoutinesViewModel {
             endMinute: form.endMinute,
             isCountBased: form.isCountBased,
             targetValue: form.targetValue,
-            unit: form.unit
+            unit: form.unit,
+            dayTimeRanges: form.dayTimeRanges
         )
         NotificationManager.shared.scheduleNotification(for: newRoutine)
         dataManager.syncGeneratedBlocks(for: newRoutine)
@@ -71,7 +72,8 @@ class RoutinesViewModel {
             endMinute: form.endMinute,
             isCountBased: form.isCountBased,
             targetValue: form.targetValue,
-            unit: form.unit
+            unit: form.unit,
+            dayTimeRanges: form.dayTimeRanges
         )
         NotificationManager.shared.scheduleNotification(for: routine)
         dataManager.syncGeneratedBlocks(for: routine)

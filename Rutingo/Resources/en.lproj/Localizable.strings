@@ -87,6 +87,7 @@
 "frequency" = "Frequency";
 "daily" = "Daily";
 "specific_days" = "Specific Days";
+"different_times_per_day" = "Different time per day";
 "reminder" = "Reminder";
 "save" = "Save";
 "delete_routine" = "Delete Routine";
@@ -96,6 +97,10 @@
 "validation_name_empty" = "Please enter a routine name.";
 "validation_select_day" = "Please select at least one day.";
 "validation_target_value" = "Please enter a target value greater than 0.";
+"validation_end_before_start" = "End time can't be before the start time.";
+"discard_changes_title" = "Discard changes?";
+"discard_changes_message" = "The changes you made will be lost.";
+"discard" = "Discard";
 "error" = "Error";
 "time_range" = "Time range";
 "start_time" = "Start";

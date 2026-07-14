@@ -87,6 +87,7 @@
 "frequency" = "Rutin sıklığı";
 "daily" = "Her gün";
 "specific_days" = "Belirli günler";
+"different_times_per_day" = "Günlere göre farklı saat";
 "reminder" = "Hatırlatıcı";
 "save" = "Kaydet";
 "delete_routine" = "Rutini sil";
@@ -97,6 +98,10 @@
 "validation_name_empty" = "Lütfen rutin adını gir.";
 "validation_select_day" = "Lütfen en az bir gün seç.";
 "validation_target_value" = "Lütfen 0'dan büyük bir hedef değer gir.";
+"validation_end_before_start" = "Bitiş saati başlangıç saatinden önce olamaz.";
+"discard_changes_title" = "Değişiklikleri kaydetmeden çıkılsın mı?";
+"discard_changes_message" = "Yaptığın değişiklikler kaybolacak.";
+"discard" = "Çık";
 "error" = "Hata";
 "time_range" = "Saat aralığı";
 "start_time" = "Başlangıç";
