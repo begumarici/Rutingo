@@ -22,6 +22,33 @@ extension Routine {
         }
     }
     
+    /// Per-weekday time-range overrides (weekday raw value 1...7 → range). Empty means every scheduled
+    /// day uses the routine's single startHour/startMinute/endHour/endMinute range.
+    var dayTimeRanges: [Int: DayTimeRange] {
+        get {
+            guard let data = dayTimeRangesData else { return [:] }
+            return (try? JSONDecoder().decode([Int: DayTimeRange].self, from: data)) ?? [:]
+        }
+        set {
+            dayTimeRangesData = newValue.isEmpty ? nil : try? JSONEncoder().encode(newValue)
+        }
+    }
+
+    /// The time range in effect for a given date: that weekday's override if one exists, else the
+    /// routine's default range.
+    func timeRange(for date: Date) -> DayTimeRange {
+        let weekday = Calendar.current.component(.weekday, from: date)
+        if let override = dayTimeRanges[weekday] {
+            return override
+        }
+        return DayTimeRange(
+            startHour: Int(startHour),
+            startMinute: Int(startMinute),
+            endHour: Int(endHour),
+            endMinute: Int(endMinute)
+        )
+    }
+
     var completionArray: [RoutineCompletion] {
         let set = completions as? Set<RoutineCompletion> ?? []
         return Array(set).sorted {

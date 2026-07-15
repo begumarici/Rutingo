@@ -5,7 +5,9 @@
 //  Created by Begüm Arıcı on 15.11.2025.
 //
 
-enum Frequency: Codable {
+import Foundation
+
+enum Frequency: Codable, Equatable {
     case daily
     case specificDays([Int])
     
@@ -58,5 +60,23 @@ enum DayOfWeek: Int, CaseIterable {
         case .friday: return "day_friday".localized
         case .saturday: return "day_saturday".localized
         }
+    }
+}
+    
+/// A time-of-day range, used to override a routine's default start/end time for a specific weekday
+/// (e.g. Monday 10:00–11:00 while the rest of the week stays at the routine's usual time).
+struct DayTimeRange: Codable, Equatable {
+    var startHour: Int
+    var startMinute: Int
+    var endHour: Int
+    var endMinute: Int
+
+    var displayText: String {
+        String(format: "%02d:%02d – %02d:%02d", startHour, startMinute, endHour, endMinute)
+    }
+
+    /// False if the end time isn't strictly after the start time (overnight ranges aren't supported).
+    var isValid: Bool {
+        (endHour * 60 + endMinute) > (startHour * 60 + startMinute)
     }
 }

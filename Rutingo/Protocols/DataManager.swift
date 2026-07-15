@@ -24,7 +24,8 @@ protocol DataManager {
         endMinute: Int16,
         isCountBased: Bool,
         targetValue: Double,
-        unit: RoutineUnit
+        unit: RoutineUnit,
+        dayTimeRanges: [Int: DayTimeRange]
     ) -> Routine
     func deleteRoutine(_ routine: Routine)
     func updateRoutine(
@@ -42,7 +43,8 @@ protocol DataManager {
         endMinute: Int16,
         isCountBased: Bool,
         targetValue: Double,
-        unit: RoutineUnit
+        unit: RoutineUnit,
+        dayTimeRanges: [Int: DayTimeRange]
     )
     func toggleCompletion(_ routine: Routine, on date: Date)
     func incrementCompletionCount(_ routine: Routine, on date: Date)
