@@ -504,6 +504,8 @@ class RoutineDetailViewController: UIViewController {
         let card = Self.makeCard()
         let date = calendarViewModel.selectedDate
         let isFuture = date > DateHelper.shared.startOfDay()
+        let isScheduled = routine.wasScheduled(on: date)
+        let isDisabled = isFuture || !isScheduled
         let isCompleted = routine.isCompleted(on: date)
 
         let header = makeSelectedDayHeader()
@@ -517,8 +519,8 @@ class RoutineDetailViewController: UIViewController {
         config.baseBackgroundColor = isCompleted ? AppColors.secondaryCardBackground : AppColors.accentGreen
         config.baseForegroundColor = isCompleted ? AppColors.primary : AppColors.onAccent
         button.configuration = config
-        button.isEnabled = !isFuture
-        button.alpha = isFuture ? 0.5 : 1.0
+        button.isEnabled = !isDisabled
+        button.alpha = isDisabled ? 0.5 : 1.0
         button.addTarget(self, action: #selector(completionToggleTapped), for: .touchUpInside)
 
         let stack = UIStackView(arrangedSubviews: [header, button])
@@ -550,6 +552,8 @@ class RoutineDetailViewController: UIViewController {
         let card = Self.makeCard()
         let date = calendarViewModel.selectedDate
         let isFuture = date > DateHelper.shared.startOfDay()
+        let isScheduled = routine.wasScheduled(on: date)
+        let isDisabled = isFuture || !isScheduled
         let value = routine.value(on: date)
 
         let header = makeSelectedDayHeader()
@@ -558,14 +562,14 @@ class RoutineDetailViewController: UIViewController {
         minusButton.translatesAutoresizingMaskIntoConstraints = false
         minusButton.setImage(UIImage(systemName: "minus.circle.fill"), for: .normal)
         minusButton.tintColor = value > 0 ? AppColors.tertiary : AppColors.tertiary.withAlphaComponent(0.4)
-        minusButton.isEnabled = value > 0 && !isFuture
+        minusButton.isEnabled = value > 0 && !isDisabled
         minusButton.addTarget(self, action: #selector(goalDecrementTapped), for: .touchUpInside)
 
         let plusButton = UIButton(type: .system)
         plusButton.translatesAutoresizingMaskIntoConstraints = false
         plusButton.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
-        plusButton.tintColor = isFuture ? AppColors.accentGreen.withAlphaComponent(0.4) : AppColors.accentGreen
-        plusButton.isEnabled = !isFuture
+        plusButton.tintColor = isDisabled ? AppColors.accentGreen.withAlphaComponent(0.4) : AppColors.accentGreen
+        plusButton.isEnabled = !isDisabled
         plusButton.addTarget(self, action: #selector(goalIncrementTapped), for: .touchUpInside)
 
         let isCompleted = routine.isCompleted(on: date)
@@ -575,7 +579,7 @@ class RoutineDetailViewController: UIViewController {
         valueLabel.textColor = isCompleted ? AppColors.accentGreen : AppColors.primary
         valueLabel.textAlignment = .center
         valueLabel.text = "\(Routine.formattedGoalValue(value))/\(Routine.formattedGoalValue(routine.targetValue))\(routine.routineUnit.shortSuffix)"
-        valueLabel.isUserInteractionEnabled = !isFuture
+        valueLabel.isUserInteractionEnabled = !isDisabled
         valueLabel.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(goalValueTapped)))
 
         let resetButton = UIButton(type: .system)
@@ -583,7 +587,7 @@ class RoutineDetailViewController: UIViewController {
         resetButton.setTitle("reset".localized, for: .normal)
         resetButton.titleLabel?.font = AppFonts.medium(13)
         resetButton.setTitleColor(AppColors.secondary, for: .normal)
-        resetButton.isEnabled = !isFuture
+        resetButton.isEnabled = !isDisabled
         resetButton.addTarget(self, action: #selector(goalResetTapped), for: .touchUpInside)
 
         let controlsRow = UIStackView(arrangedSubviews: [minusButton, valueLabel, plusButton])
@@ -847,15 +851,16 @@ extension RoutineDetailViewController: UICollectionViewDataSource, UICollectionV
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         let item = calendarViewModel.uiModels[indexPath.item]
-        guard let date = item.date else { return }
+        // Selectable whenever it's a real, non-future day — regardless of scheduled status. Checking
+        // the date directly (not `dayStatus`) matters because CalendarViewModel.dayStatus returns
+        // `.notScheduled` for a not-scheduled day even when that day is in the future, so `.future`
+        // alone isn't a reliable future/past signal. The completion/goal card below already disables
+        // its controls for not-scheduled days, and locking selection here would trap navigation
+        // (e.g. no way back to a today that isn't scheduled).
+        guard let date = item.date, item.dayStatus != .empty, date <= DateHelper.shared.startOfDay() else { return }
 
-        switch item.dayStatus {
-        case .empty, .future, .notScheduled:
-            return
-        case .completed, .skipped, .missed, .pending:
-            calendarViewModel.selectDate(date) { [weak self] in
-                self?.configureWithRoutine()
-            }
+        calendarViewModel.selectDate(date) { [weak self] in
+            self?.configureWithRoutine()
         }
     }
 }

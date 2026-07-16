@@ -76,6 +76,8 @@ class CalendarDayCell: UICollectionViewCell {
         contentView.backgroundColor = .clear
         routineIndicator.isHidden = true
         routineIndicator.backgroundColor = AppColors.primary
+        contentView.layer.borderWidth = 0
+        contentView.layer.borderColor = nil
     }
     
     // MARK: - Configuration
