@@ -363,6 +363,19 @@ class RoutineDetailViewController: UIViewController {
         var scheduleItems: [(icon: String, iconColor: UIColor, iconBg: UIColor,
                              title: String, value: String, multiline: Bool)] = []
 
+        if let createdAt = routine.createdAt {
+            let startDateFormatter = DateFormatter()
+            startDateFormatter.dateFormat = "dd.MM.yyyy"
+            scheduleItems.append((
+                icon: "calendar",
+                iconColor: UIColor(hex: "#185FA5"),
+                iconBg: UIColor(hex: "#E6F1FB"),
+                title: "start_date".localized,
+                value: startDateFormatter.string(from: createdAt),
+                multiline: false
+            ))
+        }
+
         scheduleItems.append((
             icon: "repeat",
             iconColor: UIColor(hex: "#185FA5"),

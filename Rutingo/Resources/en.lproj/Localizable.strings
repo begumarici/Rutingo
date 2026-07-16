@@ -85,6 +85,7 @@
 "routine_name" = "Routine Name";
 "routine_name_placeholder" = "e.g., Morning Workout";
 "frequency" = "Frequency";
+"start_date" = "Start date";
 "daily" = "Daily";
 "specific_days" = "Specific Days";
 "different_times_per_day" = "Different time per day";

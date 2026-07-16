@@ -85,6 +85,7 @@
 "routine_name" = "Rutin adı";
 "routine_name_placeholder" = "örn. Sabah sporu";
 "frequency" = "Rutin sıklığı";
+"start_date" = "Başlangıç tarihi";
 "daily" = "Her gün";
 "specific_days" = "Belirli günler";
 "different_times_per_day" = "Günlere göre farklı saat";
