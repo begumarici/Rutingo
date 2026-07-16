@@ -29,7 +29,7 @@ final class RoutineStreakTests: XCTestCase {
         routine = Routine(context: context)
         routine.id = UUID()
         routine.name = "Test Routine"
-        routine.createdAt = Date()
+        routine.createdAt = Calendar.current.date(byAdding: .day, value: -30, to: Date())
         routine.lastFrequencyChangeDate = DateHelper.shared.startOfDay(Date())
         routine.frequency = .daily
     }

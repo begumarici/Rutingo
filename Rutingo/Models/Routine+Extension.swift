@@ -119,6 +119,7 @@ extension Routine {
     var currentStreak: Int {
         var streak = 0
         let today = DateHelper.shared.startOfDay()
+        let earliestDate = createdAt.map { DateHelper.shared.startOfDay($0) }
 
         guard let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: today) else {
               return isCompletedToday ? 1 : 0
@@ -127,6 +128,11 @@ extension Routine {
         var currentDate = yesterday
         
         while true {
+            // A routine can't have a streak before it existed — without this, once
+            // `wasScheduled(on:)` correctly returns false for pre-creation dates, the walk below
+            // would never hit a "scheduled" day to stop on and loop back through all of history.
+            if let earliestDate, currentDate < earliestDate { break }
+
             let scheduled = wasScheduled(on: currentDate)
             let completed = isCompleted(on: currentDate)
             let skipped = isSkipped(on: currentDate)
@@ -212,7 +218,12 @@ extension Routine {
     /// handles historical freq changes by checking the last change date and snapshots.
     func wasScheduled(on date: Date) -> Bool {
         let targetDate = DateHelper.shared.startOfDay(date)
-        
+
+        // A routine can't have been scheduled before it existed.
+        guard let createdAt, targetDate >= DateHelper.shared.startOfDay(createdAt) else {
+            return false
+        }
+
         // 1. if there is a completion, then the snapshot for that day is definitive.
         if let completion = completionArray.first(where: {
             guard let d = $0.date else { return false }

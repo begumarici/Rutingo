@@ -152,12 +152,8 @@ class CalendarViewModel {
     
     // MARK: - Detail Mode
     private func dayStatus(for date: Date, routine: Routine, today: Date) -> DayStatus {
-        guard let createdAt = routine.createdAt else { return .notScheduled }
-        let created = DateHelper.shared.startOfDay(createdAt)
-        
-        guard created <= date else { return .notScheduled }
-        
         let isFuture = date > today
+        // wasScheduled(on:) already accounts for the routine's creation date.
         let scheduled = routine.wasScheduled(on: date)
         
         if !scheduled { return .notScheduled }
@@ -179,14 +175,8 @@ class CalendarViewModel {
     
     private func checkRoutine(for date: Date, in routines: [Routine]) -> Bool {
         let normalized = DateHelper.shared.startOfDay(date)
-        return routines.contains { routine in
-            guard let created = routine.createdAt else { return false }
-            let createdNorm = DateHelper.shared.startOfDay(created)
-            
-            guard createdNorm <= normalized else { return false }
-            
-            return routine.wasScheduled(on: normalized)
-        }
+        // wasScheduled(on:) already accounts for the routine's creation date.
+        return routines.contains { $0.wasScheduled(on: normalized) }
     }
     
     // MARK: - Helpers
