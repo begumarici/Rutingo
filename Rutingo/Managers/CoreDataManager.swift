@@ -361,6 +361,64 @@ class CoreDataManager: DataManager {
         }
     }
     
+    /// Deletes a routine's generated blocks from today onward (inclusive), leaving past blocks
+    /// untouched. Used by syncGeneratedBlocks, which is about to regenerate today's block anyway —
+    /// unlike deleteGeneratedBlocksFromNow, there's no "already passed today" exception here.
+    private func deleteGeneratedBlocksFromToday(for routine: Routine) {
+        guard let routineID = routine.id else { return }
+
+        let todayStart = Calendar.current.startOfDay(for: Date())
+        let request: NSFetchRequest<TimeBlock> = TimeBlock.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "isGeneratedFromRoutine == YES AND sourceRoutineID == %@ AND date >= %@",
+            routineID as CVarArg,
+            todayStart as CVarArg
+        )
+
+        do {
+            let blocks = try viewContext.fetch(request)
+            blocks.forEach { viewContext.delete($0) }
+            save()
+        } catch {
+            print("failed to delete today-onward generated blocks: \(error)")
+        }
+    }
+
+    /// Regenerates a single day's generated block for a routine — e.g. after unskipping a specific
+    /// date. Unlike syncGeneratedBlocks (which only rolls forward from today), this works for any
+    /// date including past ones, and only touches that one day.
+    func regenerateBlock(for routine: Routine, on date: Date) {
+        guard let routineID = routine.id, let routineName = routine.name else { return }
+        let day = Calendar.current.startOfDay(for: date)
+
+        let alreadyExists = fetchBlocks(for: day).contains {
+            $0.isGeneratedFromRoutine && $0.sourceRoutineID == routineID
+        }
+        guard !alreadyExists,
+              isRoutine(routine, scheduledOn: day),
+              !hasSkipLog(routineId: routineID, date: day)
+        else { return }
+
+        let hasTime = (routine.startHour >= 0 && routine.endHour >= 0) || !routine.dayTimeRanges.isEmpty
+        guard hasTime else { return }
+
+        let range = routine.timeRange(for: day)
+        let block = TimeBlock(context: viewContext)
+        block.id = UUID()
+        block.title = routineName
+        block.date = day
+        block.createdAt = Date()
+        block.startHour = Int16(range.startHour)
+        block.startMinute = Int16(range.startMinute)
+        block.endHour = Int16(range.endHour)
+        block.endMinute = Int16(range.endMinute)
+        block.isGeneratedFromRoutine = true
+        block.sourceRoutineID = routineID
+        block.addToRoutines(routine)
+
+        save()
+    }
+
     func syncGeneratedBlocks(for routine: Routine) {
         // A routine has a schedulable time either via its single default range, or via per-weekday
         // overrides (which can be set even when the default range itself is off).
@@ -370,11 +428,15 @@ class CoreDataManager: DataManager {
             let routineName = routine.name,
             hasTime
         else {
-            deleteGeneratedBlocks(for: routine)
+            deleteGeneratedBlocksFromToday(for: routine)
             return
         }
-        
-        deleteGeneratedBlocks(for: routine)
+
+        // Only today-onward blocks get wiped and regenerated — past blocks stay untouched so
+        // editing a routine (even just renaming it) doesn't erase its history. (Unlike
+        // deleteGeneratedBlocksFromNow, today's block is always cleared here — it's about to be
+        // recreated below, so keeping it would leave a duplicate for today.)
+        deleteGeneratedBlocksFromToday(for: routine)
         let dates = scheduledDates(for: routine, daysAhead: 30)
         
         for date in dates {
@@ -400,6 +462,7 @@ class CoreDataManager: DataManager {
     // helper
     private func scheduledDates(for routine: Routine, daysAhead: Int) -> [Date] {
         let today = Calendar.current.startOfDay(for: Date())
+        let routineId = routine.id
         var dates: [Date] = []
         for offset in 0..<daysAhead {
             guard let date = Calendar.current.date(
@@ -407,6 +470,11 @@ class CoreDataManager: DataManager {
                 value: offset,
                 to: today
             ) else {
+                continue
+            }
+            // Skipped days should never get a block regenerated, even if the routine is later
+            // edited — otherwise a skipped occurrence can silently reappear on the timeline.
+            if let routineId, hasSkipLog(routineId: routineId, date: date) {
                 continue
             }
             if isRoutine(routine, scheduledOn: date) {

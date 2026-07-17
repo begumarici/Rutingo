@@ -123,8 +123,10 @@ class TodayViewModel {
         if let id = routine.id {
             dataManager.deleteSkipLog(routineId: id, date: selectedDate)
         }
-        
-        CoreDataManager.shared.syncGeneratedBlocks(for: routine)
+
+        // Regenerates just this day's block (works for past dates too, unlike
+        // syncGeneratedBlocks which only rolls forward from today).
+        CoreDataManager.shared.regenerateBlock(for: routine, on: selectedDate)
         loadData(completion: completion)
     }
 

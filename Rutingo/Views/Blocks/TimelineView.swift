@@ -245,7 +245,7 @@ class TimelineView: UIView {
             statusIconColor = isActive ? AppColors.accent : AppColors.primary
         }
 
-        if routineStatus == .completed || routineStatus == .skipped {
+        if routineStatus == .skipped {
             container.alpha = 0.7
         }
 

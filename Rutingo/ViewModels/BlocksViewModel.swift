@@ -83,8 +83,15 @@ class BlocksViewModel {
         loadData(completion: completion)
     }
 
+    /// Skipping a future routine occurrence is disabled for now — see YAMA NOTLARI: to support it
+    /// properly, unskip needs to be reachable before the day arrives (Today only shows the skipped
+    /// section for today/past, and Blocks has no "skipped" state UI at all today). Revisit later.
     func skipBlock(_ block: TimeBlock, completion: () -> Void) {
-        if let routineID = block.sourceRoutineID, let date = block.date {
+        guard let date = block.date, date <= DateHelper.shared.startOfDay() else {
+            completion()
+            return
+        }
+        if let routineID = block.sourceRoutineID {
             dataManager.saveSkipLog(routineId: routineID, date: date, reason: "skipped_from_block")
         }
         deleteBlock(block, completion: completion)
