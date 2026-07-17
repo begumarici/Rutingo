@@ -603,6 +603,12 @@ class BlocksDetailViewController: UIViewController {
         statusPill.layer.cornerRadius = statusPill.bounds.height / 2
 
         deleteLabel.text = block.isGeneratedFromRoutine ? "skip".localized : "delete_block".localized
+
+        // Skipping a future routine occurrence is disabled for now (see BlocksViewModel.skipBlock) —
+        // hide the action entirely rather than let it silently no-op on tap.
+        let isFutureGeneratedBlock = block.isGeneratedFromRoutine
+            && (block.date.map { $0 > DateHelper.shared.startOfDay() } ?? false)
+        deleteCard.isHidden = isFutureGeneratedBlock
     }
     
     // MARK: - Actions
