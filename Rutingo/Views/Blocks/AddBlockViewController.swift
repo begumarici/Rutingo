@@ -22,6 +22,17 @@ class AddBlockViewController: UIViewController {
     private var selectedStartDate: Date = Date()
     private var selectedEndDate: Date = Date()
     private var pendingTitle: String?
+
+    private struct FormSnapshot: Equatable {
+        let title: String
+        let startHour: Int
+        let startMinute: Int
+        let endHour: Int
+        let endMinute: Int
+        let linkedRoutineID: UUID?
+    }
+    /// Captured at the end of viewDidLoad, to detect unsaved changes on cancel (edit mode only).
+    private var initialSnapshot: FormSnapshot?
     
     init(viewModel: BlocksViewModel) {
         self.viewModel = viewModel
@@ -195,6 +206,20 @@ class AddBlockViewController: UIViewController {
         if let linked = linkedRoutine {
             updateRoutineButton(selected: linked)
         }
+
+        initialSnapshot = currentSnapshot()
+    }
+
+    private func currentSnapshot() -> FormSnapshot {
+        let cal = Calendar.current
+        return FormSnapshot(
+            title: titleTextField.text ?? "",
+            startHour: cal.component(.hour, from: selectedStartDate),
+            startMinute: cal.component(.minute, from: selectedStartDate),
+            endHour: cal.component(.hour, from: selectedEndDate),
+            endMinute: cal.component(.minute, from: selectedEndDate),
+            linkedRoutineID: linkedRoutine?.id
+        )
     }
     
     // MARK: - Setup
@@ -422,7 +447,22 @@ class AddBlockViewController: UIViewController {
     }
     
     // MARK: - Actions
-    @objc private func cancelTapped() { dismiss(animated: true) }
+    @objc private func cancelTapped() {
+        if mode == .edit, let initial = initialSnapshot, currentSnapshot() != initial {
+            let alert = UIAlertController(
+                title: "discard_changes_title".localized,
+                message: "discard_changes_message".localized,
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "cancel".localized, style: .cancel))
+            alert.addAction(UIAlertAction(title: "discard".localized, style: .destructive) { [weak self] _ in
+                self?.dismiss(animated: true)
+            })
+            present(alert, animated: true)
+        } else {
+            dismiss(animated: true)
+        }
+    }
     @objc private func dismissKeyboard() { view.endEditing(true) }
     
     @objc private func saveTapped() {
