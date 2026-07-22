@@ -622,7 +622,7 @@ class BlocksDetailViewController: UIViewController {
         guard let id = routineID else { return }
         let routinesVM = RoutinesViewModel()
         guard let routine = routinesVM.routine(withID: id) else { return }
-        let detailVC = RoutineDetailViewController(routine: routine, viewModel: routinesVM)
+        let detailVC = RoutineDetailViewController(routine: routine, viewModel: routinesVM, initialDate: block.date)
         navigationController?.pushViewController(detailVC, animated: true)
     }
 

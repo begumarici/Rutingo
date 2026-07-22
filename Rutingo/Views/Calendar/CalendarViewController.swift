@@ -401,7 +401,10 @@ extension CalendarViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let routine = viewModel.getRoutinesForSelectedDate()[indexPath.row].routine
-        navigationController?.pushViewController(RoutineDetailViewController(routine: routine), animated: true)
+        navigationController?.pushViewController(
+            RoutineDetailViewController(routine: routine, initialDate: viewModel.selectedDate),
+            animated: true
+        )
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

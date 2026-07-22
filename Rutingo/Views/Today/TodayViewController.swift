@@ -290,7 +290,7 @@ class TodayViewController: UIViewController {
     
     // MARK: - Navigation
     private func openDetail(for routine: Routine) {
-        let detailVC = RoutineDetailViewController(routine: routine)
+        let detailVC = RoutineDetailViewController(routine: routine, initialDate: viewModel.selectedDate)
         navigationController?.pushViewController(detailVC, animated: true)
     }
     
@@ -450,8 +450,8 @@ extension TodayViewController: UITableViewDelegate {
         
         return UIContextMenuConfiguration(
             identifier: indexPath as NSCopying,
-            previewProvider: {
-                RoutineDetailViewController(routine: routine)
+            previewProvider: { [weak self] in
+                RoutineDetailViewController(routine: routine, initialDate: self?.viewModel.selectedDate)
             },
             actionProvider: { [weak self] _ in
                 guard let self else { return nil }
