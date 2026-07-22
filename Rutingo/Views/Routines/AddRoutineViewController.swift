@@ -1252,14 +1252,27 @@ class AddRoutineViewController: UIViewController {
         
         motivationText = motivationTextView.text == "motivation_placeholder".localized ? nil : motivationTextView.text
         
-        let startHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: startTimePicker.date)) : -1
-        let startMinute: Int16 = hasTimeRange ? Int16(Calendar.current.component(.minute, from: startTimePicker.date)) : 0
-        let endHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: endTimePicker.date)) : -1
-        let endMinute: Int16 = hasTimeRange ? Int16(Calendar.current.component(.minute, from: endTimePicker.date)) : 0
-        
-        let dayTimeRanges: [Int: DayTimeRange] = differentTimesSwitch.isOn
-            ? Dictionary(uniqueKeysWithValues: dayTimeRows.map { ($0.weekday, $0.range) })
-            : [:]
+        var startHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: startTimePicker.date)) : -1
+        var startMinute: Int16 = hasTimeRange ? Int16(Calendar.current.component(.minute, from: startTimePicker.date)) : 0
+        var endHour: Int16 = hasTimeRange ? Int16(Calendar.current.component(.hour, from: endTimePicker.date)) : -1
+        var endMinute: Int16 = hasTimeRange ? Int16(Calendar.current.component(.minute, from: endTimePicker.date)) : 0
+
+        let dayTimeRanges: [Int: DayTimeRange]
+        if differentTimesSwitch.isOn, let common = dayTimeRows.first?.range,
+           dayTimeRows.allSatisfy({ $0.range == common }) {
+            // Every day ended up with the same time — no real per-day customization
+            // happened, so store it as the single global range instead of a redundant
+            // per-day override map.
+            dayTimeRanges = [:]
+            startHour = Int16(common.startHour)
+            startMinute = Int16(common.startMinute)
+            endHour = Int16(common.endHour)
+            endMinute = Int16(common.endMinute)
+        } else if differentTimesSwitch.isOn {
+            dayTimeRanges = Dictionary(uniqueKeysWithValues: dayTimeRows.map { ($0.weekday, $0.range) })
+        } else {
+            dayTimeRanges = [:]
+        }
 
         return RoutineFormData(
             name: name,

@@ -392,7 +392,14 @@ class RoutineDetailViewController: UIViewController {
             multiline: false
         ))
         
-        if !routine.dayTimeRanges.isEmpty, case .specificDays(let days) = routine.frequency {
+        if !routine.dayTimeRanges.isEmpty {
+            let days: [Int]
+            switch routine.frequency {
+            case .daily:
+                days = DayOfWeek.allCases.map { $0.rawValue }
+            case .specificDays(let specificDays):
+                days = specificDays
+            }
             let sortedDays = days.sorted { d1, d2 in
                 let p1 = d1 == 1 ? 8 : d1
                 let p2 = d2 == 1 ? 8 : d2
