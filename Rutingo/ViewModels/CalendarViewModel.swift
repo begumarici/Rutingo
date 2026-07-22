@@ -69,10 +69,9 @@ class CalendarViewModel {
         completion()
     }
     
-    /// Selects an arbitrary date directly (e.g. tapping a day in the detail calendar, or jumping back to today).
-    /// Normalized to the start of day so future/past comparisons elsewhere stay accurate.
     func selectDate(_ date: Date, completion: () -> Void) {
         self.selectedDate = DateHelper.shared.startOfDay(date)
+        self.currentMonth = self.selectedDate
         generateGrid()
         completion()
     }

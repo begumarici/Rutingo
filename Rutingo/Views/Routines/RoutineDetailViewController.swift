@@ -157,6 +157,7 @@ class RoutineDetailViewController: UIViewController {
         setupUI()
         setupCalendarCard()
         if let initialDate {
+            calendarViewModel.filteredRoutine = routine
             calendarViewModel.selectDate(initialDate) {}
         }
         configureWithRoutine()
