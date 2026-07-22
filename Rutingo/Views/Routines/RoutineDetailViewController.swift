@@ -13,6 +13,7 @@ class RoutineDetailViewController: UIViewController {
     var routine: Routine! // !!!!
     private let viewModel: RoutinesViewModel
     private let calendarViewModel = CalendarViewModel()
+    private let initialDate: Date?
     
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -137,9 +138,12 @@ class RoutineDetailViewController: UIViewController {
     private var dynamicCards: [UIView] = []
 
     // MARK: - Init
-    init(routine: Routine, viewModel: RoutinesViewModel = RoutinesViewModel()) {
+    /// `initialDate` is the day the calendar/progress card should open on (e.g. the day the caller was
+    /// looking at when the user tapped through) — defaults to today when not specified.
+    init(routine: Routine, viewModel: RoutinesViewModel = RoutinesViewModel(), initialDate: Date? = nil) {
         self.routine = routine
         self.viewModel = viewModel
+        self.initialDate = initialDate
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -152,6 +156,9 @@ class RoutineDetailViewController: UIViewController {
         setupNavigationBar()
         setupUI()
         setupCalendarCard()
+        if let initialDate {
+            calendarViewModel.selectDate(initialDate) {}
+        }
         configureWithRoutine()
     }
     
