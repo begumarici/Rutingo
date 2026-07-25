@@ -349,6 +349,10 @@ class AddRoutineViewController: UIViewController {
     }()
 
     private var dayTimeRows: [DayTimeRangeRow] = []
+    /// Accumulates every per-day range entered this session, keyed by weekday, so switching
+    /// frequency (e.g. Daily -> specific days with no day picked yet) doesn't silently discard
+    /// ranges just because `activeWeekdays` briefly has no rows to hold them.
+    private var perDayTimeCache: [Int: DayTimeRange] = [:]
     
     // Reminder
     private let reminderStackView: UIStackView = {
@@ -1054,8 +1058,8 @@ class AddRoutineViewController: UIViewController {
             return
         }
 
-        var existingRanges = seedRanges
-        for row in dayTimeRows { existingRanges[row.weekday] = row.range }
+        for row in dayTimeRows { perDayTimeCache[row.weekday] = row.range }
+        for (day, range) in seedRanges { perDayTimeCache[day] = range }
         dayTimeRows.forEach { $0.removeFromSuperview() }
         dayTimeRows.removeAll()
 
@@ -1073,7 +1077,7 @@ class AddRoutineViewController: UIViewController {
         }
 
         for day in sortedDays {
-            let row = DayTimeRangeRow(weekday: day, initialRange: existingRanges[day] ?? fallbackRange)
+            let row = DayTimeRangeRow(weekday: day, initialRange: perDayTimeCache[day] ?? fallbackRange)
             row.onExpandToggle = { [weak self] in self?.view.layoutIfNeeded() }
             perDayTimeStack.addArrangedSubview(row)
             dayTimeRows.append(row)
