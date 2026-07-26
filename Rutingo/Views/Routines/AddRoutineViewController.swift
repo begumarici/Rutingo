@@ -349,6 +349,10 @@ class AddRoutineViewController: UIViewController {
     }()
 
     private var dayTimeRows: [DayTimeRangeRow] = []
+    /// Accumulates every per-day range entered this session, keyed by weekday, so switching
+    /// frequency (e.g. Daily -> specific days with no day picked yet) doesn't silently discard
+    /// ranges just because `activeWeekdays` briefly has no rows to hold them.
+    private var perDayTimeCache: [Int: DayTimeRange] = [:]
     
     // Reminder
     private let reminderStackView: UIStackView = {
@@ -1054,8 +1058,8 @@ class AddRoutineViewController: UIViewController {
             return
         }
 
-        var existingRanges = seedRanges
-        for row in dayTimeRows { existingRanges[row.weekday] = row.range }
+        for row in dayTimeRows { perDayTimeCache[row.weekday] = row.range }
+        for (day, range) in seedRanges { perDayTimeCache[day] = range }
         dayTimeRows.forEach { $0.removeFromSuperview() }
         dayTimeRows.removeAll()
 
@@ -1073,7 +1077,7 @@ class AddRoutineViewController: UIViewController {
         }
 
         for day in sortedDays {
-            let row = DayTimeRangeRow(weekday: day, initialRange: existingRanges[day] ?? fallbackRange)
+            let row = DayTimeRangeRow(weekday: day, initialRange: perDayTimeCache[day] ?? fallbackRange)
             row.onExpandToggle = { [weak self] in self?.view.layoutIfNeeded() }
             perDayTimeStack.addArrangedSubview(row)
             dayTimeRows.append(row)
@@ -1122,6 +1126,8 @@ class AddRoutineViewController: UIViewController {
             closeEndTimePicker()
             differentTimesSwitch.isOn = false
             rebuildPerDayTimeRows()
+            perDayTimeStack.isHidden = true
+            perDayTimeStack.alpha = 0.0
         }
 
         UIView.animate(withDuration: 0.3) {
@@ -1360,25 +1366,29 @@ class AddRoutineViewController: UIViewController {
             }
         }
         
-        if routine.startHour >= 0 {
+        // Defensive: a routine could in theory have per-day overrides but an invalid (-1) default
+        // range — don't let that combination silently drop the overrides when the form re-saves.
+        if routine.startHour >= 0 || !routine.dayTimeRanges.isEmpty {
             hasTimeRange = true
             timeRangeSwitch.isOn = true
             differentTimesHeaderView.isHidden = false
             differentTimesHeaderView.alpha = 1.0
 
-            var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
-            components.hour = Int(routine.startHour)
-            components.minute = Int(routine.startMinute)
-            if let date = Calendar.current.date(from: components) {
-                startTimePicker.date = date
-                startTimeValueLabel.text = formattedTime(from: date)
-            }
+            if routine.startHour >= 0 {
+                var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+                components.hour = Int(routine.startHour)
+                components.minute = Int(routine.startMinute)
+                if let date = Calendar.current.date(from: components) {
+                    startTimePicker.date = date
+                    startTimeValueLabel.text = formattedTime(from: date)
+                }
 
-            components.hour = Int(routine.endHour)
-            components.minute = Int(routine.endMinute)
-            if let date = Calendar.current.date(from: components) {
-                endTimePicker.date = date
-                endTimeValueLabel.text = formattedTime(from: date)
+                components.hour = Int(routine.endHour)
+                components.minute = Int(routine.endMinute)
+                if let date = Calendar.current.date(from: components) {
+                    endTimePicker.date = date
+                    endTimeValueLabel.text = formattedTime(from: date)
+                }
             }
 
             let overrides = routine.dayTimeRanges

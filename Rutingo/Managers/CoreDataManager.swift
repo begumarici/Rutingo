@@ -403,6 +403,9 @@ class CoreDataManager: DataManager {
         guard hasTime else { return }
 
         let range = routine.timeRange(for: day)
+        // Defensive: a day with neither its own override nor a valid default range (e.g. startHour
+        // -1 from a routine with dayTimeRanges but no default time) shouldn't produce a corrupt block.
+        guard range.isValid else { return }
         let block = TimeBlock(context: viewContext)
         block.id = UUID()
         block.title = routineName
@@ -441,6 +444,8 @@ class CoreDataManager: DataManager {
         
         for date in dates {
             let range = routine.timeRange(for: date)
+            // Defensive: skip a day that has neither its own override nor a valid default range.
+            guard range.isValid else { continue }
             let block = TimeBlock(context: viewContext)
             block.id = UUID()
             block.title = routineName
