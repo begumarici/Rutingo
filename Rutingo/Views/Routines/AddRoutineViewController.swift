@@ -1126,6 +1126,8 @@ class AddRoutineViewController: UIViewController {
             closeEndTimePicker()
             differentTimesSwitch.isOn = false
             rebuildPerDayTimeRows()
+            perDayTimeStack.isHidden = true
+            perDayTimeStack.alpha = 0.0
         }
 
         UIView.animate(withDuration: 0.3) {
@@ -1364,25 +1366,29 @@ class AddRoutineViewController: UIViewController {
             }
         }
         
-        if routine.startHour >= 0 {
+        // Defensive: a routine could in theory have per-day overrides but an invalid (-1) default
+        // range — don't let that combination silently drop the overrides when the form re-saves.
+        if routine.startHour >= 0 || !routine.dayTimeRanges.isEmpty {
             hasTimeRange = true
             timeRangeSwitch.isOn = true
             differentTimesHeaderView.isHidden = false
             differentTimesHeaderView.alpha = 1.0
 
-            var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
-            components.hour = Int(routine.startHour)
-            components.minute = Int(routine.startMinute)
-            if let date = Calendar.current.date(from: components) {
-                startTimePicker.date = date
-                startTimeValueLabel.text = formattedTime(from: date)
-            }
+            if routine.startHour >= 0 {
+                var components = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+                components.hour = Int(routine.startHour)
+                components.minute = Int(routine.startMinute)
+                if let date = Calendar.current.date(from: components) {
+                    startTimePicker.date = date
+                    startTimeValueLabel.text = formattedTime(from: date)
+                }
 
-            components.hour = Int(routine.endHour)
-            components.minute = Int(routine.endMinute)
-            if let date = Calendar.current.date(from: components) {
-                endTimePicker.date = date
-                endTimeValueLabel.text = formattedTime(from: date)
+                components.hour = Int(routine.endHour)
+                components.minute = Int(routine.endMinute)
+                if let date = Calendar.current.date(from: components) {
+                    endTimePicker.date = date
+                    endTimeValueLabel.text = formattedTime(from: date)
+                }
             }
 
             let overrides = routine.dayTimeRanges
